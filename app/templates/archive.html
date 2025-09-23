@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Archived Documents</h2>
+
+<!-- Update search placeholder in archive page -->
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <form method="GET" action="{{ url_for('main.archive') }}" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="Search by title, office, classification, status, or exact barcode..." value="{{ search }}">
+            {% if current_month %}
+                <input type="hidden" name="month" value="{{ current_month }}">
+            {% endif %}
+            {% if current_year %}
+                <input type="hidden" name="year" value="{{ current_year }}">
+            {% endif %}
+            <button type="submit" class="btn btn-primary me-2">Search</button>
+            {% if search %}
+                <a href="{{ url_for('main.archive', month=current_month, year=current_year) }}" class="btn btn-secondary">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Add Filter Form -->
+<form class="mb-4" method="GET">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="month">Month:</label>
+                <select class="form-control" id="month" name="month">
+                    <option value="">All Months</option>
+                    <option value="1" {% if current_month == '1' %}selected{% endif %}>January</option>
+                    <option value="2" {% if current_month == '2' %}selected{% endif %}>February</option>
+                    <option value="3" {% if current_month == '3' %}selected{% endif %}>March</option>
+                    <option value="4" {% if current_month == '4' %}selected{% endif %}>April</option>
+                    <option value="5" {% if current_month == '5' %}selected{% endif %}>May</option>
+                    <option value="6" {% if current_month == '6' %}selected{% endif %}>June</option>
+                    <option value="7" {% if current_month == '7' %}selected{% endif %}>July</option>
+                    <option value="8" {% if current_month == '8' %}selected{% endif %}>August</option>
+                    <option value="9" {% if current_month == '9' %}selected{% endif %}>September</option>
+                    <option value="10" {% if current_month == '10' %}selected{% endif %}>October</option>
+                    <option value="11" {% if current_month == '11' %}selected{% endif %}>November</option>
+                    <option value="12" {% if current_month == '12' %}selected{% endif %}>December</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="year">Year:</label>
+                <select class="form-control" id="year" name="year">
+                    <option value="">All Years</option>
+                    {% for year in years %}
+                        <option value="{{ year }}" {% if current_year == year|string %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{{ url_for('main.archive') }}" class="btn btn-secondary">Reset</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Preserve search parameter if it exists -->
+    {% if search %}
+        <input type="hidden" name="search" value="{{ search }}">
+    {% endif %}
+</form>
+
+<!-- Archived Documents Table -->
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Document Title</th>
+            <th>Office</th>
+            <th>Status</th>
+            <th>Created By</th>
+            <th>Assigned To</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for document in archived_documents %}
+        <tr>
+            <td>{{ document.title }}</td>
+            <td>{{ document.office }}</td>
+            <td>{{ document.status }}</td>
+            <td>{{ document.creator.username }}</td>
+            <td>{{ document.recipient.username }}</td>
+            <td>
+                <!-- View Document Modal Trigger -->
+                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewDocumentModal"
+                        data-doc='{{ {
+                            "id": document.id,
+                            "title": document.title,
+                            "office": document.office,
+                            "classification": document.classification,
+                            "status": document.status,
+                            "action_taken": document.action_taken,
+                            "remarks": document.remarks|default(""),
+                            "attachment": document.attachment|default(""),
+                            "creator": document.creator.username,
+                            "recipient": document.recipient.username,
+                            "timestamp": document.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+                            "activities": document.activities_json
+                        }|tojson|e }}'
+                        onclick="populateViewModal(JSON.parse(this.dataset.doc))">
+                    View Details
+                </button>
+
+                <!-- Unarchive Button -->
+                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#unarchiveConfirmModal-{{ document.id }}">
+                    Unarchive
+                </button>
+
+                <!-- Add Unarchive Confirmation Modal -->
+                <div class="modal fade" id="unarchiveConfirmModal-{{ document.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirm Unarchive</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to unarchive "{{ document.title }}"? It will be moved back to active documents.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <form action="{{ url_for('main.unarchive_document', document_id=document.id) }}" method="POST" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-warning">Confirm Unarchive</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Add Pagination -->
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.archive', page=pagination.prev_num, month=current_month, year=current_year, search=search) }}">Previous</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+        {% endif %}
+
+        {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+            {% if page_num %}
+                {% if page_num == pagination.page %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.archive', page=page_num, month=current_month, year=current_year, search=search) }}">{{ page_num }}</a>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">…</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.archive', page=pagination.next_num, month=current_month, year=current_year, search=search) }}">Next</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Next</span>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<!-- Single View Document Modal -->
+<div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">View Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Title:</strong> <span id="docTitle"></span></p>
+                <p><strong>Office:</strong> <span id="docOffice"></span></p>
+                <p><strong>Classification:</strong> <span id="docClassification"></span></p>
+                <p><strong>Status:</strong> <span id="docStatus"></span></p>
+                <p><strong>Action Taken:</strong> <span id="docActionTaken"></span></p>
+                <p><strong>Remarks:</strong> <span id="docRemarks"></span></p>
+                <p><strong>Attachment:</strong> <span id="docAttachment"></span></p>
+                <p><strong>Created By:</strong> <span id="docCreator"></span></p>
+                <p><strong>Assigned To:</strong> <span id="docRecipient"></span></p>
+                <p><strong>Timestamp:</strong> <span id="docTimestamp"></span></p>
+
+                <!-- Activity Log -->
+                <button class="btn btn-primary" data-bs-target="#changeLogToggle" data-bs-toggle="modal">Activity Log</button>
+            </div>
+            <div class="modal-footer">
+                <div id="archiveButtonContainer" style="display: none;">
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#archiveConfirmModal" onclick="setArchiveDocumentId(this.getAttribute('data-document-id'))" id="archiveButton">
+                        Archive
+                    </button>
+                </div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Changelogs Modal -->
+<div class="modal fade" id="changeLogToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">Document logs</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <ul id="activityLog"></ul>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-danger" data-bs-target="viewDocumentModal" data-bs-toggle="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- Add JavaScript for Modal Population -->
+<script>
+function populateViewModal(data) {
+    document.getElementById('docTitle').textContent = data.title;
+    document.getElementById('docOffice').textContent = data.office;
+    document.getElementById('docClassification').textContent = data.classification;
+    document.getElementById('docStatus').textContent = data.status;
+    document.getElementById('docActionTaken').textContent = data.action_taken;
+    document.getElementById('docRemarks').textContent = data.remarks || 'None';
+    
+    // Handle attachment
+    if (data.attachment && data.attachment !== 'None') {
+        document.getElementById('docAttachment').innerHTML = '<a href="' + data.attachment + '" target="_blank">View Attachment</a>';
+    } else {
+        document.getElementById('docAttachment').textContent = 'No attachment available';
+    }
+    
+    document.getElementById('docCreator').textContent = data.creator;
+    document.getElementById('docRecipient').textContent = data.recipient;
+    document.getElementById('docTimestamp').textContent = data.timestamp;
+
+    // Populate activity log
+    const activityLogElement = document.getElementById('activityLog');
+    activityLogElement.innerHTML = '';
+    if (data.activities && data.activities.length > 0) {
+        data.activities.forEach(activity => {
+            const li = document.createElement('li');
+            const remarksPart = activity.remarks ? '- Remarks: "' + activity.remarks + '"' : '';
+            li.innerHTML = '<strong>' + ((activity.user && activity.user.username) ? activity.user.username : 'Unknown') + '</strong> ' + activity.action + ' ' + remarksPart + ' <small>(' + activity.timestamp + ')</small>';
+            activityLogElement.appendChild(li);
+        });
+    } else {
+        activityLogElement.innerHTML = '<li>No activities recorded</li>';
+    }
+}
+
+let searchTimeout;
+
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchQuery = e.target.value.trim();
+            const currentUrl = new URL(window.location);
+            
+            if (searchQuery) {
+                currentUrl.searchParams.set('search', searchQuery);
+            } else {
+                currentUrl.searchParams.delete('search');
+            }
+            
+            // Reset to first page when searching
+            currentUrl.searchParams.set('page', '1');
+            window.location.href = currentUrl.toString();
+        }, 500); // Delay for 500ms
+    });
+}
+
+function clearSearch() {
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.delete('search');
+    currentUrl.searchParams.set('page', '1');
+    window.location.href = currentUrl.toString();
+}
+</script>
+{% endblock %}

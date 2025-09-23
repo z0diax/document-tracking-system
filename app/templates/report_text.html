@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title or 'System Activity Report' }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --text: #111;
+      --muted: #555;
+      --light: #888;
+      --border: #e5e7eb;
+      --accent: #0d6efd;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+      background: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .container {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0 0 4px 0;
+    }
+    .sub {
+      color: var(--muted);
+      margin: 0 0 16px 0;
+      font-size: 12px;
+    }
+    .section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .section h2 {
+      font-size: 16px;
+      margin: 0 0 12px 0;
+      color: var(--accent);
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .col {
+      flex: 1 1 260px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .value {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+    }
+    th {
+      background: #f8fafc;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 16px 0;
+    }
+    .controls form {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .controls label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .controls input[type="number"],
+    .controls input[type="date"],
+    .controls select {
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .controls button, .controls a.btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 12px;
+      text-decoration: none;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .controls button.primary, .controls a.btn.primary {
+      border-color: var(--accent);
+      color: #fff;
+      background: var(--accent);
+    }
+    .note {
+      color: var(--light);
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media print {
+      .controls { display: none !important; }
+      @page { size: A4; margin: 12mm; }
+      .section { break-inside: avoid; page-break-inside: avoid; }
+      table, tr, td, th { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="controls" {% if autoprint %}style="display:none"{% endif %}>
+      <form method="get" action="{{ url_for('main.print_text_report') }}">
+        <label for="date_from">From</label>
+        <input id="date_from" name="date_from" type="date" value="{{ selected_from }}">
+        <label for="date_to">To</label>
+        <input id="date_to" name="date_to" type="date" value="{{ selected_to }}">
+        <label for="details">Include details</label>
+        <select id="details" name="include_details">
+          <option value="1" {% if include_details %}selected{% endif %}>Yes</option>
+          <option value="0" {% if not include_details %}selected{% endif %}>No</option>
+        </select>
+        <input type="hidden" name="autoprint" value="0">
+        <button type="submit" class="primary">Generate</button>
+      </form>
+      <a class="btn" href="{{ url_for('main.print_text_report', date_from=selected_from, date_to=selected_to, include_details=1 if include_details else 0, autoprint=1) }}">Print</a>
+      <a class="btn" href="{{ url_for('main.print_text_report', date_from=selected_from, date_to=selected_to, include_details=1 if include_details else 0, autoprint=0, format='txt') }}">Download TXT</a>
+    </div>
+
+    <h1>{{ title or 'System Activity Report' }}</h1>
+    <div class="sub">
+      Report Period: {% if selected_from_fmt and selected_to_fmt and selected_from_fmt == selected_to_fmt %}{{ selected_from_fmt }}{% else %}{{ selected_from_fmt }} to {{ selected_to_fmt }}{% endif %} |
+      Generated: {{ generated_at.strftime('%B %d, %Y at %I:%M:%S %p') }}
+    </div>
+
+    <div class="section">
+      <h2>Summary</h2>
+      <div class="row">
+        <div class="col">
+          <div class="label">Documents created in ({% if selected_from_fmt and selected_to_fmt and selected_from_fmt == selected_to_fmt %}{{ selected_from_fmt }}{% else %}{{ selected_from_fmt }} to {{ selected_to_fmt }}{% endif %}) </div>
+          <div class="value">{{ documents_created_this_month }}</div>
+        </div>
+        <div class="col">
+          <div class="label">Per-Classification counts ({% if selected_from_fmt and selected_to_fmt and selected_from_fmt == selected_to_fmt %}{{ selected_from_fmt }}{% else %}{{ selected_from_fmt }} to {{ selected_to_fmt }}{% endif %})</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Classification</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for key, val in per_classification_counts.items() %}
+              <tr>
+                <td>{{ key }}</td>
+                <td>{{ val }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Processing Time by Classification ({{ period_label }})</h2>
+      {% if classification_processing %}
+      <table>
+        <thead>
+          <tr>
+            <th>Classification</th>
+            <th>Documents Released</th>
+            <th>Avg Processing Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in classification_processing %}
+          <tr>
+            <td>{{ row.classification }}</td>
+            <td>{{ row.count }}</td>
+            <td>{% if row.count > 0 %}{{ row.avg_formatted }}{% else %}No document processed yet{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="muted">No released documents found for the selected period.</div>
+      {% endif %}
+    </div>
+
+    <div class="section">
+      <h2>Processing Time by Classification Types ({{ period_label }})</h2>
+      {% if classification_sub_processing %}
+      <table>
+        <thead>
+          <tr>
+            <th>Classification</th>
+            <th>Type</th>
+            <th>Documents Released</th>
+            <th>Avg Processing Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for group in classification_sub_processing %}
+            {% for row in group.rows %}
+            <tr>
+              <td>{{ group.classification }}</td>
+              <td>{{ row.sub }}</td>
+              <td>{{ row.count }}</td>
+              <td>{% if row.count > 0 %}{{ row.avg_formatted }}{% else %}No documents processed yet{% endif %}</td>
+            </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="muted">No released documents found for the selected period.</div>
+      {% endif %}
+    </div>
+
+    <div class="section">
+      <h2>Period({{ period_label }})</h2>
+      <div class="row">
+        <div class="col">
+          <div class="label">Shortest average processing time</div>
+          {% if monthly_best %}
+            <div class="value">{{ monthly_best.username }}</div>
+            <div class="muted">Average: {{ monthly_best.avg_formatted }} | Documents Processed: {{ monthly_best.count }}</div>
+          {% else %}
+            <div class="muted">N/A</div>
+          {% endif %}
+        </div>
+        <div class="col">
+          <div class="label">Longest processing time user</div>
+          {% if monthly_worst %}
+            <div class="value">{{ monthly_worst.username }}</div>
+            <div class="muted">Average: {{ monthly_worst.avg_formatted }} | Documents Processed: {{ monthly_worst.count }}</div>
+          {% else %}
+            <div class="muted">N/A</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="note">Based on accepted → forwarded intervals for handled documents in {{ period_label }}.</div>
+    </div>
+
+    <div class="section">
+      <h2>Alltime (Overall)</h2>
+      <div class="row">
+        <div class="col">
+          <div class="label">Shortest average processing time</div>
+          {% if overall_best %}
+            <div class="value">{{ overall_best.username }}</div>
+            <div class="muted">Average: {{ overall_best.avg_formatted }} | Documents Processed: {{ overall_best.count }}</div>
+          {% else %}
+            <div class="muted">N/A</div>
+          {% endif %}
+        </div>
+        <div class="col">
+          <div class="label">Longest processing time user</div>
+          {% if overall_worst %}
+            <div class="value">{{ overall_worst.username }}</div>
+            <div class="muted">Average: {{ overall_worst.avg_formatted }} | Documents Processed: {{ overall_worst.count }}</div>
+          {% else %}
+            <div class="muted">N/A</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="note">Based on accepted → forwarded intervals for all handled documents.</div>
+    </div>
+
+    <div class="section">
+      <h2>User Performance ({{ period_label }})</h2>
+      {% if user_performance %}
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Documents Created</th>
+            <th>Documents Processed</th>
+            <th>Avg Processing Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in user_performance %}
+          <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.documents_created }}</td>
+            <td>{{ u.documents_handled }}</td>
+            <td>{{ u.avg_formatted }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="muted">No user activity found for the selected period.</div>
+      {% endif %}
+    </div>
+
+    <div class="section">
+      <h2>Leave User Performance ({{ period_label }})</h2>
+      {% if leave_user_metrics_period %}
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Leaves Released</th>
+            <th>Avg Leave Processing Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in leave_user_metrics_period %}
+          <tr>
+            <td>{{ row.username }}</td>
+            <td>{{ row.leaves_released }}</td>
+            <td>{{ row.avg_formatted }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="muted">No leave processing data for the selected period.</div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  {% if autoprint %}
+  <script>
+    // Auto-print for convenience when requested
+    window.addEventListener('load', function() {
+      try { window.print(); } catch (e) {}
+    });
+  </script>
+  {% endif %}
+</body>
+</html>

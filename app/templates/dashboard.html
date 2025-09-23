@@ -1,0 +1,3249 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Dashboard content container -->
+<div class="dashboard-container">
+    <!-- Add custom CSS for the status animation -->
+    <style>
+        .status-accepted {
+            position: relative;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-accepted::after {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: white;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+
+        /* For Computation (blue with animation) */
+        .status-forcomp {
+            position: relative;
+            animation: pulse 1.5s infinite;
+        }
+        .status-forcomp::after {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: white;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes blink {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <script type="application/json" id="flash-messages-data">{{ messages|tojson|safe }}</script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    try {
+                        const el = document.getElementById('flash-messages-data');
+                        const toasts = el ? JSON.parse(el.textContent || '[]') : [];
+                        toasts.forEach(function(item) {
+                            const category = item[0];
+                            const message = item[1];
+                            showToast(message, category);
+                        });
+                    } catch (e) {
+                        console.error('Failed to render flash messages', e);
+                    }
+                });
+            </script>
+        {% endif %}
+    {% endwith %}
+
+{% if request.args.get('view') == 'leave' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Leave</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLeaveModal">
+        Create Record
+    </button>
+</div>
+{% else %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Dashboard</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDocumentModal">
+        Create New Document
+    </button>
+</div>
+{% endif %}
+
+<!-- Create Document Modal -->
+<div class="modal fade" id="createDocumentModal" tabindex="-1" aria-labelledby="createDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createDocumentModalLabel">Create New Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('main.create_document') }}" enctype="multipart/form-data" id="createDocumentForm">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control", placeholder="Enter document title") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.office.label(class="form-label") }}
+                        <select class="form-control" id="{{ form.office.id }}" name="{{ form.office.name }}">
+                            <option value="" disabled selected>Select an office</option>
+                            {% for choice in form.office.choices %}
+                            <option value="{{ choice[0] }}">{{ choice[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.classification.label(class="form-label") }}
+                        <select class="form-control" id="classification-main" name="{{ form.classification.name }}">
+                            <option value="" disabled selected>Select a classification</option>
+                            {% for choice in form.classification.choices %}
+                            <option value="{{ choice[0] }}">{{ choice[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Add custom classification input field -->
+                    <div class="mb-3" id="custom-classification-container" style="display: none;">
+                        {{ form.custom_classification.label(class="form-label") }}
+                        {{ form.custom_classification(class="form-control", maxlength="20") }}
+                        <div id="charLimitIndicator" class="text-danger mt-1" style="display: none;">
+                            Character limit reached (20 characters maximum)
+                        </div>
+                    </div>
+
+                    <!-- Sub-classification dropdown (initially hidden) -->
+                    <div class="mb-3" id="sub-classification-container" style="display: none;">
+                        <label for="sub-classification" class="form-label">Classification Type</label>
+                        <select class="form-control" id="sub-classification">
+                            <option value="" disabled selected>Select a classification type</option>
+                            <!-- Options will be dynamically populated based on main classification -->
+                        </select>
+                    </div>
+                    <!-- Hidden input to store combined classification value -->
+                    <input type="hidden" id="full-classification" name="full_classification">
+                    
+                    <!-- Add barcode field -->
+                    <div class="mb-3">
+                        {{ form.barcode.label(class="form-label") }}
+                        {{ form.barcode(class="form-control", placeholder="Enter document barcode", id="barcode-input") }}
+                        <div class="validation-feedback" id="barcode-feedback"></div>
+                        <!-- Container for barcode suggestions -->
+                        <div class="barcode-suggestions mt-2" id="barcode-suggestions"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.status.label(class="form-label") }}
+                        <select class="form-control" id="{{ form.status.id }}" name="{{ form.status.name }}">
+                            <option value="" disabled selected>Select a status</option>
+                            {% for choice in form.status.choices %}
+                            <option value="{{ choice[0] }}">{{ choice[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.action_taken.label(class="form-label") }}
+                        <select class="form-control" id="{{ form.action_taken.id }}" name="{{ form.action_taken.name }}">
+                            <option value="" disabled selected>Select an action</option>
+                            {% for choice in form.action_taken.choices %}
+                            <option value="{{ choice[0] }}">{{ choice[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.attachment.label(class="form-label") }}
+                        {{ form.attachment(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.remarks.label(class="form-label") }}
+                        {{ form.remarks(class="form-control", rows=3, placeholder="Enter any additional remarks") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.recipient.label(class="form-label") }}
+                        <select class="form-control" id="{{ form.recipient.id }}" name="{{ form.recipient.name }}">
+                            <option value="" disabled selected>Select a recipient</option>
+                            {% for user_id, username in form.recipient.choices %}
+                            <option value="{{ user_id }}">{{ username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if request.args.get('view') == 'received' %}
+    <!-- Search Bar for Received Documents -->
+    <div class="mb-3">
+        <form method="GET" action="{{ url_for('main.dashboard') }}" class="d-flex">
+            <input type="hidden" name="view" value="received">
+            <input type="text" name="search" class="form-control me-2" placeholder="Search by title, office, classification, or barcode..." 
+                   value="{{ search_query if request.args.get('view') == 'received' }}">
+            <button type="submit" class="btn btn-primary me-2">Search</button>
+            {% if search_query and request.args.get('view') == 'received' %}
+                <a href="{{ url_for('main.dashboard', view='received') }}" class="btn btn-secondary">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+    <!-- Documents Received -->
+    <h3>Documents Received</h3>
+    
+    <!-- Batch Action Controls -->
+    <div class="mb-3" id="batchControls" style="display: none;">
+        <div class="d-flex gap-2 align-items-center">
+            <span class="text-muted">Selected: <span id="selectedCount">0</span> document(s)</span>
+            <!-- Accept/Decline buttons for Pending/Forwarded documents -->
+            <div id="batchPendingActions" style="display: none;">
+                <button type="button" class="btn btn-success btn-sm" onclick="batchAccept()">
+                    <i class="fas fa-check"></i> Accept Selected
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#batchDeclineModal">
+                    <i class="fas fa-times"></i> Decline Selected
+                </button>
+            </div>
+            <!-- Forward/Release buttons for Accepted documents -->
+            <div id="batchAcceptedActions" style="display: none;">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#batchForwardModal">
+                    <i class="fas fa-share"></i> Forward Selected
+                </button>
+                <button type="button" class="btn btn-info btn-sm" onclick="batchRelease()">
+                    <i class="fas fa-paper-plane"></i> Release Selected
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th style="width: 40px;">
+                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" title="Select All">
+                </th>
+                <th>Document Title</th>
+                <th>Office</th>
+                <th>Classification</th>
+                <th>Barcode</th>
+                <th>Status</th>
+                <th>Sender</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in received_documents %}
+            <tr>
+                <td>
+                    {% if document.recipient == current_user and document.status not in ['Released', 'Declined'] %}
+                        <input type="checkbox" class="document-checkbox" value="{{ document.id }}" onchange="updateBatchControls()">
+                    {% endif %}
+                </td>
+                <td>{{ document.title }}</td>
+                <td>{{ document.office }}</td>
+                <td>{{ document.classification }}</td>
+                <td>{{ document.barcode }}</td>
+                <td>
+                    {% if document.status == 'Accepted' %}
+                        <span class="badge bg-info status-accepted">
+                            Processing
+                        </span>
+                    {% else %}
+                        <span class="badge bg-{{ {
+                            'Pending': 'warning',
+                            'Declined': 'danger',
+                            'Released': 'success',
+                            'Archived': 'secondary'
+                        }.get(document.status, 'secondary') }}"
+                        {% if document.status == 'Released' %}
+                            title="Released on: {{ document.released_timestamp | local_time('%m-%d-%Y at %I:%M %p') }}"
+                        {% endif %}>
+                            {{ document.status }}
+                        </span>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ document.last_activity_details.user.username }} | 
+                    <small>{{ document.last_activity_details.timestamp | local_time('%m-%d-%Y at %I:%M %p') }}</small>
+                </td>
+                <td class="text-center">
+                    {% if document.recipient == current_user and document.status in ['Pending', 'Forwarded'] %}
+                        <!-- Accept Button triggers custom modal -->
+                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#acceptModal-{{ document.id }}">
+                            Accept
+                        </button>
+                        <!-- Decline Button (unchanged) -->
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#declineModal{{ document.id }}">
+                            Decline
+                        </button>
+                    {% endif %}
+                    {% if document.recipient == current_user and document.status == 'Accepted' %}
+                        <!-- Forward Button (unchanged) -->
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#forwardModal{{ document.id }}">
+                            Forward
+                        </button>
+                        <!-- Release Button triggers custom modal -->
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#releaseModal-{{ document.id }}">
+                            Release
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+
+            <!-- Accept Confirmation Modal -->
+            <div class="modal fade" id="acceptModal-{{ document.id }}" tabindex="-1" aria-labelledby="acceptModalLabel{{ document.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="acceptModalLabel{{ document.id }}">Confirm Accept</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <!-- Modal Body -->
+                        <div class="modal-body">
+                            Are you sure you want to accept the document "{{ document.title }}"?
+                        </div>
+                        <!-- Modal Footer -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('main.accept_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-success">Confirm Accept</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Release Confirmation Modal -->
+    <div class="modal fade" id="releaseModal-{{ document.id }}" tabindex="-1" aria-labelledby="releaseModalLabel{{ document.id }}" aria-hidden="true">
+
+
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="releaseModalLabel{{ document.id }}">Confirm Release</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <!-- Modal Body -->
+                        <div class="modal-body">
+                            Are you sure you want to release the document "{{ document.title }}"?
+                        </div>
+                        <!-- Modal Footer -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('main.release_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-info">Confirm Release</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decline Document Modal -->
+            <div class="modal fade" id="declineModal{{ document.id }}" tabindex="-1" aria-labelledby="declineModalLabel{{ document.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="declineModalLabel{{ document.id }}">Decline Document</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{{ url_for('main.decline_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="mb-3">
+                                    {{ decline_form.reason.label(class="form-label") }}
+                                    {{ decline_form.reason(class="form-control", rows=3) }}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-danger">Decline</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forward Document Modal -->
+            <div class="modal fade" id="forwardModal{{ document.id }}" tabindex="-1" aria-labelledby="forwardModalLabel{{ document.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="forwardModalLabel{{ document.id }}">Forward Document</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{{ url_for('main.forward_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="mb-3">
+                                    {{ forward_form.action_taken.label(class="form-label") }}
+                                    {{ forward_form.action_taken(class="form-control") }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ forward_form.recipient.label(class="form-label") }}
+                                    {{ forward_form.recipient(class="form-control") }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ forward_form.remarks.label(class="form-label") }}
+                                    {{ forward_form.remarks(class="form-control", rows=3) }}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Forward</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Release Confirmation Modal -->
+            <div class="modal fade" id="releaseModal-{{ document.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Release Document</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to release the document "{{ document.title }}"?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('main.release_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-success">Confirm Release</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination for Received Documents -->
+    <nav aria-label="Received documents pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if received_pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='received', page=received_pagination.prev_num, search=request.args.get('search', '')) }}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+            {% endif %}
+
+            {% for page_num in received_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == received_pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.dashboard', view='received', page=page_num, search=request.args.get('search', '')) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if received_pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='received', page=received_pagination.next_num, search=request.args.get('search', '')) }}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% elif request.args.get('view') == 'employee' %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Employee Records</h2>
+        <div>
+            <form method="GET" action="{{ url_for('main.dashboard') }}" class="d-flex">
+                <input type="hidden" name="view" value="employee">
+                <input type="text" name="search" class="form-control me-2" placeholder="Search by name, office, or status..." value="{{ request.args.get('search','') }}">
+                <button type="submit" class="btn btn-primary me-2">Search</button>
+                {% if request.args.get('search') %}
+                    <a href="{{ url_for('main.dashboard', view='employee') }}" class="btn btn-secondary">Reset</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Office</th>
+                    <th>Position</th>
+                    <th>Status</th>
+                    <th>Hired Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Mock data rows -->
+                <tr>
+                    <td>EMP-1001</td>
+                    <td>Juan Dela Cruz</td>
+                    <td>HRMDO</td>
+                    <td>HR Specialist</td>
+                    <td><span class="badge bg-success">Active</span></td>
+                    <td>2021-03-15</td>
+                    <td class="text-nowrap">
+                        <button class="btn btn-sm btn-info" disabled title="Mock">View</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>EMP-1002</td>
+                    <td>Maria Santos</td>
+                    <td>CPDO</td>
+                    <td>Planning Officer</td>
+                    <td><span class="badge bg-warning text-dark">Probationary</span></td>
+                    <td>2024-11-02</td>
+                    <td class="text-nowrap">
+                        <button class="btn btn-sm btn-info" disabled title="Mock">View</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>EMP-1003</td>
+                    <td>Pedro Reyes</td>
+                    <td>CAO</td>
+                    <td>Administrative Aide</td>
+                    <td><span class="badge bg-secondary">Inactive</span></td>
+                    <td>2019-07-22</td>
+                    <td class="text-nowrap">
+                        <button class="btn btn-sm btn-info" disabled title="Mock">View</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>EMP-1004</td>
+                    <td>Luisa Mercado</td>
+                    <td>CMO</td>
+                    <td>Executive Assistant</td>
+                    <td><span class="badge bg-success">Active</span></td>
+                    <td>2020-01-10</td>
+                    <td class="text-nowrap">
+                        <button class="btn btn-sm btn-info" disabled title="Mock">View</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>EMP-1005</td>
+                    <td>Carlos Garcia</td>
+                    <td>CENRO</td>
+                    <td>Environmental Officer</td>
+                    <td><span class="badge bg-success">Active</span></td>
+                    <td>2018-05-30</td>
+                    <td class="text-nowrap">
+                        <button class="btn btn-sm btn-info" disabled title="Mock">View</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% elif request.args.get('view') == 'leave' %}
+    <!-- Leave: Create Form -->
+
+    <!-- Create Leave Request Modal -->
+    <div class="modal fade" id="createLeaveModal" tabindex="-1" aria-labelledby="createLeaveModalLabel" aria-hidden="true" style="display: none;">
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createLeaveModalLabel">Create Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tabs for Leave and EWP -->
+                    <ul class="nav nav-tabs mb-3" id="leaveEwpTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-leave" type="button" role="tab">Create Leave Record</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-ewp" type="button" role="tab">EWP</button>
+                        </li>
+                    </ul>
+                    <form id="leave-create-form" method="POST" action="{{ url_for('main.create_leave_request') }}" style="display: block;">
+                        {{ leave_form.hidden_tag() }}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ leave_form.barcode.label(class="form-label") }}
+                                {{ leave_form.barcode(class="form-control", placeholder="Optional barcode") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ leave_form.employee_name.label(class="form-label") }}
+                                {{ leave_form.employee_name(class="form-control", placeholder="Employee full name") }}
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                {{ leave_form.office.label(class="form-label") }}
+                                {{ leave_form.office(class="form-select") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ leave_form.leave_type.label(class="form-label") }}
+                                {{ leave_form.leave_type(class="form-select", id="leave-type-select") }}
+                            </div>
+                        </div>
+
+                        <!-- Conditional fields for Leave Type -->
+                        <div id="leave-conditional-fields" class="row g-3 mt-2">
+                            <!-- Vacation Leave / Special Privilege Leave -->
+                            <div id="vacation-spl-container" class="col-12" style="display: none;">
+                                <label class="form-label">Vacation Leave / Special Privilege Leave</label>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-6">
+                                        <label for="vacation-spl-subtype" class="form-label">Subtype</label>
+                                        <select id="vacation-spl-subtype" name="vacation_spl_subtype" class="form-select">
+                                            <option value="" disabled selected>Select subtype</option>
+                                            <option value="Within Philippines">Within Philippines</option>
+                                            <option value="Abroad (Specify)">Abroad (Specify)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="vacation-spl-detail-col" style="display: none;">
+                                        <label for="vacation-spl-detail" class="form-label">Details</label>
+                                        <input type="text" class="form-control" id="vacation-spl-detail" name="vacation_spl_detail" placeholder="Specify location">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sick Leave -->
+                            <div id="sick-leave-container" class="col-12" style="display: none;">
+                                <label class="form-label">Sick Leave</label>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-6">
+                                        <label for="sick-leave-subtype" class="form-label">Subtype</label>
+                                        <select id="sick-leave-subtype" name="sick_leave_subtype" class="form-select">
+                                            <option value="" disabled selected>Select subtype</option>
+                                            <option value="In hospital (Specify Illness)">In hospital (Specify Illness)</option>
+                                            <option value="Out Patient (Specify Illness)">Out Patient (Specify Illness)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="sick-leave-detail-col" style="display: none;">
+                                        <label for="sick-leave-detail" class="form-label">Specify illness</label>
+                                        <input type="text" class="form-control" id="sick-leave-detail" name="sick_leave_detail" placeholder="Enter illness">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Special Leave Benefits for Women -->
+                            <div id="slbw-container" class="col-12" style="display: none;">
+                                <label for="slbw-details" class="form-label">Special Leave Benefits for Women</label>
+                                <input type="text" class="form-control" id="slbw-details" name="slbw_details" placeholder="Enter details">
+                            </div>
+
+                            <!-- Study Leave -->
+                            <div id="study-leave-container" class="col-12" style="display: none;">
+                                <label for="study-leave-purpose" class="form-label">Study Leave</label>
+                                <select id="study-leave-purpose" name="study_leave_purpose" class="form-select">
+                                    <option value="" disabled selected>Select purpose</option>
+                                    <option value="Completion of Master&#39;s Degree">Completion of Master's Degree</option>
+                                    <option value="BAR/Board Examination Review">BAR/Board Examination Review</option>
+                                </select>
+                            </div>
+
+                            <!-- Others -->
+                            <div id="others-container" class="col-12" style="display: none;">
+                                <label for="others-subtype" class="form-label">Others</label>
+                                <select id="others-subtype" name="others_subtype" class="form-select">
+                                    <option value="" disabled selected>Select subtype</option>
+                                    <option value="Monetization of Leave Credits">Monetization of Leave Credits</option>
+                                    <option value="Terminal Leave">Terminal Leave</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-12">
+                                <label class="form-label">Date Range(s)</label>
+                                <div id="date-range-list" class="d-flex flex-column gap-2">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control date-range-picker" name="date_range" placeholder="Select date range" autocomplete="off">
+                                        <select class="form-select" name="time_mode_range" style="max-width: 240px;">
+                                            <option value="FULL_DAY" selected>Whole day (08:00am–5:00pm)</option>
+                                            <option value="AM_HALF">AM half-day (08:00am–12:00pm)</option>
+                                            <option value="PM_HALF">PM half-day (1:00pm–5:00pm)</option>
+                                        </select>
+                                        <!-- remove button appears only on additional inputs -->
+                                    </div>
+                                </div>
+                                <button type="button" id="add-date-range-btn" class="btn btn-sm btn-outline-primary mt-2">+ Add another date range</button>
+                                <!-- compatibility hidden fields for backend fallback -->
+                                <input type="hidden" name="start_date" id="leave-start-date-hidden">
+                                <input type="hidden" name="end_date" id="leave-end-date-hidden">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-12">
+                                {{ leave_form.remarks.label(class="form-label") }}
+                                {{ leave_form.remarks(class="form-control", rows=2, placeholder="Optional remarks") }}
+                            </div>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            {{ leave_form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+
+                    <!-- EWP form (hidden by default; toggled by tabs) -->
+                    <div id="ewp-form-wrapper" style="display: none;">
+                        <form id="ewp-create-form" method="POST" action="{{ url_for('main.create_ewp') }}">
+                            {{ ewp_form.hidden_tag() }}
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    {{ ewp_form.barcode.label(class="form-label") }}
+                                    {{ ewp_form.barcode(class="form-control", placeholder="Optional barcode") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ ewp_form.employee_name.label(class="form-label") }}
+                                    {{ ewp_form.employee_name(class="form-control", placeholder="Employee full name") }}
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-4">
+                                    {{ ewp_form.office.label(class="form-label") }}
+                                    {{ ewp_form.office(class="form-select") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ ewp_form.amount.label(class="form-label") }}
+                                    {{ ewp_form.amount(class="form-control", placeholder="Amount in Pesos", type="text", inputmode="decimal", autocomplete="off") }}
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    {{ ewp_form.purpose.label(class="form-label") }}
+                                    {{ ewp_form.purpose(class="form-control", rows="2", placeholder="Purpose") }}
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    {{ ewp_form.remarks.label(class="form-label") }}
+                                    {{ ewp_form.remarks(class="form-control", rows="2", placeholder="Optional remarks") }}
+                                </div>
+                            </div>
+                            <div class="mt-3 d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                                {{ ewp_form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave/EWP Records Tabs and Search -->
+    {% set _active_tab = active_tab|default('leave') %}
+    <ul class="nav nav-tabs mb-3 leave-ewp-list-tabs">
+      <li class="nav-item">
+        <a class="nav-link {% if _active_tab == 'leave' %}active{% endif %}" href="{{ url_for('main.dashboard', view='leave', tab='leave', search=search_query) }}">Leave Records</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if _active_tab == 'ewp' %}active{% endif %}" href="{{ url_for('main.dashboard', view='leave', tab='ewp', search=search_query) }}">EWP Records</a>
+      </li>
+    </ul>
+    <div class="mb-3">
+        <form method="GET" action="{{ url_for('main.dashboard') }}" class="d-flex">
+            <input type="hidden" name="view" value="leave">
+            <input type="hidden" name="tab" value="{{ _active_tab }}">
+            <input type="text" name="search" class="form-control me-2" placeholder="{{ 'Search by name, office, status, or barcode...' if _active_tab == 'ewp' else 'Search by employee name, office, type, status, or barcode...' }}" 
+                   value="{{ search_query if request.args.get('view') == 'leave' }}">
+            <button type="submit" class="btn btn-primary me-2">Search</button>
+            {% if search_query and request.args.get('view') == 'leave' %}
+                <a href="{{ url_for('main.dashboard', view='leave', tab=_active_tab) }}" class="btn btn-secondary">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Leave/EWP: Listing -->
+    {% if _active_tab == 'ewp' %}
+    <h3 class="mb-3">EWP Records</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Barcode</th>
+                    <th>Name</th>
+                    <th>Office</th>
+                    <th>Amount</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th>Purpose</th>
+                    <th>Remarks</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if ewp_records %}
+                    {% for r in ewp_records %}
+                    <tr>
+                        <td>{{ r.barcode or '-' }}</td>
+                        <td>{{ r.employee_name }}</td>
+                        <td>{{ r.office }}</td>
+                        <td>{{ '{:,.2f}'.format(r.amount) if r.amount is not none else '-' }}</td>
+                        <td>{{ r.created_timestamp|local_time('%B %d, %Y at %I:%M %p') if r.created_timestamp else '-' }}</td>
+                        <td>
+                            <span class="badge {% if r.status == 'Pending' %}bg-warning text-dark{% elif r.status == 'For Computation' %}bg-primary status-forcomp{% elif r.status == 'Released' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ r.status }}
+                            </span>
+                        </td>
+                        <td>{{ r.purpose or '-' }}</td>
+                        <td>{{ r.remarks or '-' }}</td>
+                        <td class="text-nowrap">
+                            <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="modal" data-bs-target="#viewEwpModal-{{ r.id }}" aria-label="View" title="View">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                <span class="visually-hidden">View</span>
+                            </button>
+                            {% if r.status != 'Released' %}
+                                <button type="button" class="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#changeEwpStatusModal-{{ r.id }}" aria-label="Change Status" title="Change Status">
+                                    <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Change Status</span>
+                                </button>
+                            {% endif %}
+                            {% if current_user.is_admin or (current_user.can_access_leave and r.created_by_user_id == current_user.id and r.status != 'Released') %}
+                            <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editEwpModal-{{ r.id }}" aria-label="Edit" title="Edit">
+                                <i class="fas fa-pen-to-square" aria-hidden="true"></i>
+                                <span class="visually-hidden">Edit</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteEwpModal-{{ r.id }}" aria-label="Delete" title="Delete">
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                <span class="visually-hidden">Delete</span>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">No EWP Records Found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if ewp_records %}
+        {% for r in ewp_records %}
+        <!-- View EWP Modal -->
+        <div class="modal fade" id="viewEwpModal-{{ r.id }}" tabindex="-1" aria-labelledby="viewEwpModalLabel-{{ r.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewEwpModalLabel-{{ r.id }}">EWP Record Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="lr-card">
+                            <div class="lr-card-header">
+                                <div class="lr-title"><i class="fas fa-user me-2"></i>{{ r.employee_name }}</div>
+                                <div class="lr-status">
+                                    <span class="badge rounded-pill {% if r.status == 'Pending' %}bg-warning text-dark{% elif r.status == 'For Computation' %}bg-primary status-forcomp{% elif r.status == 'Released' %}bg-success{% else %}bg-secondary{% endif %}">{{ r.status }}</span>
+                                </div>
+                            </div>
+                            <div class="lr-subtitle">
+                                <span class="lr-inline"><i class="fas fa-building"></i> {{ r.office }}</span>
+                                <span class="mx-2">•</span>
+                                <span class="lr-inline"><i class="fas fa-barcode"></i> {{ r.barcode or '-' }}</span>
+                            </div>
+                            <div class="lr-grid">
+                                <div class="lr-tile">
+                                    <div class="lr-tlabel">Amount</div>
+                                    <div class="lr-tvalue">{{ '{:,.2f}'.format(r.amount) if r.amount is not none else '-' }}</div>
+                                </div>
+                                <div class="lr-tile">
+                                    <div class="lr-tlabel">Created</div>
+                                    <div class="lr-tvalue">{{ r.created_timestamp|local_time('%B %d, %Y at %I:%M %p') if r.created_timestamp else '-' }}</div>
+                                </div>
+                            </div>
+                            <div class="lr-section">
+                                <div class="lr-section-title"><i class="fas fa-bullseye me-1"></i> Purpose</div>
+                                <div class="lr-note">{{ r.purpose or '—' }}</div>
+                            </div>
+                            <div class="lr-section">
+                                <div class="lr-section-title"><i class="fas fa-comment-dots me-1"></i> Remarks</div>
+                                <div class="lr-note">{{ r.remarks or '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change EWP Status Modal -->
+        <div class="modal fade" id="changeEwpStatusModal-{{ r.id }}" tabindex="-1" aria-labelledby="changeEwpStatusModalLabel-{{ r.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changeEwpStatusModalLabel-{{ r.id }}">Change EWP Status</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{{ url_for('main.update_ewp_status', ewp_id=r.id, page=request.args.get('page', 1)) }}">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="ewp-status-{{ r.id }}" class="form-label">Select Status</label>
+                                <select id="ewp-status-{{ r.id }}" name="status" class="form-select">
+                                    <option value="Pending" {% if r.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="For Computation" {% if r.status == 'For Computation' %}selected{% endif %}>For Computation</option>
+                                    <option value="Released" {% if r.status == 'Released' %}selected{% endif %}>Released</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="ewp-remarks-container-{{ r.id }}">
+                                <label for="ewp-remarks-{{ r.id }}" class="form-label">Remarks</label>
+                                <textarea id="ewp-remarks-{{ r.id }}" name="remarks" class="form-control" rows="3" placeholder="Enter remarks (optional)"></textarea>
+                            </div>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update Status</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% if current_user.is_admin or (current_user.can_access_leave and r.created_by_user_id == current_user.id and r.status != 'Released') %}
+        <!-- Edit EWP Modal -->
+        <div class="modal fade" id="editEwpModal-{{ r.id }}" tabindex="-1" aria-labelledby="editEwpModalLabel-{{ r.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editEwpModalLabel-{{ r.id }}">Edit EWP Record</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="{{ url_for('main.edit_ewp', ewp_id=r.id, page=request.args.get('page', 1)) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="ewp-employee_name-{{ r.id }}">Name</label>
+                                    <input type="text" class="form-control" id="ewp-employee_name-{{ r.id }}" name="employee_name" value="{{ r.employee_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="ewp-barcode-{{ r.id }}">Barcode</label>
+                                    <input type="text" class="form-control" id="ewp-barcode-{{ r.id }}" name="barcode" value="{{ r.barcode or '' }}">
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="ewp-office-{{ r.id }}">Office</label>
+                                    <select class="form-select" id="ewp-office-{{ r.id }}" name="office" required>
+                                        {% for val, label in ewp_form.office.choices %}
+                                            <option value="{{ val }}" {% if val == r.office %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="ewp-amount-{{ r.id }}">Amount</label>
+                                    <input type="text" class="form-control" id="ewp-amount-{{ r.id }}" name="amount" value="{{ '{:,.2f}'.format(r.amount) if r.amount is not none else '' }}">
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    <label class="form-label" for="ewp-purpose-{{ r.id }}">Purpose</label>
+                                    <textarea class="form-control" id="ewp-purpose-{{ r.id }}" name="purpose" rows="2">{{ r.purpose or '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-2">
+                                <div class="col-12">
+                                    <label class="form-label" for="ewp-remarks-edit-{{ r.id }}">Remarks</label>
+                                    <textarea class="form-control" id="ewp-remarks-edit-{{ r.id }}" name="remarks" rows="2">{{ r.remarks or '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="mt-3 d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete EWP Modal -->
+        <div class="modal fade" id="deleteEwpModal-{{ r.id }}" tabindex="-1" aria-labelledby="deleteEwpModalLabel-{{ r.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteEwpModalLabel-{{ r.id }}">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this EWP record for "{{ r.employee_name }}"? This action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ url_for('main.delete_ewp', ewp_id=r.id, page=request.args.get('page', 1)) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if ewp_pagination %}
+    <nav aria-label="EWP records pagination" class="mt-3">
+        <ul class="pagination justify-content-center">
+            {% if ewp_pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=ewp_pagination.prev_num, search=request.args.get('search', '')) }}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for page_num in ewp_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == ewp_pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if ewp_pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=ewp_pagination.next_num, search=request.args.get('search', '')) }}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <h3 class="mb-3">Leave Records</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Barcode</th>
+                            <th>Employee Name</th>
+                            <th>Office</th>
+                            <th>Type</th>
+                            <th>Date of Leave</th>
+                            <th>Date & Time of Filing</th>
+
+                            <th>Status</th>
+                            <th>Remarks</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+            <tbody>
+                {% if leave_requests %}
+                    {% for l in leave_requests %}
+                    <tr>
+                        <td>{{ l.barcode or '-' }}</td>
+                        <td>{{ l.employee_name }}</td>
+                        <td>{{ l.office }}</td>
+                        <td>{{ l.leave_type }}{% if l.subtype %} — {{ l.subtype }}{% endif %}</td>
+                        <td>
+                            {% if l.date_ranges and l.date_ranges|length > 1 %}
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#leaveDatesModal-{{ l.id }}">
+                                    Multiple Dates
+                                </button>
+                                <!-- Modal listing all date ranges -->
+                                <div class="modal fade" id="leaveDatesModal-{{ l.id }}" tabindex="-1" aria-labelledby="leaveDatesModalLabel-{{ l.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="leaveDatesModalLabel-{{ l.id }}">Leave Date Ranges</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <ol class="mb-0">
+                                                    {% for r in l.date_ranges %}
+                                                        <li>
+                                                            {% if r.start_date and r.end_date %}
+                                                                {% if r.start_date == r.end_date %}
+                                                                    {{ r.start_date.strftime('%B %d, %Y') }}
+                                                                {% else %}
+                                                                    {{ r.start_date.strftime('%B %d, %Y') }} to {{ r.end_date.strftime('%B %d, %Y') }}
+                                                                {% endif %}
+                                                            {% elif r.start_date %}
+                                                                {{ r.start_date.strftime('%B %d, %Y') }}
+                                                            {% elif r.end_date %}
+                                                                {{ r.end_date.strftime('%B %d, %Y') }}
+                                                            {% else %}
+                                                                -
+                                                            {% endif %}
+                                                            {% set tm = (r.time_mode or 'FULL_DAY') %}
+                                                            {% if tm == 'AM_HALF' %}
+                                                                (AM half-day)
+                                                            {% elif tm == 'PM_HALF' %}
+                                                                (PM half-day)
+                                                            {% else %}
+                                                                (Full day)
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endfor %}
+                                                </ol>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif l.date_ranges and l.date_ranges|length == 1 %}
+                                {% set r = l.date_ranges[0] %}
+                                {% if r.start_date and r.end_date %}
+                                    {% if r.start_date == r.end_date %}
+                                        {{ r.start_date.strftime('%B %d, %Y') }}
+                                    {% else %}
+                                        {{ r.start_date.strftime('%B %d, %Y') }} to {{ r.end_date.strftime('%B %d, %Y') }}
+                                    {% endif %}
+                                {% elif r.start_date %}
+                                    {{ r.start_date.strftime('%B %d, %Y') }}
+                                {% elif r.end_date %}
+                                    {{ r.end_date.strftime('%B %d, %Y') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                                {% set tm = (r.time_mode or 'FULL_DAY') %}
+                                {% if tm == 'AM_HALF' %}
+                                    (AM half-day)
+                                {% elif tm == 'PM_HALF' %}
+                                    (PM half-day)
+                                {% else %}
+                                    (Full day)
+                                {% endif %}
+                            {% else %}
+                                {% if l.start_date and l.end_date %}
+                                    {% if l.start_date == l.end_date %}
+                                        {{ l.start_date.strftime('%B %d, %Y') }}
+                                    {% else %}
+                                        {{ l.start_date.strftime('%B %d, %Y') }} to {{ l.end_date.strftime('%B %d, %Y') }}
+                                    {% endif %}
+                                {% elif l.start_date %}
+                                    {{ l.start_date.strftime('%B %d, %Y') }}
+                                {% elif l.end_date %}
+                                    {{ l.end_date.strftime('%B %d, %Y') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>{{ l.created_timestamp|local_time('%B %d, %Y at %I:%M %p') if l.created_timestamp else '-' }}</td>
+
+                        <td>
+                            <span class="badge {% if l.status == 'Pending' %}bg-warning text-dark{% elif l.status == 'For Computation' %}bg-primary status-forcomp{% elif l.status == 'For Signature' %}bg-info text-dark{% elif l.status == 'Released' %}bg-success{% else %}bg-secondary{% endif %}"{% if l.status == 'Released' and l.released_timestamp %} title="Released on: {{ l.released_timestamp|local_time('%B %d, %Y at %I:%M %p') }}"{% endif %}>
+                                {{ l.status }}
+                            </span>
+                        </td>
+                        <td>{{ l.remarks or '-' }}</td>
+                        <td class="text-nowrap">
+                            <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="modal" data-bs-target="#viewLeaveModal-{{ l.id }}" aria-label="View" title="View">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                <span class="visually-hidden">View</span>
+                            </button>
+                            {% if l.status != 'Released' %}
+                                <button type="button" class="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#changeLeaveStatusModal-{{ l.id }}" aria-label="Change Status" title="Change Status">
+                                    <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Change Status</span>
+                                </button>
+                            {% endif %}
+                            {% if current_user.is_admin or (l.status != 'Released' and current_user.can_access_leave and l.created_by_user_id == current_user.id) %}
+                            <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editLeaveModal-{{ l.id }}" aria-label="Edit" title="Edit">
+                                <i class="fas fa-pen-to-square" aria-hidden="true"></i>
+                                <span class="visually-hidden">Edit</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteLeaveModal-{{ l.id }}" aria-label="Delete" title="Delete">
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                <span class="visually-hidden">Delete</span>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <!-- Edit Leave Modal -->
+                    <div class="modal fade" id="editLeaveModal-{{ l.id }}" tabindex="-1" aria-labelledby="editLeaveModalLabel-{{ l.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editLeaveModalLabel-{{ l.id }}">Edit Leave Request</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="POST" action="{{ url_for('main.edit_leave_request', leave_id=l.id, page=request.args.get('page', 1)) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="employee_name-{{ l.id }}">Employee Name</label>
+                                                <input type="text" class="form-control" id="employee_name-{{ l.id }}" name="employee_name" value="{{ l.employee_name }}" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="barcode-{{ l.id }}">Barcode</label>
+                                                <input type="text" class="form-control" id="barcode-{{ l.id }}" name="barcode" value="{{ l.barcode or '' }}">
+                                            </div>
+                                        </div>
+                                        <div class="row g-3 mt-2">
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="office-{{ l.id }}">Office</label>
+                                                <select class="form-select" id="office-{{ l.id }}" name="office" required>
+                                                    {% for val, label in leave_form.office.choices %}
+                                                        <option value="{{ val }}" {% if val == l.office %}selected{% endif %}>{{ label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="leave-type-{{ l.id }}">Type</label>
+                                                <select class="form-select" id="leave-type-{{ l.id }}" name="leave_type" required>
+                                                    {% for val, label in leave_form.leave_type.choices %}
+                                                        <option value="{{ val }}" {% if val == l.leave_type %}selected{% endif %}>{{ label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 mt-2">
+                                            <div class="col-12">
+                                                <label class="form-label">Date Range(s)</label>
+                                                <div class="date-range-list d-flex flex-column gap-2">
+                                                    {% if l.date_ranges and l.date_ranges|length > 0 %}
+                                                        {% for r in l.date_ranges %}
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control date-range-picker" name="date_range"
+                                                                value="{% if r.start_date and r.end_date %}{{ r.start_date.strftime('%Y-%m-%d') }} to {{ r.end_date.strftime('%Y-%m-%d') }}{% elif r.start_date %}{{ r.start_date.strftime('%Y-%m-%d') }}{% elif r.end_date %}{{ r.end_date.strftime('%Y-%m-%d') }}{% else %}{% endif %}"
+                                                                placeholder="Select date range" autocomplete="off">
+                                                            <select class="form-select" name="time_mode_range" style="max-width: 240px;">
+                                                                <option value="FULL_DAY" {% if (r.time_mode or 'FULL_DAY') == 'FULL_DAY' %}selected{% endif %}>Full day (08:00–17:00)</option>
+                                                                <option value="AM_HALF" {% if r.time_mode == 'AM_HALF' %}selected{% endif %}>AM half-day (08:00–12:00)</option>
+                                                                <option value="PM_HALF" {% if r.time_mode == 'PM_HALF' %}selected{% endif %}>PM half-day (1:00–5:00)</option>
+                                                            </select>
+                                                            <button type="button" class="btn btn-outline-danger">Remove</button>
+                                                        </div>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control date-range-picker" name="date_range"
+                                                                value="{% if l.start_date and l.end_date %}{{ l.start_date.strftime('%Y-%m-%d') }} to {{ l.end_date.strftime('%Y-%m-%d') }}{% elif l.start_date %}{{ l.start_date.strftime('%Y-%m-%d') }}{% elif l.end_date %}{{ l.end_date.strftime('%Y-%m-%d') }}{% else %}{% endif %}"
+                                                                placeholder="Select date range" autocomplete="off">
+                                                            <select class="form-select" name="time_mode_range" style="max-width: 240px;">
+                                                                <option value="FULL_DAY" selected>Full day (08:00–17:00)</option>
+                                                                <option value="AM_HALF">AM half-day (08:00–12:00)</option>
+                                                                <option value="PM_HALF">PM half-day (1:00–5:00)</option>
+                                                            </select>
+                                                            <button type="button" class="btn btn-outline-danger">Remove</button>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary mt-2 add-date-range-btn">+ Add another date range</button>
+                                                <div class="form-text">If you leave all date ranges empty, existing ranges will be retained.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 mt-2">
+                                            <div class="col-12">
+                                                <label class="form-label" for="remarks-{{ l.id }}">Remarks</label>
+                                                <textarea class="form-control" id="remarks-{{ l.id }}" name="remarks" rows="3">{{ l.remarks or '' }}</textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 d-flex justify-content-end">
+                                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted">No Records Found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Leave: View modals -->
+    <style>
+      /* Scoped styles for Leave Request Details (lr-*) */
+      .lr-card { border-radius: 12px; box-shadow: 0 8px 22px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e9ecef; background: #fff; }
+      .lr-card-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%); color: #fff; }
+      .lr-title { font-weight: 600; font-size: 1.05rem; }
+      .lr-subtitle { padding: 10px 16px; background: #f8f9fa; border-top: 1px solid #e9ecef; border-bottom: 1px solid #e9ecef; color:#495057; }
+      .lr-section { padding: 16px; }
+      .lr-section-title { font-weight: 600; color: #495057; margin-bottom: 8px; }
+      .lr-chips .lr-chip { margin-right: 8px; margin-bottom: 6px; }
+      .lr-timeline { list-style: none; margin: 0; padding: 0 4px; }
+      .lr-timeline li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px dashed #eee; }
+      .lr-timeline li:last-child { border-bottom: none; }
+      .lr-dot { color: #0d6efd; }
+      .lr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 0 16px 16px; }
+      .lr-tile { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; }
+      .lr-tlabel { font-size: 12px; color: #6c757d; text-transform: uppercase; letter-spacing: .05em; }
+      .lr-tvalue { font-weight: 600; color: #343a40; }
+      .lr-note { background: #fff8e1; border: 1px solid #ffe8a1; color: #6c5c2e; border-radius: 8px; padding: 12px; }
+      .lr-dot-ico { width: 22px; text-align: center; color: #0d6efd; }
+      .lr-divider { height: 1px; background: #f1f3f5; margin: 0 16px; }
+      .lr-inline { display: inline-flex; align-items: center; gap: 8px; }
+      .lr-subtle { color: #6c757d; }
+    </style>
+    {% if leave_requests %}
+        {% for l in leave_requests %}
+        <div class="modal fade" id="viewLeaveModal-{{ l.id }}" tabindex="-1" aria-labelledby="viewLeaveModalLabel-{{ l.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewLeaveModalLabel-{{ l.id }}">Leave Request Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="lr-card">
+                            <div class="lr-card-header">
+                                <div class="lr-title"><i class="fas fa-user me-2"></i>{{ l.employee_name }}</div>
+                                <div class="lr-status">
+                                    <span class="badge rounded-pill {% if l.status == 'Pending' %}bg-warning text-dark{% elif l.status == 'For Computation' %}bg-primary status-forcomp{% elif l.status == 'For Signature' %}bg-info text-dark{% elif l.status == 'Released' %}bg-success{% else %}bg-secondary{% endif %}">{{ l.status }}</span>
+                                </div>
+                            </div>
+                            <div class="lr-subtitle">
+                                <span class="lr-inline"><i class="fas fa-building"></i> {{ l.office }}</span>
+                                <span class="mx-2">•</span>
+                                <span class="lr-inline"><i class="fas fa-barcode"></i> {{ l.barcode or '-' }}</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
+                                        onclick="copyToClipboard({{ (l.barcode or '')|tojson }}, 'bc-copied-{{ l.id }}')"
+                                        {% if not l.barcode %}disabled{% endif %}>
+                                    Copy
+                                </button>
+                                <small id="bc-copied-{{ l.id }}" class="text-success ms-2" style="opacity:0; transition:opacity .2s;">Copied</small>
+                            </div>
+
+                            <div class="lr-section">
+                                <div class="lr-section-title"><i class="fas fa-tags me-1"></i> Type</div>
+                                <div class="lr-chips">
+                                    <span class="badge rounded-pill bg-primary lr-chip">{{ l.leave_type }}</span>
+                                    {% if l.subtype %}
+                                        <span class="badge rounded-pill bg-info text-dark lr-chip">{{ l.subtype }}</span>
+                                    {% endif %}
+                                    {% if l.subtype_detail %}
+                                        <span class="badge rounded-pill bg-secondary lr-chip">{{ l.subtype_detail }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="lr-section">
+                                <div class="lr-section-title"><i class="fas fa-calendar-alt me-1"></i> Dates</div>
+                                {% if l.date_ranges and l.date_ranges|length > 0 %}
+                                    <ul class="lr-timeline">
+                                        {% for r in l.date_ranges %}
+                                        <li>
+                                            <span class="lr-dot-ico"><i class="far fa-calendar-check"></i></span>
+                                            <span>
+                                                {% if r.start_date and r.end_date %}
+                                                    {% if r.start_date == r.end_date %}
+                                                        {{ r.start_date.strftime('%B %d, %Y') }}
+                                                    {% else %}
+                                                        {{ r.start_date.strftime('%B %d, %Y') }} to {{ r.end_date.strftime('%B %d, %Y') }}
+                                                    {% endif %}
+                                                {% elif r.start_date %}
+                                                    {{ r.start_date.strftime('%B %d, %Y') }}
+                                                {% elif r.end_date %}
+                                                    {{ r.end_date.strftime('%B %d, %Y') }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                                {% set tm = (r.time_mode or 'FULL_DAY') %}
+                                                {% if tm == 'AM_HALF' %}
+                                                    (AM half-day)
+                                                {% elif tm == 'PM_HALF' %}
+                                                    (PM half-day)
+                                                {% else %}
+                                                    (Full day)
+                                                {% endif %}
+                                            </span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <ul class="lr-timeline">
+                                        <li>
+                                            <span class="lr-dot-ico"><i class="far fa-calendar"></i></span>
+                                            <span>
+                                                {% if l.start_date and l.end_date %}
+                                                    {% if l.start_date == l.end_date %}
+                                                        {{ l.start_date.strftime('%B %d, %Y') }}
+                                                    {% else %}
+                                                        {{ l.start_date.strftime('%B %d, %Y') }} to {{ l.end_date.strftime('%B %d, %Y') }}
+                                                    {% endif %}
+                                                {% elif l.start_date %}
+                                                    {{ l.start_date.strftime('%B %d, %Y') }}
+                                                {% elif l.end_date %}
+                                                    {{ l.end_date.strftime('%B %d, %Y') }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </span>
+                                        </li>
+                                    </ul>
+                                {% endif %}
+                            </div>
+
+                            <div class="lr-grid">
+                                <div class="lr-tile">
+                                    <div class="lr-tlabel">Created</div>
+                                    <div class="lr-tvalue">{{ l.created_timestamp|local_time('%B %d, %Y at %I:%M %p') if l.created_timestamp else '-' }}</div>
+                                </div>
+                                <div class="lr-tile">
+                                    <div class="lr-tlabel">Released</div>
+                                    <div class="lr-tvalue">{{ l.released_timestamp|local_time('%B %d, %Y at %I:%M %p') if l.released_timestamp else '-' }}</div>
+                                </div>
+                                <div class="lr-tile">
+                                    <div class="lr-tlabel">Time to Release</div>
+                                    <div class="lr-tvalue">
+                                        {% if l.created_by_user_id == current_user.id and l.release_delta_fmt %}
+                                            {{ l.release_delta_fmt }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lr-section">
+                                <div class="lr-section-title"><i class="fas fa-comment-dots me-1"></i> Remarks</div>
+                                <div class="lr-note">{{ l.remarks or '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if current_user.is_admin or (current_user.can_access_leave and l.created_by_user_id == current_user.id and l.status != 'Released') %}
+        <div class="modal fade" id="deleteLeaveModal-{{ l.id }}" tabindex="-1" aria-labelledby="deleteLeaveModalLabel-{{ l.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteLeaveModalLabel-{{ l.id }}">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this leave request for "{{ l.employee_name }}"? This action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ url_for('main.delete_leave_request', leave_id=l.id, page=request.args.get('page', 1)) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Change Leave Status Modal -->
+        <div class="modal fade" id="changeLeaveStatusModal-{{ l.id }}" tabindex="-1" aria-labelledby="changeLeaveStatusModalLabel-{{ l.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changeLeaveStatusModalLabel-{{ l.id }}">Change Leave Status</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{{ url_for('main.update_leave_request_status', leave_id=l.id, page=request.args.get('page', 1)) }}">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="leave-status-{{ l.id }}" class="form-label">Select Status</label>
+                                <select id="leave-status-{{ l.id }}" name="status" class="form-select">
+                                    <option value="Pending" {% if l.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="For Computation" {% if l.status == 'For Computation' %}selected{% endif %}>For Computation</option>
+                                    <option value="For Signature" {% if l.status == 'For Signature' %}selected{% endif %}>For Signature</option>
+                                    <option value="Released" {% if l.status == 'Released' %}selected{% endif %}>Released</option>
+                                </select>
+                            </div>
+
+                            <!-- Conditional remarks for Pending and Released -->
+                            <div class="mb-3" id="leave-remarks-container-{{ l.id }}" style="display: none;">
+                                <label for="leave-remarks-{{ l.id }}" class="form-label">Remarks</label>
+                                <textarea id="leave-remarks-{{ l.id }}" name="remarks" class="form-control" rows="3" placeholder="Enter remarks (optional)"></textarea>
+                            </div>
+
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update Status</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+    {% endif %}
+
+    <!-- Pagination for Leave Requests -->
+    {% if leave_pagination %}
+    <nav aria-label="Leave requests pagination" class="mt-3">
+        <ul class="pagination justify-content-center">
+            {% if leave_pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', page=leave_pagination.prev_num) }}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for page_num in leave_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == leave_pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.dashboard', view='leave', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if leave_pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', page=leave_pagination.next_num) }}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% endif %}
+{% else %}
+    <!-- Search Bar for Created Documents -->
+    <div class="mb-3">
+        <form method="GET" action="{{ url_for('main.dashboard') }}" class="d-flex">
+            <input type="hidden" name="view" value="created">
+            <input type="text" name="search" class="form-control me-2" placeholder="Search by title, office, classification, or barcode..." 
+                   value="{{ search_query if not request.args.get('view') or request.args.get('view') == 'created' }}">
+            <button type="submit" class="btn btn-primary me-2">Search</button>
+            {% if search_query and (not request.args.get('view') or request.args.get('view') == 'created') %}
+                <a href="{{ url_for('main.dashboard', view='created') }}" class="btn btn-secondary">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+    <!-- Documents You Created -->
+    <h3>Documents You Created</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Document Title</th>
+                <th>Office</th>
+                <th>Classification</th>
+                <th>Barcode</th>
+                <th>Status</th>
+                <th>Forwarded To</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in created_documents %}
+            <tr>
+                <td>{{ document.title }}</td>
+                <td>{{ document.office }}</td>
+                <td>{{ document.classification }}</td>
+                <td>{{ document.barcode }}</td>
+    <td>
+        <span class="badge bg-{{ {
+            'Pending': 'warning',
+            'For Computation': 'primary status-forcomp',
+            'For Review': 'info text-dark',
+            'Approved': 'success',
+            'Released': 'success',
+            'Declined': 'danger',
+            'Archived': 'secondary'
+        }.get(document.status, 'secondary') }}">
+            {{ document.status }}
+        </span>
+    </td>
+
+                <td>{{ document.recipient.username }}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="modal" data-bs-target="#viewDocumentModal" 
+                            onclick='populateViewModal({{ {
+                                "id": document.id,
+                                "title": document.title,
+                                "office": document.office,
+                                "classification": document.classification,
+                                "barcode": document.barcode,
+                                "status": document.status,
+                                "action_taken": document.action_taken,
+                                "remarks": document.remarks|default(""),
+                                "attachment": document.attachment|default(""),
+                                "creator": document.creator.username,
+                                "recipient": document.recipient.username,
+                                "timestamp": document.timestamp|local_time("%B-%d-%Y at %I:%M %p")|tojson,
+                                "activities": document.activities_json
+                            }|tojson|safe }})' aria-label="View" title="View">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                        <span class="visually-hidden">View</span>
+                    </button>
+
+                    {% if document.status != 'Declined' and document.status != 'Released' %}
+                        <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editModal-{{ document.id }}" aria-label="Edit" title="Edit">
+                            <i class="fas fa-pen-to-square" aria-hidden="true"></i>
+                            <span class="visually-hidden">Edit</span>
+                        </button>
+                    {% elif document.status == 'Declined' %}
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#resubmitModal-{{ document.id }}" aria-label="Resubmit" title="Resubmit">
+                            <i class="fas fa-redo" aria-hidden="true"></i>
+                            <span class="visually-hidden">Resubmit</span>
+                        </button>
+                    {% endif %}
+
+                    {% if document.status != 'Released' %}
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ document.id }}" aria-label="Delete" title="Delete">
+                            <i class="fas fa-trash" aria-hidden="true"></i>
+                            <span class="visually-hidden">Delete</span>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination for Created Documents -->
+    <nav aria-label="Created documents pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if created_pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='created', page=created_pagination.prev_num, search=request.args.get('search', '')) }}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+            {% endif %}
+
+            {% for page_num in created_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == created_pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.dashboard', view='created', page=page_num, search=request.args.get('search', '')) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if created_pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='created', page=created_pagination.next_num, search=request.args.get('search', '')) }}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+
+<!-- Modals for Created Documents -->
+{% for document in created_documents %}
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal-{{ document.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDocumentModalLabel{{ document.id }}">Edit Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ url_for('main.edit_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created')) }}" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control", value=document.title) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.office.label(class="form-label") }}
+                            <select class="form-control" id="{{ form.office.id }}" name="{{ form.office.name }}">
+                                {% for choice in form.office.choices %}
+                                <option value="{{ choice[0] }}" {% if choice[0] == document.office %}selected{% endif %}>
+                                    {{ choice[1] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.classification.label(class="form-label") }}
+                            <select class="form-control" id="{{ form.classification.id }}" name="{{ form.classification.name }}">
+                                {% for choice in form.classification.choices %}
+                                <option value="{{ choice[0] }}" {% if choice[0] == document.classification %}selected{% endif %}>
+                                    {{ choice[1] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.status.label(class="form-label") }}
+                            <select class="form-control" id="{{ form.status.id }}" name="{{ form.status.name }}">
+                                {% for choice in form.status.choices %}
+                                <option value="{{ choice[0] }}" {% if choice[0] == document.status %}selected{% endif %}>
+                                    {{ choice[1] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.action_taken.label(class="form-label") }}
+                            <select class="form-control" id="{{ form.action_taken.id }}" name="{{ form.action_taken.name }}">
+                                {% for choice in form.action_taken.choices %}
+                                <option value="{{ choice[0] }}" {% if choice[0] == document.action_taken %}selected{% endif %}>
+                                    {{ choice[1] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.barcode.label(class="form-label") }}
+                            {{ form.barcode(class="form-control", value=document.barcode) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.attachment.label(class="form-label") }}
+                            {{ form.attachment(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.remarks.label(class="form-label") }}
+                            {{ form.remarks(class="form-control", rows=3, value=document.remarks or '') }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.recipient.label(class="form-label") }}
+                            <select class="form-control" id="{{ form.recipient.id }}" name="{{ form.recipient.name }}">
+                                {% for user_id, username in form.recipient.choices %}
+                                <option value="{{ user_id }}" {% if user_id == document.recipient_id %}selected{% endif %}>
+                                    {{ username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal-{{ document.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel{{ document.id }}">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the document "{{ document.title }}"? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('main.delete_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created')) }}" method="POST" style="display:inline;">
+                        {{ form.csrf_token }}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<!-- Single View Document Modal -->
+<!-- Replicate the Leave stylish modal CSS for created documents -->
+<style>
+  /* Scoped styles for Leave/Document Details (lr-*) */
+  .lr-card { border-radius: 12px; box-shadow: 0 8px 22px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e9ecef; background: #fff; }
+  .lr-card-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%); color: #fff; }
+  .lr-title { font-weight: 600; font-size: 1.05rem; }
+  .lr-subtitle { padding: 10px 16px; background: #f8f9fa; border-top: 1px solid #e9ecef; border-bottom: 1px solid #e9ecef; color:#495057; }
+  .lr-section { padding: 16px; }
+  .lr-section-title { font-weight: 600; color: #495057; margin-bottom: 8px; }
+  .lr-chips .lr-chip { margin-right: 8px; margin-bottom: 6px; }
+  .lr-timeline { list-style: none; margin: 0; padding: 0 4px; }
+  .lr-timeline li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px dashed #eee; }
+  .lr-timeline li:last-child { border-bottom: none; }
+  .lr-dot { color: #0d6efd; }
+  .lr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 0 16px 16px; }
+  .lr-tile { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; }
+  .lr-tlabel { font-size: 12px; color: #6c757d; text-transform: uppercase; letter-spacing: .05em; }
+  .lr-tvalue { font-weight: 600; color: #343a40; }
+  .lr-note { background: #fff8e1; border: 1px solid #ffe8a1; color: #6c5c2e; border-radius: 8px; padding: 12px; }
+  .lr-dot-ico { width: 22px; text-align: center; color: #0d6efd; }
+  .lr-divider { height: 1px; background: #f1f3f5; margin: 0 16px; }
+  .lr-inline { display: inline-flex; align-items: center; gap: 8px; }
+  .lr-subtle { color: #6c757d; }
+</style>
+<div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">View Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="lr-card">
+                    <div class="lr-card-header">
+                        <div class="lr-title"><i class="fas fa-file-alt me-2"></i><span id="docTitle"></span></div>
+                        <div class="lr-status">
+                            <span id="docStatusBadge" class="badge rounded-pill bg-secondary">-</span>
+                            <span id="docStatus" class="visually-hidden"></span>
+                        </div>
+                    </div>
+                    <div class="lr-subtitle">
+                        <span class="lr-inline"><i class="fas fa-building"></i> <span id="docOffice"></span></span>
+                        <span class="mx-2">•</span>
+                        <span class="lr-inline"><i class="fas fa-barcode"></i> <span id="docBarcode"></span></span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="docBarcodeCopyBtn">
+                            Copy
+                        </button>
+                        <small id="bc-copied-created" class="text-success ms-2" style="opacity:0; transition:opacity .2s;">Copied</small>
+                    </div>
+
+                    <div class="lr-section">
+                        <div class="lr-section-title"><i class="fas fa-tags me-1"></i> Type</div>
+                        <div class="lr-chips">
+                            <span class="badge rounded-pill bg-primary lr-chip" id="docClassification"></span>
+                            <span class="badge rounded-pill bg-info text-dark lr-chip" id="docActionTaken"></span>
+                        </div>
+                    </div>
+
+                    <div class="lr-grid">
+                        <div class="lr-tile">
+                            <div class="lr-tlabel">Created</div>
+                            <div class="lr-tvalue" id="docTimestamp"></div>
+                        </div>
+                        <div class="lr-tile">
+                            <div class="lr-tlabel">Created By</div>
+                            <div class="lr-tvalue" id="docCreator"></div>
+                        </div>
+                        <div class="lr-tile">
+                            <div class="lr-tlabel">Assigned To</div>
+                            <div class="lr-tvalue" id="docRecipient"></div>
+                        </div>
+                    </div>
+
+                    <div class="lr-section">
+                        <div class="lr-section-title"><i class="fas fa-paperclip me-1"></i> Attachment</div>
+                        <div id="docAttachment"></div>
+                    </div>
+
+                    <div class="lr-section">
+                        <div class="lr-section-title"><i class="fas fa-comment-dots me-1"></i> Remarks</div>
+                        <div class="lr-note" id="docRemarks"></div>
+                    </div>
+
+                    <div class="lr-section">
+                        <button class="btn btn-primary" data-bs-target="#changeLogToggle" data-bs-toggle="modal">Activity Log</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="archiveButtonContainer" style="display: none;">
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#archiveConfirmModal" onclick="setArchiveDocumentId(this.getAttribute('data-document-id'))" id="archiveButton">
+                        Archive
+                    </button>
+                </div>
+                <button class="btn btn-outline-danger" data-bs-target="viewDocumentModal" data-bs-toggle="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Changlog Modal -->
+<div class="modal fade" id="changeLogToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">Document logs</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <ul id="activityLog"></ul>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-danger" data-bs-target="viewDocumentModal" data-bs-toggle="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Add Archive Confirmation Modal -->
+<div class="modal fade" id="archiveConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Archive</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to archive this document? It will be moved to the archive section.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="archiveForm" action="" method="POST" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-warning">Confirm Archive</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Action Modals -->
+<!-- Batch Decline Modal -->
+<div class="modal fade" id="batchDeclineModal" tabindex="-1" aria-labelledby="batchDeclineModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="batchDeclineModalLabel">Decline Selected Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('main.batch_decline_documents') }}" id="batchDeclineForm">
+                    {{ batch_decline_form.csrf_token }}
+                    <div class="mb-3">
+                        {{ batch_decline_form.reason.label(class="form-label") }}
+                        {{ batch_decline_form.reason(class="form-control", rows=3) }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Decline Selected Documents</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Forward Modal -->
+<div class="modal fade" id="batchForwardModal" tabindex="-1" aria-labelledby="batchForwardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="batchForwardModalLabel">Forward Selected Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('main.batch_forward_documents') }}" id="batchForwardForm">
+                    {{ batch_forward_form.csrf_token }}
+                    <div class="mb-3">
+                        {{ batch_forward_form.recipient.label(class="form-label") }}
+                        {{ batch_forward_form.recipient(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ batch_forward_form.action_taken.label(class="form-label") }}
+                        {{ batch_forward_form.action_taken(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ batch_forward_form.remarks.label(class="form-label") }}
+                        {{ batch_forward_form.remarks(class="form-control", rows=3) }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Forward Selected Documents</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resubmit Document Modal -->
+{% for document in created_documents %}
+    {% if document.status == 'Declined' %}
+    <div class="modal fade" id="resubmitModal-{{ document.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Resubmit Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ url_for('main.resubmit_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created')) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="action_taken-{{ document.id }}" class="form-label">Action Taken</label>
+                            <select class="form-control" id="action_taken-{{ document.id }}" name="action_taken" required>
+                                <option value="">Select Action</option>
+                                <option value="Noted">Noted</option>
+                                <option value="Signed">Signed</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Verified">Verified</option>
+                                <option value="For Review">For Review</option>
+                                <option value="For Revision">For Revision</option>
+                                <option value="Endorsed">Endorsed</option>
+                                <option value="Filed">Filed</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="remarks-{{ document.id }}" class="form-label">Remarks</label>
+                            <textarea class="form-control" id="remarks-{{ document.id }}" name="remarks" rows="3"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Resubmit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+
+<!-- Add this JavaScript just before the closing body tag -->
+<script>
+/* eslint-disable */
+/* @ts-nocheck */
+// Define CSRF token for AJAX requests
+const csrfToken = "{{ csrf_token() }}";
+
+// Copy helper for Leave barcode
+function copyToClipboard(text, feedbackId) {
+    try {
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                var n = document.getElementById(feedbackId);
+                if (n) { n.style.opacity = 1; setTimeout(function(){ n.style.opacity = 0; }, 1200); }
+            });
+        } else {
+            // Fallback for older browsers
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+            var n2 = document.getElementById(feedbackId);
+            if (n2) { n2.style.opacity = 1; setTimeout(function(){ n2.style.opacity = 0; }, 1200); }
+        }
+    } catch (err) {
+        console.error('Copy failed', err);
+    }
+}
+
+function populateViewModal(data) {
+    var el;
+
+    // Title, Office, Classification
+    if ((el = document.getElementById('docTitle'))) el.textContent = data.title || '';
+    if ((el = document.getElementById('docOffice'))) el.textContent = data.office || '';
+    if ((el = document.getElementById('docClassification'))) el.textContent = data.classification || '';
+
+    // Barcode + copy button enable/disable
+    var barcodeText = data.barcode || '';
+    if ((el = document.getElementById('docBarcode'))) el.textContent = barcodeText || 'None';
+    var copyBtn = document.getElementById('docBarcodeCopyBtn');
+    if (copyBtn) {
+        copyBtn.disabled = !barcodeText;
+        copyBtn.onclick = function() {
+            copyToClipboard(barcodeText, 'bc-copied-created');
+        };
+    }
+
+    // Status badge (mirror table styling; Accepted -> Processing animated)
+    var statusBadge = document.getElementById('docStatusBadge');
+    var statusText = data.status || '';
+    var badgeClass = 'badge rounded-pill bg-secondary';
+    var displayText = statusText;
+
+    if (statusText === 'Accepted') {
+        badgeClass = 'badge rounded-pill bg-info status-accepted';
+        displayText = 'Processing';
+    } else if (statusText === 'Pending') {
+        badgeClass = 'badge rounded-pill bg-warning';
+    } else if (statusText === 'Declined') {
+        badgeClass = 'badge rounded-pill bg-danger';
+    } else if (statusText === 'Released') {
+        badgeClass = 'badge rounded-pill bg-success';
+    } else if (statusText === 'Archived') {
+        badgeClass = 'badge rounded-pill bg-secondary';
+    }
+    if (statusBadge) {
+        statusBadge.className = badgeClass;
+        statusBadge.textContent = displayText || '-';
+    }
+    // Maintain hidden status span for any legacy references
+    var hiddenStatus = document.getElementById('docStatus');
+    if (hiddenStatus) hiddenStatus.textContent = statusText;
+
+    // Action Taken and Remarks
+    if ((el = document.getElementById('docActionTaken'))) el.textContent = data.action_taken || 'None';
+    if ((el = document.getElementById('docRemarks'))) el.textContent = data.remarks || 'None';
+
+    // Attachment
+    var attachEl = document.getElementById('docAttachment');
+    if (attachEl) {
+        if (data.attachment && data.attachment !== 'None') {
+            const attachmentUrl = "{{ url_for('main.serve_file', filename='') }}" + String(data.attachment).split('/').pop();
+            attachEl.innerHTML = '<a href="' + attachmentUrl + '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-download"></i> View Attachment</a>';
+        } else {
+            attachEl.textContent = 'No attachment available';
+        }
+    }
+
+    // Created by / Assigned to / Timestamp
+    if ((el = document.getElementById('docCreator'))) el.textContent = data.creator || '';
+    if ((el = document.getElementById('docRecipient'))) el.textContent = data.recipient || '';
+    if ((el = document.getElementById('docTimestamp'))) el.textContent = data.timestamp || '';
+
+    // Populate activity log with pre-formatted timestamps
+    const activityLogElement = document.getElementById('activityLog');
+    if (activityLogElement) {
+        activityLogElement.innerHTML = '';
+        if (data.activities && data.activities.length > 0) {
+            data.activities.forEach(function(activity) {
+                const li = document.createElement('li');
+                const remarksPart = activity.remarks ? ('- Remarks: "' + activity.remarks + '"') : '';
+                li.innerHTML = '<strong>' + activity.user.username + '</strong> ' + activity.action + ' ' + remarksPart + ' <small>(' + activity.timestamp + ')</small>';
+                activityLogElement.appendChild(li);
+            });
+        } else {
+            activityLogElement.innerHTML = '<li>No activities recorded</li>';
+        }
+    }
+
+    // Handle archive button visibility and form action
+    var archiveButton = document.getElementById('archiveButton');
+    var archiveButtonContainer = document.getElementById('archiveButtonContainer');
+    if (archiveButton && archiveButtonContainer) {
+        if (statusText !== 'Archived') {
+            archiveButtonContainer.style.display = 'inline';
+            archiveButton.setAttribute('data-document-id', data.id);
+        } else {
+            archiveButtonContainer.style.display = 'none';
+        }
+    }
+}
+
+function setArchiveDocumentId(documentId) {
+    document.getElementById('archiveForm').action = "{{ url_for('main.archive_document', document_id=0) }}".replace('0', documentId);
+}
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup tabs for Leave/EWP in Create Leave modal
+        (function() {
+            try {
+                var tabLeave = document.getElementById('tab-leave');
+                var tabEwp = document.getElementById('tab-ewp');
+                var leaveForm = document.getElementById('leave-create-form');
+                var ewpWrap = document.getElementById('ewp-form-wrapper');
+                if (!tabLeave || !tabEwp || !leaveForm || !ewpWrap) return;
+                function activate(tab) {
+                    if (tab === 'leave') {
+                        tabLeave.classList.add('active');
+                        tabEwp.classList.remove('active');
+                        leaveForm.style.display = 'block';
+                        ewpWrap.style.display = 'none';
+                    } else {
+                        tabEwp.classList.add('active');
+                        tabLeave.classList.remove('active');
+                        leaveForm.style.display = 'none';
+                        ewpWrap.style.display = 'block';
+                    }
+                }
+                tabLeave.addEventListener('click', function(){ activate('leave'); });
+                tabEwp.addEventListener('click', function(){ activate('ewp'); });
+                activate('leave');
+            } catch (e) { console.error('EWP/Leave tabs init error', e); }
+        })();
+
+        // EWP Amount auto-formatting: format with thousand separators and 2 decimals.
+        (function() {
+            try {
+                var ewpCreateForm = document.getElementById('ewp-create-form');
+                if (!ewpCreateForm) return;
+                var amountInput = ewpCreateForm.querySelector('input[name="amount"]');
+                if (!amountInput) return;
+
+                // Track last valid normalized value to avoid clearing user input on blur
+                var lastNorm = '';
+
+                function normalizeAmount(val) {
+                    var v = String(val || '').replace(/[^0-9.]/g, '');
+                    // keep only first dot
+                    var firstDot = v.indexOf('.');
+                    if (firstDot !== -1) {
+                        // remove subsequent dots
+                        var before = v.slice(0, firstDot + 1);
+                        var after = v.slice(firstDot + 1).replace(/\./g, '');
+                        v = before + after;
+                    }
+                    // limit decimals to 2
+                    var parts = v.split('.');
+                    if (parts.length > 1) {
+                        parts[1] = parts[1].slice(0, 2);
+                        v = parts[0] + '.' + parts[1];
+                    }
+                    // remove leading zeros like 00012 -> 12, but keep "0" and "0.x"
+                    if (v && v !== '.' && v !== '0.') {
+                        var p = v.split('.');
+                        var intPart = (p[0] || '').replace(/^0+(?=\d)/, '');
+                        if (p.length > 1) {
+                            v = intPart + '.' + (p[1] || '');
+                        } else {
+                            v = intPart;
+                        }
+                    }
+                    return v;
+                }
+
+                function formatDisplayFromNorm(norm) {
+                    if (!norm && norm !== '0') return '';
+                    var num = Number(norm);
+                    if (!isFinite(num)) return '';
+                    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+
+                // Prepare initial state if prefilled
+                if (amountInput.value) {
+                    lastNorm = normalizeAmount(amountInput.value);
+                    if (lastNorm) {
+                        amountInput.value = formatDisplayFromNorm(lastNorm);
+                    }
+                }
+
+                amountInput.addEventListener('focus', function() {
+                    // Show raw editable number without separators while typing
+                    var norm = normalizeAmount(this.value);
+                    if (norm || norm === '0') {
+                        this.value = norm;
+                        lastNorm = norm;
+                    }
+                    // place caret at end
+                    setTimeout(() => { try { this.selectionStart = this.selectionEnd = this.value.length; } catch(_) {} }, 0);
+                });
+
+                function onInput(e) {
+                    var cur = amountInput.selectionStart;
+                    var beforeLen = amountInput.value.length;
+                    var norm = normalizeAmount(amountInput.value);
+                    amountInput.value = norm;
+                    lastNorm = norm;
+                    // Attempt to keep cursor near same position
+                    var afterLen = amountInput.value.length;
+                    var delta = afterLen - beforeLen;
+                    try { amountInput.selectionStart = amountInput.selectionEnd = Math.max(0, (cur || 0) + (delta || 0)); } catch(_) {}
+                }
+
+                amountInput.addEventListener('input', onInput);
+
+                // Change and blur should only format if we have a valid normalized value
+                function applyFormattedIfValid() {
+                    if (lastNorm || lastNorm === '0') {
+                        amountInput.value = formatDisplayFromNorm(lastNorm);
+                    }
+                }
+
+                amountInput.addEventListener('change', applyFormattedIfValid);
+                amountInput.addEventListener('blur', applyFormattedIfValid);
+
+                // Normalize on form submit to plain "1234.56" without commas
+                ewpCreateForm.addEventListener('submit', function() {
+                    if (!(lastNorm || lastNorm === '0')) {
+                        amountInput.value = '';
+                        return;
+                    }
+                    var num = Number(lastNorm);
+                    amountInput.value = isFinite(num) ? num.toFixed(2) : '';
+                });
+            } catch (err) {
+                console.error('EWP amount formatter init error', err);
+            }
+        })();
+
+        // Pre-initialize all modals
+        var modals = document.querySelectorAll('.modal');
+        modals.forEach(function(modal) {
+            new bootstrap.Modal(modal, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+        });
+
+        // Initialize Leave Date Range pickers (Flatpickr range mode) and dynamic add/remove
+        (function() {
+            const dateRangeList = document.getElementById('date-range-list');
+            const addBtn = document.getElementById('add-date-range-btn');
+            const createLeaveForm = document.querySelector('#createLeaveModal form');
+
+            function initPicker(input) {
+                if (window.flatpickr) {
+                    window.flatpickr(input, {
+                        mode: 'range',
+                        dateFormat: 'Y-m-d'
+                    });
+                }
+            }
+
+            function addRangeInput() {
+                if (!dateRangeList) return;
+                const group = document.createElement('div');
+                group.className = 'input-group';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = 'date_range';
+                input.className = 'form-control date-range-picker';
+                input.placeholder = 'Select date range';
+                input.autocomplete = 'off';
+
+                // Time mode selector aligned with this range
+                const select = document.createElement('select');
+                select.name = 'time_mode_range';
+                select.className = 'form-select';
+                select.style.maxWidth = '240px';
+                const optFull = new Option('Full day (08:00–17:00)', 'FULL_DAY', true, true);
+                const optAm = new Option('AM half-day (08:00–12:00)', 'AM_HALF');
+                const optPm = new Option('PM half-day (1:00–5:00)', 'PM_HALF');
+                select.add(optFull);
+                select.add(optAm);
+                select.add(optPm);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-outline-danger';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', function() {
+                    group.remove();
+                });
+
+                group.appendChild(input);
+                group.appendChild(select);
+                group.appendChild(removeBtn);
+                dateRangeList.appendChild(group);
+                initPicker(input);
+            }
+
+            if (dateRangeList) {
+                const first = dateRangeList.querySelector('input[name="date_range"]');
+                if (first) initPicker(first);
+            }
+            if (addBtn) {
+                addBtn.addEventListener('click', addRangeInput);
+            }
+            if (createLeaveForm) {
+                createLeaveForm.addEventListener('submit', function(e) {
+                    const inputs = Array.from(createLeaveForm.querySelectorAll('input[name="date_range"]'));
+                    const ranges = inputs.map(i => (i.value || '').trim()).filter(Boolean);
+                    if (ranges.length === 0) {
+                        e.preventDefault();
+                        alert('Please select at least one date range.');
+                        return;
+                    }
+                    const first = ranges[0];
+                    let parts = first.split(' to ');
+                    let start = (parts[0] || '').trim();
+                    let end = (parts[1] || '').trim();
+                    if (!end) end = start;
+                    const startHidden = document.getElementById('leave-start-date-hidden');
+                    const endHidden = document.getElementById('leave-end-date-hidden');
+                    if (startHidden) startHidden.value = start;
+                    if (endHidden) endHidden.value = end;
+                });
+            }
+        })();
+
+        // Conditional fields for Leave Type selection
+        (function() {
+            const leaveTypeSelect = document.getElementById('leave-type-select');
+
+            const vacationSpl = document.getElementById('vacation-spl-container');
+            const sick = document.getElementById('sick-leave-container');
+            const slbw = document.getElementById('slbw-container');
+            const study = document.getElementById('study-leave-container');
+            const others = document.getElementById('others-container');
+
+            const vacationSplSubtype = document.getElementById('vacation-spl-subtype');
+            const vacationSplDetailCol = document.getElementById('vacation-spl-detail-col');
+            const vacationSplDetail = document.getElementById('vacation-spl-detail');
+
+            const sickSubtype = document.getElementById('sick-leave-subtype');
+            const sickDetailCol = document.getElementById('sick-leave-detail-col');
+            const sickDetail = document.getElementById('sick-leave-detail');
+
+            const slbwDetails = document.getElementById('slbw-details');
+            const studyPurpose = document.getElementById('study-leave-purpose');
+            const othersSubtype = document.getElementById('others-subtype');
+
+            function hideAll() {
+                [vacationSpl, sick, slbw, study, others].forEach(c => { if (c) c.style.display = 'none'; });
+
+                if (vacationSplSubtype) vacationSplSubtype.selectedIndex = 0;
+                if (vacationSplDetail) vacationSplDetail.value = '';
+                if (vacationSplDetailCol) vacationSplDetailCol.style.display = 'none';
+
+                if (sickSubtype) sickSubtype.selectedIndex = 0;
+                if (sickDetail) sickDetail.value = '';
+                if (sickDetailCol) sickDetailCol.style.display = 'none';
+
+                if (slbwDetails) slbwDetails.value = '';
+                if (studyPurpose) studyPurpose.selectedIndex = 0;
+                if (othersSubtype) othersSubtype.selectedIndex = 0;
+
+                // Remove required flags by default
+                if (vacationSplDetail) vacationSplDetail.required = false;
+                if (sickDetail) sickDetail.required = false;
+                if (studyPurpose) studyPurpose.required = false;
+                if (othersSubtype) othersSubtype.required = false;
+            }
+
+            function updateConditionalFields() {
+                if (!leaveTypeSelect) return;
+                const v = leaveTypeSelect.value || '';
+                hideAll();
+
+                if (v === 'Vacation Leave' || v === 'Special Privilege Leave') {
+                    if (vacationSpl) vacationSpl.style.display = 'block';
+
+                    if (vacationSplSubtype) {
+                        function applyVac() {
+                            const sv = vacationSplSubtype.value || '';
+                            if (sv) {
+                                if (vacationSplDetailCol) vacationSplDetailCol.style.display = 'block';
+                                if (vacationSplDetail) {
+                                    vacationSplDetail.required = true;
+                                    vacationSplDetail.placeholder = (sv === 'Abroad (Specify)')
+                                        ? 'Specify country/city'
+                                        : 'Specify location';
+                                }
+                            } else {
+                                if (vacationSplDetailCol) vacationSplDetailCol.style.display = 'none';
+                                if (vacationSplDetail) {
+                                    vacationSplDetail.required = false;
+                                    vacationSplDetail.value = '';
+                                }
+                            }
+                        }
+                        // Initialize and bind
+                        applyVac();
+                        vacationSplSubtype.addEventListener('change', applyVac);
+                    }
+
+                } else if (v === 'Sick Leave') {
+                    if (sick) sick.style.display = 'block';
+
+                    if (sickSubtype) {
+                        function applySick() {
+                            const sv = sickSubtype.value || '';
+                            if (sv) {
+                                if (sickDetailCol) sickDetailCol.style.display = 'block';
+                                if (sickDetail) sickDetail.required = true;
+                            } else {
+                                if (sickDetailCol) sickDetailCol.style.display = 'none';
+                                if (sickDetail) {
+                                    sickDetail.required = false;
+                                    sickDetail.value = '';
+                                }
+                            }
+                        }
+                        // Initialize and bind
+                        applySick();
+                        sickSubtype.addEventListener('change', applySick);
+                    }
+
+                } else if (v === 'Special Leave Benefits for Women') {
+                    if (slbw) slbw.style.display = 'block';
+                } else if (v === 'Study Leave') {
+                    if (study) study.style.display = 'block';
+                    if (studyPurpose) studyPurpose.required = true;
+                } else if (v === 'Others') {
+                    if (others) others.style.display = 'block';
+                    if (othersSubtype) othersSubtype.required = true;
+                }
+            }
+
+            if (leaveTypeSelect) {
+                leaveTypeSelect.addEventListener('change', updateConditionalFields);
+                // Initialize on load (e.g., when form is reopened)
+                updateConditionalFields();
+            }
+        })();
+
+    // Handle resubmit button clicks
+    document.querySelectorAll('[data-bs-target^="#resubmitModal-"]').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            var modalId = this.getAttribute('data-bs-target');
+            var modal = document.querySelector(modalId);
+            if (modal) {
+                var bsModal = bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
+                bsModal.show();
+            }
+        });
+    });
+
+    // Safely handle canvas initialization
+    var canvas = document.getElementById('chartCanvas');
+    if (canvas) {
+        try {
+            var ctx = canvas.getContext('2d');
+            console.log("Chart canvas initialized successfully");
+            // Chart initialization would go here if needed
+        } catch (error) {
+            console.error("Error initializing chart canvas:", error);
+        }
+    } else {
+        console.warn("Canvas element 'chartCanvas' not found; skipping chart initialization.");
+    }
+
+    // Sub-classification logic
+    const mainClassification = document.getElementById('classification-main');
+    const subClassificationContainer = document.getElementById('sub-classification-container');
+    const subClassification = document.getElementById('sub-classification');
+    const fullClassification = document.getElementById('full-classification');
+    const createDocumentForm = document.getElementById('createDocumentForm');
+    
+    if (createDocumentForm) {
+        // Show/hide sub-classification based on main classification selection
+        mainClassification.addEventListener('change', function() {
+            // Clear current options in sub-classification
+            while (subClassification.options.length > 1) {
+                subClassification.remove(1);
+            }
+            
+            if (this.value === 'Communications') {
+                // Add Communications options
+                const commOptions = [
+                    'Travel Order',
+                    'Office Order',
+                    'Travel Authority'
+                ];
+                
+                commOptions.forEach(function(option) {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = option;
+                    optionEl.textContent = option;
+                    subClassification.appendChild(optionEl);
+                });
+                
+                subClassificationContainer.style.display = 'block';
+            } 
+            else if (this.value === 'Request') {
+                // Add Request options
+                const requestOptions = [
+                    'Certificate of Employment',
+                    'Service Record',
+                    'Clearance'
+                ];
+                
+                requestOptions.forEach(function(option) {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = option;
+                    optionEl.textContent = option;
+                    subClassification.appendChild(optionEl);
+                });
+                
+                subClassificationContainer.style.display = 'block';
+            } 
+            else if (this.value === 'Payroll') {
+                // Add Payroll options
+                const payrollOptions = [
+                    'Salary',
+                    'Voucher',
+                    'Trust fund',
+                    'Terminal Pay',
+                    'Overtime Pay',
+                    'Subsistence Allowance',
+                    'Travel Allowance',
+                    'RATA',
+                    'Mobile Allowance'
+                ];
+                
+                payrollOptions.forEach(function(option) {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = option;
+                    optionEl.textContent = option;
+                    subClassification.appendChild(optionEl);
+                });
+                
+                subClassificationContainer.style.display = 'block';
+            }
+            else {
+                subClassificationContainer.style.display = 'none';
+                subClassification.selectedIndex = 0;
+            }
+        });
+        
+        // Handle form submission to combine classification values 
+        createDocumentForm.addEventListener('submit', function(e) {
+            console.log("Form submit triggered");
+            
+            // For debugging
+            console.log("Main classification:", mainClassification.value);
+            console.log("Sub classification:", subClassification.value);
+            
+            // If Communications, Request, or Payroll is selected, combine with sub-classification
+            if ((mainClassification.value === 'Communications' || 
+                 mainClassification.value === 'Request' || 
+                 mainClassification.value === 'Payroll') && 
+                subClassification.value) {
+                fullClassification.value = mainClassification.value + ' - ' + subClassification.value;
+                console.log("Combined classification:", fullClassification.value);
+            } else {
+                // For other classifications, just use the main value
+                fullClassification.value = mainClassification.value;
+                console.log("Using main classification:", fullClassification.value);
+            }
+        });
+    }
+
+    // Fix edit form submission handlers
+    {% for document in created_documents %}
+    (function() {
+        const editModal = document.getElementById('editModal-{{ document.id }}');
+        if (editModal) {
+            const form = editModal.querySelector('form');
+            const mainClassField = form.querySelector('[name="{{ form.classification.name }}"]');
+            
+            // Create and append the sub-classification container if it doesn't exist
+            let subContainer = form.querySelector('.sub-classification-container');
+            if (!subContainer) {
+                subContainer = document.createElement('div');
+                subContainer.className = 'mb-3 sub-classification-container';
+                subContainer.style.display = 'none';
+                
+                const subLabel = document.createElement('label');
+                subLabel.className = 'form-label';
+                subLabel.textContent = 'Sub-Classification';
+                
+                const subSelect = document.createElement('select');
+                subSelect.className = 'form-control sub-classification';
+                subSelect.innerHTML = '<option value="" disabled selected>Select a sub-classification</option>';
+                
+                subContainer.appendChild(subLabel);
+                subContainer.appendChild(subSelect);
+                
+                // Insert after classification field
+                mainClassField.closest('.mb-3').after(subContainer);
+                
+                // Create hidden field for combined value
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.className = 'full-classification';
+                hiddenField.name = 'full_classification';
+                form.appendChild(hiddenField);
+                
+                // Check if current document has a Communications, Request, or Payroll classification
+                const currentClass = "{{ document.classification }}";
+                if (currentClass.startsWith('Communications - ') || 
+                    currentClass.startsWith('Request - ') || 
+                    currentClass.startsWith('Payroll - ')) {
+                    // Extract main classification and sub-classification
+                    const parts = currentClass.split(' - ');
+                    const mainClass = parts[0];
+                    const subValue = parts[1];
+                    
+                    mainClassField.value = mainClass;
+                    subContainer.style.display = 'block';
+                    
+                    // Populate appropriate sub-classification options
+                    const subSelectEl = subContainer.querySelector('select');
+                    while (subSelectEl.options.length > 1) {
+                        subSelectEl.remove(1);
+                    }
+                    
+                    let subOptions = [];
+                    if (mainClass === 'Communications') {
+                        subOptions = ['Travel Order', 'Office Order', 'Travel Authority'];
+                    } else if (mainClass === 'Request') {
+                        subOptions = ['Certificate of Employment', 'Service Record', 'Clearance'];
+                    } else if (mainClass === 'Payroll') {
+                        subOptions = ['Salary', 'Voucher', 'Trust fund', 'Terminal Pay', 'Overtime Pay', 
+                                      'Subsistence Allowance', 'Travel Allowance', 'RATA', 'Mobile Allowance'];
+                    }
+                    
+                    // Add options to the select
+                    subOptions.forEach(function(option) {
+                        const optEl = document.createElement('option');
+                        optEl.value = option;
+                        optEl.textContent = option;
+                        if (option === subValue) {
+                            optEl.selected = true;
+                        }
+                        subSelectEl.appendChild(optEl);
+                    });
+                }
+                
+                // Add change event to main classification
+                mainClassField.addEventListener('change', function() {
+                    // Clear current sub-classification options
+                    const subSelectEl = subContainer.querySelector('select');
+                    while (subSelectEl.options.length > 1) {
+                        subSelectEl.remove(1);
+                    }
+                    
+                    if (this.value === 'Communications') {
+                        // Add Communications options
+                        const commOptions = ['Travel Order', 'Office Order', 'Travel Authority'];
+                        commOptions.forEach(function(option) {
+                            const optEl = document.createElement('option');
+                            optEl.value = option;
+                            optEl.textContent = option;
+                            subSelectEl.appendChild(optEl);
+                        });
+                        
+                        subContainer.style.display = 'block';
+                    } 
+                    else if (this.value === 'Request') {
+                        // Add Request options
+                        const requestOptions = ['Certificate of Employment', 'Service Record', 'Clearance'];
+                        requestOptions.forEach(function(option) {
+                            const optEl = document.createElement('option');
+                            optEl.value = option;
+                            optEl.textContent = option;
+                            subSelectEl.appendChild(optEl);
+                        });
+                        
+                        subContainer.style.display = 'block';
+                    }
+                    else if (this.value === 'Payroll') {
+                        // Add Payroll options
+                        const payrollOptions = ['Salary', 'Voucher', 'Trust fund', 'Terminal Pay', 'Overtime Pay', 
+                                                'Subsistence Allowance', 'Travel Allowance', 'RATA', 'Mobile Allowance'];
+                        payrollOptions.forEach(function(option) {
+                            const optEl = document.createElement('option');
+                            optEl.value = option;
+                            optEl.textContent = option;
+                            subSelectEl.appendChild(optEl);
+                        });
+                        
+                        subContainer.style.display = 'block';
+                    }
+                    else {
+                        subContainer.style.display = 'none';
+                        subSelectEl.selectedIndex = 0;
+                    }
+                });
+                
+                // Add submit handler
+                form.addEventListener('submit', function(e) {
+                    const subSelectEl = subContainer.querySelector('select');
+                    const hiddenField = form.querySelector('.full-classification');
+                    
+                    if ((mainClassField.value === 'Communications' || 
+                         mainClassField.value === 'Request' || 
+                         mainClassField.value === 'Payroll') && 
+                        subSelectEl.value) {
+                        hiddenField.value = mainClassField.value + ' - ' + subSelectEl.value;
+                    } else {
+                        hiddenField.value = mainClassField.value;
+                    }
+                });
+            }
+        }
+    })();
+    {% endfor %}
+
+    // Initialize Leave Status remarks toggle for leave requests (generic, no Jinja)
+    (function() {
+        const selects = document.querySelectorAll('[id^="leave-status-"]');
+        selects.forEach(function(selectEl) {
+            const idPart = selectEl.id.replace('leave-status-', '');
+            const remarksContainer = document.getElementById('leave-remarks-container-' + idPart);
+            if (!remarksContainer) return;
+            function apply() {
+                const v = selectEl.value;
+                remarksContainer.style.display = (v === 'Pending' || v === 'For Signature' || v === 'Released') ? 'block' : 'none';
+            }
+            apply();
+            selectEl.addEventListener('change', apply);
+        });
+    })();
+
+    // Initialize barcode validation with debounce function
+    const barcodeInput = document.getElementById('barcode-input');
+    if (!barcodeInput) {
+        console.warn("Barcode input element not found; skipping validation.");
+    }
+
+    const barcodeFeedback = document.getElementById('barcode-feedback');
+    const barcodeSuggestions = document.getElementById('barcode-suggestions');
+    
+    let barcodeTimer = null;
+    
+    if (barcodeInput) {
+        barcodeInput.addEventListener('input', function() {
+            // Clear all validation states
+            clearBarcodeValidation();
+            
+            const barcode = this.value.trim();
+            
+            if (!barcode) {
+                return;
+            }
+            
+            // Add checking class to show spinner
+            barcodeInput.classList.add('checking');
+            
+            // Clear previous timer
+            if (barcodeTimer) {
+                clearTimeout(barcodeTimer);
+            }
+            
+            // Debounce barcode validation
+            barcodeTimer = setTimeout(function() {
+                validateBarcode(barcode);
+            }, 500);
+        });
+    }
+    
+    function clearBarcodeValidation() {
+        // Remove validation state from input
+        barcodeInput.classList.remove('is-valid');
+        barcodeInput.classList.remove('is-invalid');
+        barcodeInput.classList.remove('checking');
+        
+        // Clear feedback message and suggestions
+        barcodeFeedback.textContent = '';
+        barcodeFeedback.className = 'validation-feedback';
+        barcodeSuggestions.innerHTML = '';
+    }
+    
+    // Function to validate barcode with error handling
+
+    function validateBarcode(barcode) {
+        const formData = new FormData();
+        formData.append('barcode', barcode);
+        formData.append('csrf_token', csrfToken);
+        
+        fetch('{{ url_for("main.check_barcode") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData,
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove checking class
+            barcodeInput.classList.remove('checking');
+            
+            // Display validation message
+            barcodeFeedback.textContent = data.message;
+            
+            if (data.valid) {
+                // Valid barcode
+                barcodeFeedback.classList.add('valid');
+                barcodeInput.classList.add('is-valid');
+            } else {
+                // Invalid barcode
+                barcodeFeedback.classList.add('invalid');
+                barcodeInput.classList.add('is-invalid');
+                
+                // Display suggestions if available
+                if (data.suggestions && data.suggestions.length > 0) {
+                    const suggestionHeader = document.createElement('p');
+                    suggestionHeader.className = 'mb-1 small text-muted';
+                    suggestionHeader.textContent = 'Suggested available barcodes:';
+                    barcodeSuggestions.appendChild(suggestionHeader);
+                    
+                    const suggestionsList = document.createElement('div');
+                    suggestionsList.className = 'd-flex flex-wrap gap-2';
+                    
+                    data.suggestions.forEach(function(suggestion) {
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-primary suggestion-badge';
+                        badge.textContent = suggestion;
+                        badge.style.cursor = 'pointer';
+                        badge.addEventListener('click', function() {
+                            barcodeInput.value = suggestion;
+                            clearBarcodeValidation();
+                            validateBarcode(suggestion);
+                        });
+                        suggestionsList.appendChild(badge);
+                    });
+                    
+                    barcodeSuggestions.appendChild(suggestionsList);
+                }
+            }
+        })
+        .catch(error => {
+            // Remove checking class
+            barcodeInput.classList.remove('checking');
+            
+            // Show error
+            barcodeFeedback.textContent = 'Error checking barcode';
+            barcodeFeedback.classList.add('invalid');
+            barcodeInput.classList.add('is-invalid');
+            console.error('Barcode validation error:', error);
+        });
+    }
+
+    
+    // Add form submit validation for barcode
+    if (createDocumentForm) {
+        createDocumentForm.addEventListener('submit', function(e) {
+            const barcode = barcodeInput.value.trim();
+            
+            if (barcode && barcodeInput.classList.contains('is-invalid')) {
+                // If barcode is invalid, prevent form submission
+                e.preventDefault();
+                barcodeFeedback.textContent = 'Please use a valid barcode';
+                barcodeFeedback.classList.add('invalid');
+                barcodeInput.focus();
+            }
+        });
+    }
+
+    const customContainer = document.getElementById('custom-classification-container');
+    const customInput = document.querySelector('#custom-classification-container input');
+    const charLimitIndicator = document.getElementById('charLimitIndicator');
+
+    // Show/hide custom classification based on selection
+    mainClassification.addEventListener('change', function() {
+        if (this.value === 'Others') {
+            customContainer.style.display = 'block';
+            customInput.required = true;
+        } else {
+            customContainer.style.display = 'none';
+            customInput.required = false;
+            customInput.value = '';
+            customInput.classList.remove('is-invalid');
+            charLimitIndicator.style.display = 'none';
+        }
+    });
+
+    // Character limit validation
+    customInput.addEventListener('input', function() {
+        if (this.value.length >= 20) {
+            this.classList.add('is-invalid');
+            charLimitIndicator.style.display = 'block';
+        } else {
+            this.classList.remove('is-invalid');
+            charLimitIndicator.style.display = 'none';
+        }
+    });
+
+    // Modify form submission to combine classification
+    if (createDocumentForm) {
+        createDocumentForm.addEventListener('submit', function(e) {
+            if (mainClassification.value === 'Others' && !customInput.value.trim()) {
+                e.preventDefault();
+                alert('Please enter a custom classification');
+                return;
+            }
+            
+            if (mainClassification.value === 'Others') {
+                const hiddenInput = document.querySelector('input[name="full_classification"]');
+                hiddenInput.value = 'Others - ' + customInput.value.trim();
+            }
+        });
+    }
+    // Initialize Edit Leave modals (date range pickers and dynamic add/remove)
+    (function() {
+        try {
+            var modals = document.querySelectorAll('[id^="editLeaveModal-"]');
+            modals.forEach(function(modal) {
+                var list = modal.querySelector('.date-range-list');
+                var addBtn = modal.querySelector('.add-date-range-btn');
+
+                function initPicker(input) {
+                    if (window.flatpickr) {
+                        window.flatpickr(input, {
+                            mode: 'range',
+                            dateFormat: 'Y-m-d'
+                        });
+                    }
+                }
+
+                // Initialize any pre-rendered pickers
+                var inputs = modal.querySelectorAll('input.date-range-picker');
+                inputs.forEach(function(i){ initPicker(i); });
+
+                // Wire up remove buttons
+                modal.querySelectorAll('.date-range-list .btn.btn-outline-danger').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var group = this.closest('.input-group');
+                        if (group) group.remove();
+                    });
+                });
+
+                if (addBtn && list) {
+                    addBtn.addEventListener('click', function() {
+                        var group = document.createElement('div');
+                        group.className = 'input-group mb-2';
+
+                        var input = document.createElement('input');
+                        input.type = 'text';
+                        input.name = 'date_range';
+                        input.className = 'form-control date-range-picker';
+                        input.placeholder = 'Select date range';
+                        input.autocomplete = 'off';
+
+                        var select = document.createElement('select');
+                        select.name = 'time_mode_range';
+                        select.className = 'form-select';
+                        select.style.maxWidth = '240px';
+                        select.innerHTML = ''
+                          + '<option value="FULL_DAY" selected>Full day (08:00–17:00)</option>'
+                          + '<option value="AM_HALF">AM half-day (08:00–12:00)</option>'
+                          + '<option value="PM_HALF">PM half-day (1:00–5:00)</option>';
+
+                        var removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'btn btn-outline-danger';
+                        removeBtn.textContent = 'Remove';
+                        removeBtn.addEventListener('click', function() {
+                            group.remove();
+                        });
+
+                        group.appendChild(input);
+                        group.appendChild(select);
+                        group.appendChild(removeBtn);
+                        list.appendChild(group);
+                        initPicker(input);
+                    });
+                }
+            });
+        } catch (err) {
+            console.error('Failed to initialize Edit Leave modals', err);
+        }
+    })();
+});
+
+// Batch Operations JavaScript Functions
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+    
+    documentCheckboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+    
+    updateBatchControls();
+}
+
+function updateBatchControls() {
+    const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+    const checkedBoxes = document.querySelectorAll('.document-checkbox:checked');
+    const batchControls = document.getElementById('batchControls');
+    const selectedCount = document.getElementById('selectedCount');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const batchPendingActions = document.getElementById('batchPendingActions');
+    const batchAcceptedActions = document.getElementById('batchAcceptedActions');
+    
+    if (selectedCount) {
+        selectedCount.textContent = checkedBoxes.length;
+    }
+    
+    if (batchControls) {
+        batchControls.style.display = checkedBoxes.length > 0 ? 'block' : 'none';
+    }
+    
+    // Determine which batch actions to show based on selected document statuses
+    if (checkedBoxes.length > 0) {
+        let hasPendingOrForwarded = false;
+        let hasAccepted = false;
+        
+        checkedBoxes.forEach(function(checkbox) {
+            const row = checkbox.closest('tr');
+            const statusBadge = row.querySelector('td:nth-child(6) .badge');
+            const statusText = statusBadge ? statusBadge.textContent.trim() : '';
+            
+            if (statusText === 'Pending' || statusText === 'Forwarded') {
+                hasPendingOrForwarded = true;
+            } else if (statusText === 'Processing') { // This is how 'Accepted' is displayed
+                hasAccepted = true;
+            }
+        });
+        
+        // Show appropriate action buttons based on selection
+        if (batchPendingActions) {
+            batchPendingActions.style.display = hasPendingOrForwarded ? 'block' : 'none';
+        }
+        if (batchAcceptedActions) {
+            batchAcceptedActions.style.display = hasAccepted ? 'block' : 'none';
+        }
+    } else {
+        // Hide all action buttons when nothing is selected
+        if (batchPendingActions) {
+            batchPendingActions.style.display = 'none';
+        }
+        if (batchAcceptedActions) {
+            batchAcceptedActions.style.display = 'none';
+        }
+    }
+    
+    // Update select all checkbox state
+    if (selectAllCheckbox) {
+        if (checkedBoxes.length === 0) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = false;
+        } else if (checkedBoxes.length === documentCheckboxes.length) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = true;
+        } else {
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+}
+
+function getSelectedDocumentIds() {
+    const checkedBoxes = document.querySelectorAll('.document-checkbox:checked');
+    return Array.from(checkedBoxes).map(cb => cb.value);
+}
+
+function batchAccept() {
+    const selectedIds = getSelectedDocumentIds();
+    if (selectedIds.length === 0) {
+        alert('Please select at least one document to accept.');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to accept ${selectedIds.length} document(s)?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("main.batch_accept_documents") }}';
+        
+        // Add CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Add document IDs
+        selectedIds.forEach(function(id) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'document_ids';
+            input.value = id;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function batchRelease() {
+    const selectedIds = getSelectedDocumentIds();
+    if (selectedIds.length === 0) {
+        alert('Please select at least one document to release.');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to release ${selectedIds.length} document(s)?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("main.batch_release_documents") }}';
+        
+        // Add CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Add document IDs
+        selectedIds.forEach(function(id) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'document_ids';
+            input.value = id;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Handle batch decline form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const batchDeclineForm = document.getElementById('batchDeclineForm');
+    if (batchDeclineForm) {
+        batchDeclineForm.addEventListener('submit', function(e) {
+            const selectedIds = getSelectedDocumentIds();
+            if (selectedIds.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one document to decline.');
+                return;
+            }
+            
+            // Add selected document IDs to the form
+            selectedIds.forEach(function(id) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'document_ids';
+                input.value = id;
+                batchDeclineForm.appendChild(input);
+            });
+        });
+    }
+    
+    const batchForwardForm = document.getElementById('batchForwardForm');
+    if (batchForwardForm) {
+        batchForwardForm.addEventListener('submit', function(e) {
+            const selectedIds = getSelectedDocumentIds();
+            if (selectedIds.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one document to forward.');
+                return;
+            }
+            
+            // Add selected document IDs to the form
+            selectedIds.forEach(function(id) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'document_ids';
+                input.value = id;
+                batchForwardForm.appendChild(input);
+            });
+        });
+    }
+});
+</script>{% endblock %}

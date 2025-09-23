@@ -1,0 +1,100 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.pyo
+
+# Virtual environments
+.venv/
+env/
+ENV/
+.venv*/
+pip-wheel-metadata/
+
+# Build/distribution artifacts
+build/
+dist/
+.eggs/
+*.egg-info/
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Type checker / static analysis
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Secrets / environment / config
+.env
+.env.*
+.flaskenv
+config.txt
+config.py
+
+# Databases and instance data
+instance/
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite3-journal
+
+# User uploads
+uploads/
+uploads_test/
+app/uploads/
+
+# Backups
+backup/
+
+# Logs and runtime
+*.log
+logs/
+*.pid
+*.pid.lock
+*.sock
+run/
+tmp/
+temp/
+
+# Alembic/Python caches inside migrations
+migrations/__pycache__/
+backup/migrations/__pycache__/
+
+# Node (if present)
+node_modules/
+*.tsbuildinfo

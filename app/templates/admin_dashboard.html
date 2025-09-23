@@ -1,0 +1,2970 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Enhanced styling -->
+<style>
+html {
+    scroll-behavior: smooth;
+}
+.section-label {
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    border-left: 4px solid #0d6efd;
+    margin-bottom: 20px;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.section-description {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+.stat-card { 
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* status animation   */
+.status-accepted {
+    position: relative;
+    animation: pulse 1.5s infinite;
+}
+
+.status-accepted::after {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: white;
+    margin-left: 5px;
+    animation: blink 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+@keyframes blink {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Print-friendly rules */
+@media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    body, .content-wrapper {
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .navbar,
+    #offcanvasWithBothOptions,
+    .pagination,
+    .btn,
+    .toast,
+    .toast-container,
+    #toast-container,
+    .modal,
+    .dropdown-menu,
+    .sidebar-item,
+    .list-group,
+    .list-group-flush {
+        display: none !important;
+    }
+
+    a[href]:after { content: ""; }
+
+    #page-content-wrapper, .container-fluid, .content-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .section-header, .card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Start new pages for large sections for readability */
+    #productivity-metrics,
+    #recent-activities,
+    #all-documents,
+    #classification-metrics {
+        break-before: page;
+        page-break-before: always;
+    }
+
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    @page {
+        size: A4;
+        margin: 12mm;
+    }
+
+    .page-break {
+        break-before: page;
+        page-break-before: always;
+    }
+}
+</style>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="mb-0">Admin Dashboard</h2>
+    <div class="d-print-none">
+        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#reportTextModal">
+            <i class="fas fa-file-alt me-1"></i> Print Text Report
+        </button>
+    </div>
+</div>
+<!-- Print-only header -->
+<div class="d-none d-print-block mb-3">
+    <h2 class="mb-1">Admin Dashboard Report</h2>
+    <div>Generated: <span id="printTimestamp"></span></div>
+</div>
+
+<!-- Overview Section -->
+<div id="overview" class="section-header">
+    <div class="section-label">
+        <h3 class="mb-2">Overview</h3>
+        <div class="section-description">Quick Overview</div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Documents</h5>
+                    <p class="card-text">{{ total_documents }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Released</h5>
+                    <p class="card-text">{{ total_released }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                    <p class="card-text">{{ total_pending }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Metrics Section -->
+<div id="activity-metrics" class="section-header mt-5">
+    <div class="section-label">
+        <h3 class="mb-2">Activity Metrics</h3>
+        <div class="section-description">Daily and monthly activity breakdown</div>
+    </div>
+    <div class="row mt-4">
+        <!-- Daily Activities -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Today's Activities</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for action in ['Documents Created', 'Leave Created', 'Declined', 'Documents Released', 'Forwarded', 'Resubmitted'] %}
+                            <tr>
+                                <td>{{ action }}</td>
+                                <td>{{ daily_metrics.get(action, 0) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-info">
+                                <th>Total</th>
+                                <th>{{ daily_metrics.values()|sum }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Activities -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">This Month's Activities</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for action in ['Documents Created', 'Leave Created', 'Declined', 'Documents Released', 'Forwarded', 'Resubmitted'] %}
+                            <tr>
+                                <td>{{ action }}</td>
+                                <td>{{ monthly_metrics.get(action, 0) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-info">
+                                <th>Total</th>
+                                <th>{{ monthly_metrics.values()|sum }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Charts -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Today's Activities Chart</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyActivityChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">This Month's Activities Chart</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyActivityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Daily Trend (This Month) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Daily Trend (This Month): Created and Processed</h5>
+                </div>
+                <div class="card-body" style="height: 320px;">
+                    <canvas id="dailyTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Productivity Metrics Section -->
+<div id="productivity-metrics" class="section-header mt-5">
+    <div class="section-label">
+        <h3 class="mb-2">Productivity Metrics</h3>
+        <div class="section-description">Document processing metrics from created to released</div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Document Release Times</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Document Title</th>
+                            <th>Created By</th>
+                            <th>Released By</th>
+                            <th>Release Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for metric in release_metrics[:5] %}
+                        <tr>
+                            <td>{{ metric.title }}</td>
+                            <td>{{ metric.creator }}</td>
+                            <td>{{ metric.handler }}</td>
+                            <td>{{ format_timedelta(metric.release_time) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">No released documents found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!--Pending Documents -->
+    <h3>Pending Documents</h3>
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>Created By</th>
+                            <th>Assigned To</th>
+                            <th>Created Date</th>
+                            <th>Pending Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in pending_docs_info[:5] %}
+                        <tr>
+                            <td>{{ doc.title }}</td>
+                            <td>{{ doc.creator }}</td>
+                            <td>{{ doc.assigned_to }}</td>
+                            <td>{{ doc.created_date|local_time("%B %d, %Y at %I:%M %p") }}</td>
+                            <td>{{ format_timedelta(doc.pending_time) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No pending documents found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Performance Section -->
+<div id="user-performance" class="section-header mt-5">
+    <div class="section-label">
+        <h3 class="mb-2">User Performance</h3>
+        <div class="section-description">Individual user statistics and processing efficiency</div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Documents Handled</th>
+                            <th>Average Document Processing Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in user_metrics %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.documents_handled }}</td>
+                            <td>
+                                {% if user.avg_processing_time and user.avg_processing_time > 0 %}
+                                    {% if user.avg_processing_time < 60 %}
+                                        less than a minute
+                                    {% else %}
+                                        {{ user.avg_processing_time|format_avg_timedelta }}
+                                    {% endif %}
+                                {% else %}
+                                    No data
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Performance Section -->
+<div id="leave-performance" class="section-header mt-4">
+    <div class="section-label">
+        <h3 class="mb-2">Leave Performance</h3>
+        <div class="section-description">Processing time from created to released for Leave requests</div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Leaves Released</th>
+                            <th>Average Leave Processing Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in leave_user_metrics %}
+                        <tr>
+                            <td>{{ row.username }}</td>
+                            <td>{{ row.leaves_released }}</td>
+                            <td>
+                                {% if row.avg_processing_time and row.avg_processing_time > 0 %}
+                                    {% if row.avg_processing_time < 60 %}
+                                        less than a minute
+                                    {% else %}
+                                        {{ row.avg_processing_time|format_avg_timedelta }}
+                                    {% endif %}
+                                {% else %}
+                                    No data
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center">No leave processing data</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities Section -->
+<div id="recent-activities" class="section-header mt-5">
+    <div class="section-label">
+        <h3 class="mb-2">Recent Activities</h3>
+        <div class="section-description">Latest actions and events of every users in the system</div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Document</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in recent_activities %}
+                <tr>
+                    <td>{{ activity.timestamp|local_time('%B %d, %Y at %I:%M %p') }}</td>
+                    <td>{{ activity.user.username }}</td>
+                    <td>{{ activity.action }}</td>
+                    <td>{{ activity.document.title if activity.document else 'N/A' }}</td>
+                    <td>
+                        {% if activity.action == 'Forwarded' and activity.document %}
+                            Forwarded to {{ activity.document.recipient.username }}
+                        {% elif activity.remarks %}
+                            {{ activity.remarks }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No activities found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <!-- Recent Activities Pagination -->
+    {% if activity_pagination.pages > 1 %}
+    <nav aria-label="Activity log navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {{ 'disabled' if not activity_pagination.has_prev }}">
+                <a class="page-link" 
+                   href="{{ url_for('main.admin_dashboard', activity_page=activity_pagination.prev_num, doc_page=doc_pagination.page, search=search_query) if activity_pagination.has_prev else '#' }}"
+                   tabindex="{{ '-1' if not activity_pagination.has_prev else '0' }}">
+                    Previous
+                </a>
+            </li>
+            
+            {% for page_num in activity_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {{ 'active' if page_num == activity_pagination.page }}">
+                        <a class="page-link" href="{{ url_for('main.admin_dashboard', activity_page=page_num, doc_page=doc_pagination.page, search=search_query) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            <li class="page-item {{ 'disabled' if not activity_pagination.has_next }}">
+                <a class="page-link" 
+                   href="{{ url_for('main.admin_dashboard', activity_page=activity_pagination.next_num, doc_page=doc_pagination.page, search=search_query) if activity_pagination.has_next else '#' }}">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Users Section -->
+<div id="users" class="section-header mt-5">
+    <div class="section-label">
+        <h3 class="mb-2">Users</h3>
+        <div class="section-description">Manage system users and their access</div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <!-- Add a quick filter for users by status -->
+            <div class="mb-3">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary active" onclick="filterUsers('all', event)">All</button>
+                    <button type="button" class="btn btn-outline-warning" onclick="filterUsers('pending', event)">Pending</button>
+                    <button type="button" class="btn btn-outline-success" onclick="filterUsers('active', event)">Active</button>
+                    <button type="button" class="btn btn-outline-danger" onclick="filterUsers('disabled', event)">Disabled/Declined</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr data-status="{{ user.status|lower }}" data-user-id="{{ user.id }}">
+                            <td>{{ user.id }}</td>   
+                            <td>
+<a href="javascript:void(0);" onclick='openUserMetrics({{ user.id }}, {{ user.username|tojson }}); return false;'>
+    {{ user.username }}
+</a>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge bg-{{ {
+                                    'Active': 'success',
+                                    'Disabled': 'danger',
+                                    'Pending': 'warning',
+                                    'Declined': 'danger'
+                                }.get(user.status, 'secondary') }}">
+                                    {{ user.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    {% if user.status == 'Pending' %}
+                                    <!-- Approval actions for pending users -->
+                                    <button type="button" class="btn btn-sm btn-outline-success" 
+                                            onclick="approveUser({{ user.id }})" 
+                                            title="Approve User">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="declineUser({{ user.id }})" 
+                                            title="Decline User">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% else %}
+                                    <!-- Toggle status for active/disabled users - disable for current user -->
+                                    <button type="button" class="btn btn-sm btn-outline-warning" 
+                                            onclick="toggleUserStatus({{ user.id }})" 
+                                            {% if user.id == current_user.id %}disabled{% endif %}
+                                            title="{% if user.id == current_user.id %}Cannot toggle your own account{% else %}{{ 'Disable' if user.status == 'Active' else 'Enable' }} User{% endif %}">
+                                        <i class="fas fa-power-off"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <!-- Delete button - use special class for buttons that should be disabled -->
+<button type="button" class="btn btn-sm btn-outline-danger {% if user.id == current_user.id or user.has_documents() %}deletion-restricted{% endif %}" 
+                                            onclick='{% if user.id == current_user.id or user.has_documents() %}showDeletionRestriction(event, "{% if user.id == current_user.id %}Cannot delete your own account{% else %}Cannot delete users with documents ({{ user.documents_created|length + user.documents_received|length }}){% endif %}"){% else %}confirmDeleteUser({{ user.id }}, {{ user.username|tojson }}){% endif %}' 
+                                            title="Delete User"
+                                            {% if user.id == current_user.id %}
+                                            data-restriction-reason="Cannot delete your own account"
+                                            {% elif user.has_documents() %}
+                                            data-restriction-reason="Cannot delete users with documents ({{ user.documents_created|length + user.documents_received|length }})"
+                                            {% endif %}>
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No users found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Pagination -->
+    {% if users_pagination and users_pagination.pages > 1 %}
+    <nav aria-label="Users navigation">
+        <ul class="pagination justify-content-center mt-3">
+            <li class="page-item {{ 'disabled' if not users_pagination.has_prev }}">
+                <a class="page-link" 
+                   href="{{ url_for('main.admin_dashboard', user_page=users_pagination.prev_num, doc_page=doc_pagination.page, activity_page=activity_pagination.page, search=search_query) if users_pagination.has_prev else '#' }}"
+                   tabindex="{{ '-1' if not users_pagination.has_prev else '0' }}">
+                    Previous
+                </a>
+            </li>
+            {% for page_num in users_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {{ 'active' if page_num == users_pagination.page }}">
+                        <a class="page-link" href="{{ url_for('main.admin_dashboard', user_page=page_num, doc_page=doc_pagination.page, activity_page=activity_pagination.page, search=search_query) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {{ 'disabled' if not users_pagination.has_next }}">
+                <a class="page-link" 
+                   href="{{ url_for('main.admin_dashboard', user_page=users_pagination.next_num, doc_page=doc_pagination.page, activity_page=activity_pagination.page, search=search_query) if users_pagination.has_next else '#' }}">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Debug Information Section -->
+<div class="section-header mt-5" id="debug-info" style="display: none;">
+    <div class="section-label">
+        <h3 class="mb-2">Debug Information</h3>
+        <div class="section-description">User document associations</div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Has Documents</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.has_documents() }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button onclick="document.getElementById('debug-info').style.display = 'none';" class="btn btn-sm btn-secondary">Hide Debug Info</button>
+        </div>
+    </div>
+</div>
+
+<!-- All Documents Section -->
+<div id="all-documents" class="section-header mt-5">
+    <div class="section-label">
+        <h3 class="mb-2">Document Repository</h3>
+        <div class="section-description">Complete listing of all documents </div>
+    </div>
+    <!-- Search Bar -->
+    <div class="mb-3">
+        <form method="GET" action="{{ url_for('main.admin_dashboard') }}" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="Search by title, office, classification, status, or barcode..." value="{{ search_query }}">
+            <button type="submit" class="btn btn-primary me-2">Search</button>
+            {% if search_query %}
+                <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+    <!-- Documents Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Office</th>
+                    <th>Classification</th>
+                    <th>Barcode</th>
+                    <th>Status</th>
+                    <th>Created By</th>
+                    <th>Assigned To</th>
+                    <th>Created Date</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for document in documents %}
+                <tr>
+                    <td>
+                        <a href="#" class="document-link" data-bs-toggle="modal" data-bs-target="#viewDocumentAdminModal" 
+                           data-doc='{{ {
+                                "id": document.id,
+                                "title": document.title,
+                                "office": document.office,
+                                "classification": document.classification,
+                                "barcode": document.barcode|default(""),
+                                "status": document.status,
+                                "action_taken": document.action_taken,
+                                "remarks": document.remarks|default(""),
+                                "attachment": document.attachment|default(""),
+                                "creator": document.creator.username,
+                                "recipient": document.recipient.username,
+                                "timestamp": document.timestamp|local_time("%B %d, %Y at %I:%M %p"),
+                                "accepted_timestamp": document.accepted_timestamp|local_time("%B %d, %Y at %I:%M %p") if document.accepted_timestamp else None,
+                                "released_timestamp": document.released_timestamp|local_time("%B %d, %Y at %I:%M %p") if document.released_timestamp else None,
+                                "forwarded_timestamp": document.forwarded_timestamp|local_time("%B %d, %Y at %I:%M %p") if document.forwarded_timestamp else None
+                            }|tojson|safe }}'>
+                            {{ document.title }}
+                        </a>
+                    </td>
+                    <td>{{ document.office }}</td>
+                    <td>{{ document.classification }}</td>
+                    <td>{{ document.barcode }}</td>
+                    <td>
+                        {% if document.status == 'Accepted' %}
+                            <span class="badge bg-info status-accepted">
+                                Processing
+                            </span>
+                        {% else %}
+                            <span class="badge bg-{{ {
+                                'Pending': 'warning',
+                                'Declined': 'danger',
+                                'Released': 'success',
+                                'Archived': 'secondary'
+                            }.get(document.status, 'secondary') }}">
+                                {{ document.status }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>{{ document.creator.username }}</td>
+                    <td>{{ document.recipient.username }}</td>
+                    <td>{{ document.timestamp|local_time("%B %d, %Y at %I:%M %p") }}</td>
+                    <td>
+                        {% if document.released_timestamp %}
+                            {{ document.released_timestamp|local_time("%B %d, %Y at %I:%M %p") }}
+                        {% elif document.accepted_timestamp %}
+                            {{ document.accepted_timestamp|local_time("%B %d, %Y at %I:%M %p") }}
+                        {% else %}
+                            {{ document.timestamp|local_time("%B %d, %Y at %I:%M %p") }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center">No documents found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <!-- Documents Pagination -->
+    {% if doc_pagination.pages > 1 %}
+    <nav aria-label="Document navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {{ 'disabled' if not doc_pagination.has_prev }}">
+                <a class="page-link" 
+                   href="{{ url_for('main.admin_dashboard', doc_page=doc_pagination.prev_num, activity_page=activity_pagination.page, search=search_query) if doc_pagination.has_prev else '#' }}"
+                   tabindex="{{ '-1' if not doc_pagination.has_prev else '0' }}">
+                    Previous
+                </a>
+            </li>
+            {% for page_num in doc_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {{ 'active' if page_num == doc_pagination.page }}">
+                        <a class="page-link" href="{{ url_for('main.admin_dashboard', doc_page=page_num, activity_page=activity_pagination.page, search=search_query) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {{ 'disabled' if not doc_pagination.has_next }}">
+                <a class="page-link" 
+                   href="{{ url_for('main.admin_dashboard', doc_page=doc_pagination.next_num, activity_page=activity_pagination.page, search=search_query) if doc_pagination.has_next else '#' }}">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Document Distribution Charts -->
+<div class="section-header mt-5">
+    <div class="section-label">
+        <h3 class="mb-2">Document Analytics</h3>
+        <div class="section-description">Document status and classification distribution</div>
+    </div>
+    
+    <!-- Add a container with max-width for better display on large screens -->
+    <div class="container-fluid px-0" style="max-width: 1200px;">
+        <!-- Status Distribution Chart -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Document Status Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="position: relative; height: 250px;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Classification Distribution Chart -->
+        <div class="row mt-4 mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Document Classification Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="classificationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Analytics Charts -->
+        <div class="row mt-4 mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Leave Status Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="position: relative; height: 250px;">
+                            <canvas id="leaveStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Leave Type Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="position: relative; height: 250px;">
+                            <canvas id="leaveTypeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Document Classification Time Analysis -->
+<div id="classification-metrics" class="section-header mt-5">
+    <div class="section-label">
+        <h3 class="mb-2">Classification Metrics</h3>
+        <div class="section-description">Daily and monthly classification breakdown</div>
+    </div>
+    <div class="row mt-4">
+        <!-- Today's Classifications -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Today's Classifications</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Classification</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for main_type, data in today_classifications.items() %}
+                            <!-- Main classification -->
+                            <tr class="table-light">
+                                <td><strong>{{ main_type }}</strong></td>
+                                <td><strong>{{ data.total }}</strong></td>
+                            </tr>
+                            <!-- Sub-types -->
+                            {% for sub_type, count in data.sub_types.items() %}
+                            <tr>
+                                <td class="ps-4">{{ sub_type }}</td>
+                                <td>{{ count }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-info">
+                                <th>Total</th>
+                                <th>{{ today_classifications.values()|map(attribute='total')|sum }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <!-- Chart for Today's Classifications -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <canvas id="todayClassChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Classifications -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">This Month's Classifications</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Classification</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for main_type, data in monthly_classifications.items() %}
+                            <!-- Main classification -->
+                            <tr class="table-light">
+                                <td><strong>{{ main_type }}</strong></td>
+                                <td><strong>{{ data.total }}</strong></td>
+                            </tr>
+                            <!-- Sub-types -->
+                            {% for sub_type, count in data.sub_types.items() %}
+                            <tr>
+                                <td class="ps-4">{{ sub_type }}</td>
+                                <td>{{ count }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-info">
+                                <th>Total</th>
+                                <th>{{ monthly_classifications.values()|map(attribute='total')|sum }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <!-- Chart for Monthly Classifications -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <canvas id="monthlyClassChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast container for notifications -->
+<div id="toast-container" class="position-fixed bottom-0 end-0 p-3"></div>
+
+<!-- View Document Admin Modal -->
+<div class="modal fade" id="viewDocumentAdminModal" tabindex="-1" aria-labelledby="viewDocumentAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="viewDocumentAdminModalLabel">
+                    <i class="fas fa-file-alt me-2"></i>Document Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <!-- Document Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Document Title</h6>
+                            <p id="adminDocTitle" class="fw-bold">-</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Status</h6>
+                            <div id="adminDocStatus">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Office</h6>
+                            <p id="adminDocOffice" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Classification</h6>
+                            <p id="adminDocClassification" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Barcode</h6>
+                            <p id="adminDocBarcode" class="mb-0">-</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Action Taken</h6>
+                            <p id="adminDocActionTaken" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Attachment</h6>
+                            <div id="adminDocAttachment">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-1">Remarks</h6>
+                            <p id="adminDocRemarks" class="mb-0">-</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Management Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Created By</h6>
+                            <p id="adminDocCreator" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Assigned To</h6>
+                            <p id="adminDocRecipient" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Created Date</h6>
+                            <p id="adminDocTimestamp" class="mb-0">-</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Timestamps -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Accepted</h6>
+                            <p id="adminDocAcceptedTimestamp" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Forwarded</h6>
+                            <p id="adminDocForwardedTimestamp" class="mb-0">-</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Released</h6>
+                            <p id="adminDocReleasedTimestamp" class="mb-0">-</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Activity Log -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2">Activity Log</h6>
+                            <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                <ul id="activityLog" class="list-unstyled mb-0">
+                                    <li class="text-muted">Loading activities...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="archiveButtonContainer" style="display: none;">
+                    <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#archiveConfirmModal" onclick="setArchiveDocumentId(this.getAttribute('data-document-id'))" id="archiveButton">
+                        <i class="fas fa-archive me-1"></i>Archive
+                    </button>
+                </div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Archive Confirmation Modal -->
+<div class="modal fade" id="archiveConfirmModal" tabindex="-1" aria-labelledby="archiveConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="archiveConfirmModalLabel">
+                    <i class="fas fa-archive me-2"></i>Confirm Archive
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to archive this document? It will be moved to the archive section.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="archiveForm" action="" method="POST" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-archive me-1"></i>Confirm Archive
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add this right after the main content, before any existing modals -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteUserModalLabel">Confirm User Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete user <strong id="delete-username"></strong>?</p>
+        <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> This action cannot be undone.</p>
+        <p>Users can only be deleted if they have no associated documents in the system.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteUserBtn">
+          <i class="fas fa-user-minus"></i> Delete User
+        </button>
+        <input type="hidden" id="userIdToDelete">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Metrics Modal -->
+<div class="modal fade" id="userMetricsModal" tabindex="-1" aria-labelledby="userMetricsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="userMetricsModalLabel">
+            <i class="fas fa-user-chart me-2"></i>
+            User Metrics
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <dl class="row mb-0">
+                <dt class="col-sm-6">User</dt>
+                <dd class="col-sm-6" id="umUsername">-</dd>
+
+                <dt class="col-sm-6">Documents processed this month</dt>
+                <dd class="col-sm-6" id="umDocsMonth">-</dd>
+
+                <dt class="col-sm-6">Documents created (overall)</dt>
+                <dd class="col-sm-6" id="umCreatedOverall">-</dd>
+
+                <dt class="col-sm-6">Documents created (this month)</dt>
+                <dd class="col-sm-6" id="umCreatedMonth">-</dd>
+
+                <dt class="col-sm-6">Avg processing time (overall)</dt>
+                <dd class="col-sm-6" id="umAvgProc">-</dd>
+
+                <dt class="col-sm-6">Avg processing time (this month)</dt>
+                <dd class="col-sm-6" id="umMonthlyAvg">-</dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <canvas id="userMetricsChart" style="max-height: 250px;"></canvas>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <h6>Additional Metrics</h6>
+              <div id="additionalMetrics" class="d-flex flex-wrap gap-3">
+                <!-- Additional metric cards will be dynamically inserted here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-primary" onclick="printUserMetrics()">
+          <i class="fas fa-print me-1"></i> Print
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- All our JavaScript goes here -->
+<!-- User Metrics JS -->
+<script>
+function openUserMetrics(userId, username) {
+    try {
+        // Set initial state
+        var usernameEl = document.getElementById('umUsername');
+        var docsMonthEl = document.getElementById('umDocsMonth');
+        var createdOverallEl = document.getElementById('umCreatedOverall');
+        var createdMonthEl = document.getElementById('umCreatedMonth');
+        var avgProcEl = document.getElementById('umAvgProc');
+        var monthlyAvgEl = document.getElementById('umMonthlyAvg');
+
+        if (usernameEl) usernameEl.textContent = username || '-';
+        if (docsMonthEl) docsMonthEl.textContent = 'Loading...';
+        if (createdOverallEl) createdOverallEl.textContent = 'Loading...';
+        if (createdMonthEl) createdMonthEl.textContent = 'Loading...';
+        if (avgProcEl) avgProcEl.textContent = 'Loading...';
+        if (monthlyAvgEl) monthlyAvgEl.textContent = 'Loading...';
+
+        // Show modal immediately with loading placeholders
+        var modalEl = document.getElementById('userMetricsModal');
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        // Ensure Chart is available and draw a placeholder chart so the canvas is not empty
+        try {
+            if (typeof Chart !== 'undefined') {
+                initializeUserMetricsChart({
+                    labels: ['Loading'],
+                    datasets: [{
+                        label: 'Loading...',
+                        data: [0],
+                        backgroundColor: ['rgba(54, 162, 235, 0.2)'],
+                        borderColor: ['rgba(54, 162, 235, 1)'],
+                        borderWidth: 1
+                    }]
+                });
+            } else {
+                console.warn('Chart.js is not available when opening the modal.');
+            }
+        } catch (e) {
+            console.warn('Unable to render placeholder chart:', e);
+        }
+
+        // Fetch metrics
+        fetch('{{ url_for("main.user_metrics_details", user_id=0) }}'.replace('0', userId), {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+            if (!data || data.success === false) {
+                var err = (data && data.error) ? data.error : 'Unable to load user metrics';
+                if (window.showToast) showToast(err, 'danger');
+                if (docsMonthEl) docsMonthEl.textContent = 'Error';
+                if (createdOverallEl) createdOverallEl.textContent = 'Error';
+                if (createdMonthEl) createdMonthEl.textContent = 'Error';
+                if (avgProcEl) avgProcEl.textContent = 'Error';
+                if (monthlyAvgEl) monthlyAvgEl.textContent = 'Error';
+                return;
+            }
+
+            // Text fields
+            if (usernameEl) usernameEl.textContent = (data.user && data.user.username) ? data.user.username : (username || '-');
+            if (docsMonthEl) docsMonthEl.textContent = (typeof data.documents_processed_this_month === 'number') ? data.documents_processed_this_month : '-';
+            if (createdOverallEl) createdOverallEl.textContent = (typeof data.documents_created_overall === 'number') ? data.documents_created_overall : '-';
+            if (createdMonthEl) createdMonthEl.textContent = (typeof data.documents_created_this_month === 'number') ? data.documents_created_this_month : '-';
+            if (avgProcEl) avgProcEl.textContent = data.average_processing_time_formatted || 'N/A';
+            if (monthlyAvgEl) monthlyAvgEl.textContent = data.monthly_average_processing_time_formatted || 'N/A';
+
+            // Chart data (prefer server-provided, otherwise build client-side)
+            var chartData = data.metrics_chart_data || buildUserMetricsChartData(data);
+            if (typeof Chart !== 'undefined') {
+                initializeUserMetricsChart(chartData);
+            } else {
+                console.error('Chart.js not loaded; cannot render user metrics chart.');
+            }
+
+            // Additional metrics
+            if (data.additional_metrics) {
+                populateAdditionalMetrics(data.additional_metrics);
+            }
+        })
+        .catch(function(e) {
+            console.error('Error fetching user metrics:', e);
+            if (window.showToast) showToast('Error fetching user metrics', 'danger');
+            if (docsMonthEl) docsMonthEl.textContent = 'Error';
+            if (avgProcEl) avgProcEl.textContent = 'Error';
+            if (monthlyAvgEl) monthlyAvgEl.textContent = 'Error';
+        });
+    } catch (e) {
+        console.error('openUserMetrics error:', e);
+        if (window.showToast) showToast('Unexpected error opening metrics', 'danger');
+    }
+}
+
+// Build a reasonable default dataset for charting if backend doesn't provide one
+function buildUserMetricsChartData(data) {
+    function num(x) { return (typeof x === 'number' && isFinite(x)) ? x : 0; }
+
+    var docsMonth = num(data && data.documents_processed_this_month);
+
+    // Try to get timing metrics in seconds/minutes if available; otherwise fallback to 0
+    var overallSec = 0;
+    if (data) {
+        if (typeof data.average_processing_time_seconds === 'number') {
+            overallSec = data.average_processing_time_seconds;
+        } else if (typeof data.average_processing_time_minutes === 'number') {
+            overallSec = data.average_processing_time_minutes * 60;
+        }
+    }
+
+    var monthlySec = 0;
+    if (data) {
+        if (typeof data.monthly_average_processing_time_seconds === 'number') {
+            monthlySec = data.monthly_average_processing_time_seconds;
+        } else if (typeof data.monthly_average_processing_time_minutes === 'number') {
+            monthlySec = data.monthly_average_processing_time_minutes * 60;
+        }
+    }
+
+    // Convert seconds to hours with 2 decimal places for display
+    var overallHrs = +((overallSec || 0) / 3600).toFixed(2);
+    var monthlyHrs = +((monthlySec || 0) / 3600).toFixed(2);
+
+    return {
+        labels: ['Processed (month)'],
+        datasets: [{
+            label: 'User metrics',
+            data: [docsMonth],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.6)'
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+}
+
+let userMetricsChartInstance = null;
+
+function initializeUserMetricsChart(chartData) {
+    const canvas = document.getElementById('userMetricsChart');
+    if (!canvas) {
+        console.error('userMetricsChart canvas not found');
+        return;
+    }
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js not available');
+        return;
+    }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.error('Could not get 2d context for userMetricsChart');
+        return;
+    }
+    if (userMetricsChartInstance) {
+        userMetricsChartInstance.data = chartData;
+        userMetricsChartInstance.update();
+    } else {
+        userMetricsChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Metric'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Value'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const val = typeof context.parsed.y === 'number' ? context.parsed.y : 0;
+                                return (context.dataset.label || 'Value') + ': ' + val;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+function populateAdditionalMetrics(metrics) {
+    const container = document.getElementById('additionalMetrics');
+    container.innerHTML = '';
+    metrics.forEach(metric => {
+        const card = document.createElement('div');
+        card.className = 'card p-3 flex-fill';
+        card.style.minWidth = '150px';
+        card.innerHTML = `
+            <h6>${metric.title}</h6>
+            <p class="mb-0">${metric.value}</p>
+        `;
+        container.appendChild(card);
+    });
+}
+
+/**
+ * Print the currently displayed user metrics in a clean, print-friendly layout.
+ * This opens a new window with the metrics snapshot (including the chart as an image)
+ * and triggers the browser print dialog.
+ */
+function printUserMetrics() {
+    try {
+        // Collect values from the modal
+        const username = (document.getElementById('umUsername')?.textContent || '').trim() || '-';
+        const docsMonth = (document.getElementById('umDocsMonth')?.textContent || '').trim() || '-';
+        const avgProc = (document.getElementById('umAvgProc')?.textContent || '').trim() || 'N/A';
+        const monthlyAvg = (document.getElementById('umMonthlyAvg')?.textContent || '').trim() || 'N/A';
+        const chartCanvas = document.getElementById('userMetricsChart');
+        let chartDataUrl = '';
+        try {
+            if (chartCanvas && chartCanvas.toDataURL) {
+                chartDataUrl = chartCanvas.toDataURL('image/png');
+            }
+        } catch (e) {
+            console.warn('Could not export chart image:', e);
+        }
+
+        // Capture additional metrics HTML if present
+        const additionalMetricsEl = document.getElementById('additionalMetrics');
+        const additionalMetricsHTML = additionalMetricsEl ? additionalMetricsEl.innerHTML : '';
+
+        // Build print window
+        const printWin = window.open('', '_blank', 'width=1000,height=800');
+        if (!printWin) {
+            if (window.showToast) showToast('Popup blocked. Please allow popups to print.', 'warning');
+            return;
+        }
+
+        const nowStr = new Date().toLocaleString();
+
+        // Minimal, self-contained HTML (no reliance on parent page CSS)
+        const html =
+            '<!doctype html>'
+          + '<html><head><meta charset="utf-8"><title>User Metrics Report</title>'
+          + '<style>'
+          + 'body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#111;}'
+          + 'h1{font-size:20px;margin:0 0 4px 0;}'
+          + '.sub{color:#666;margin:0 0 16px 0;font-size:12px;}'
+          + '.section{border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:16px;}'
+          + '.grid{display:flex;flex-wrap:wrap;gap:12px;}'
+          + '.metric{flex:1 1 220px;border:1px solid #e5e7eb;border-radius:8px;padding:12px;}'
+          + '.metric h3{margin:0 0 6px 0;font-size:13px;color:#333;}'
+          + '.metric p{margin:0;font-size:14px;font-weight:bold;}'
+          + '.chart-wrap{display:flex;justify-content:center;align-items:center;padding:16px;}'
+          + '.chart-wrap img{max-width:650px;width:100%;height:auto;border:1px solid #e5e7eb;border-radius:8px;}'
+          + '.header-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}'
+          + '.label{color:#555;font-size:13px;}'
+          + '.value{font-weight:bold;font-size:14px;}'
+          + '@page{size: A4;margin:12mm;}'
+          + '</style></head><body>'
+          + '<div class="header-row"><h1>User Metrics Report</h1><div class="sub">Generated: ' + nowStr + '</div></div>'
+          + '<div class="section">'
+          + '  <div class="grid">'
+          + '    <div class="metric"><h3>User</h3><p>' + username + '</p></div>'
+          + '    <div class="metric"><h3>Documents processed this month</h3><p>' + docsMonth + '</p></div>'
+          + '    <div class="metric"><h3>Avg processing time (overall)</h3><p>' + avgProc + '</p></div>'
+          + '    <div class="metric"><h3>Avg processing time (this month)</h3><p>' + monthlyAvg + '</p></div>'
+          + '  </div>'
+          + '</div>'
+          + '<div class="section">'
+          + '  <div class="label">Metrics Chart</div>'
+          + '  <div class="chart-wrap">'
+          + (chartDataUrl ? ('<img alt="User metrics chart" src="' + chartDataUrl + '">') : '<div style="color:#999">No chart available</div>')
+          + '  </div>'
+          + '</div>'
+          + (additionalMetricsHTML
+                ? ('<div class="section"><div class="label">Additional Metrics</div><div class="grid">' + additionalMetricsHTML + '</div></div>')
+                : '')
+          + '</body></html>';
+
+        printWin.document.open();
+        printWin.document.write(html);
+        printWin.document.close();
+
+        // Wait a short moment to ensure resources are ready, then print
+        printWin.focus();
+        setTimeout(function() {
+            try { printWin.print(); } catch (e) { console.warn('Print failed:', e); }
+        }, 300);
+    } catch (e) {
+        console.error('printUserMetrics error:', e);
+        if (window.showToast) showToast('Could not open print view', 'danger');
+    }
+}
+</script>
+<script>
+    // Define CSRF token for AJAX requests
+    const csrfToken = "{{ csrf_token() }}";
+
+    // Improved showToast function
+    function showToast(message, type = 'info') {
+        // Get or create toast container
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toast = document.createElement('div');
+        // Set Bootstrap toast classes
+        toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type}`;
+        toast.id = toastId;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        // Set toast content
+        toast.innerHTML = ''
+            + '<div class="d-flex">'
+            +   '<div class="toast-body">'
+            +     message
+            +   '</div>'
+            +   '<button type="button" class="btn-close btn-close-white me-2 m-auto" '
+            +           'data-bs-dismiss="toast" aria-label="Close"></button>'
+            + '</div>';
+        // Add toast to container
+        toastContainer.appendChild(toast);
+        // Initialize with Bootstrap
+        try {
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 5000
+            });
+            bsToast.show();
+            // Clean up after hiding
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        } catch (e) {
+            console.error('Error showing toast:', e);
+            alert(message); // Fallback
+        }
+    }
+
+    // Function to show toast when trying to delete users with documents
+    function showDeletionRestriction(event, reason) {
+        event.preventDefault();
+        event.stopPropagation();
+        showToast(reason, 'warning');
+        console.log("Deletion restricted:", reason);
+    }
+
+    // Update chart initialization with element existence check
+    window.addEventListener('DOMContentLoaded', function() {
+        // Initialize all tooltips
+        if (window.bootstrap && bootstrap.Tooltip) {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+        
+        // Add special class styling for deletion-restricted buttons
+        document.head.insertAdjacentHTML('beforeend', '<style>.deletion-restricted{opacity:0.65;cursor:not-allowed;}</style>');
+        
+        // Add click handler for disabled delete buttons to show explanation
+        document.querySelectorAll('.btn-outline-danger[disabled]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const reason = this.getAttribute('data-bs-title') || 'This action cannot be performed';
+                showToast(reason, 'warning');
+                console.log("Disabled button clicked, showing toast with message:", reason);
+            });
+        });
+
+        // Status Chart
+        const statusChartElement = document.getElementById('statusChart');
+        if (statusChartElement) {
+            const statusCtx = statusChartElement.getContext('2d');
+            const statusChart = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Pending', 'Accepted', 'Declined', 'Released', 'Archived'],
+                    datasets: [{
+                        label: 'Document Status',
+                        data: [
+                            {{ total_pending }},
+                            {{ total_accepted }},
+                            {{ total_declined }},
+                            {{ total_released }},
+                            {{ total_archived }}
+                        ],
+                        backgroundColor: [
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(153, 102, 255, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return (label ? label : '') + ': ' + (value || 0) + ' (' + Math.round((value / total) * 100) + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Leave Analytics Charts
+        const leaveStatusEl = document.getElementById('leaveStatusChart');
+        if (leaveStatusEl && typeof Chart !== 'undefined') {
+            const lsCtx = leaveStatusEl.getContext('2d');
+            const leaveStatusData = [
+                {{ leave_total_pending|default(0) }},
+                {{ leave_total_forcomp|default(0) }},
+                {{ leave_total_forsignature|default(0) }},
+                {{ leave_total_released|default(0) }}
+            ];
+            new Chart(lsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'For Computation', 'For Signature', 'Released'],
+                    datasets: [{
+                        label: 'Leave Status',
+                        data: leaveStatusData,
+                        backgroundColor: [
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(0, 123, 255, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(0, 123, 255, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const leaveTypeEl = document.getElementById('leaveTypeChart');
+        if (leaveTypeEl && typeof Chart !== 'undefined') {
+            const ltCtx = leaveTypeEl.getContext('2d');
+            const leaveTypesLabels = {{ leave_types_labels|tojson|safe }};
+            const leaveTypesCounts = {{ leave_types_counts|tojson|safe }};
+            new Chart(ltCtx, {
+                type: 'bar',
+                data: {
+                    labels: leaveTypesLabels,
+                    datasets: [{
+                        label: 'Leave Types',
+                        data: leaveTypesCounts,
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Classification Chart - UPDATED to Grouped Bar Chart with improved options
+        const classChartElement = document.getElementById('classificationChart');
+        if (classChartElement) {
+            const classCtx = classChartElement.getContext('2d');
+            
+            // Define colors for each main classification group
+            const colorSchemes = {
+                Communications: {
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    hoverBackgroundColor: 'rgba(54, 162, 235, 0.9)',
+                    borderColor: 'rgba(54, 162, 235, 1)'
+                },
+                Payroll: {
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    hoverBackgroundColor: 'rgba(255, 99, 132, 0.9)',
+                    borderColor: 'rgba(255, 99, 132, 1)'
+                },
+                Request: {
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    hoverBackgroundColor: 'rgba(75, 192, 192, 0.9)',
+                    borderColor: 'rgba(75, 192, 192, 1)'
+                },
+                Others: {  // Add Others color scheme
+                    backgroundColor: 'rgba(153, 102, 255, 0.7)',
+                    hoverBackgroundColor: 'rgba(153, 102, 255, 0.9)',
+                    borderColor: 'rgba(153, 102, 255, 1)'
+                }
+            };
+            
+            // Create datasets for the grouped bar chart
+            const classificationChart = new Chart(classCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        // Communications sub-types
+                        'Travel Order', 'Office Order', 'Travel Authority',
+                        // Payroll sub-types
+                        'Salary', 'Voucher', 'Trust fund', 'Terminal Pay', 'Overtime Pay',
+                        'Subsistence Allowance', 'Travel Allowance', 'RATA', 'Mobile Allowance',
+                        // Request sub-types
+                        'Certificate of Employment', 'Service Record', 'Clearance',
+                        // Others category
+                        'Others'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Communications',
+                            data: [
+                                // Communications values for each subcategory
+                                {{ communications_subtypes.get('Travel Order', 0) }},
+                                {{ communications_subtypes.get('Office Order', 0) }},
+                                {{ communications_subtypes.get('Travel Authority', 0) }},
+                                // Empty values for other categories
+                                null, null, null, null, null, null, null, null, 
+                                null, null, null, null, null
+                            ],
+                            backgroundColor: colorSchemes.Communications.backgroundColor,
+                            borderColor: colorSchemes.Communications.borderColor,
+                            borderWidth: 1,
+                            hoverBackgroundColor: colorSchemes.Communications.hoverBackgroundColor
+                        },
+                        {
+                            label: 'Payroll',
+                            data: [
+                                // Empty values for Communications categories
+                                null, null, null,
+                                // Payroll values
+                                {{ payroll_subtypes.get('Salary', 0) }},
+                                {{ payroll_subtypes.get('Voucher', 0) }},
+                                {{ payroll_subtypes.get('Trust fund', 0) }},
+                                {{ payroll_subtypes.get('Terminal Pay', 0) }},
+                                {{ payroll_subtypes.get('Overtime Pay', 0) }},
+                                {{ payroll_subtypes.get('Subsistence Allowance', 0) }},
+                                {{ payroll_subtypes.get('Travel Allowance', 0) }},
+                                {{ payroll_subtypes.get('RATA', 0) }},
+                                {{ payroll_subtypes.get('Mobile Allowance', 0) }},
+                                // Empty values for Request and Others categories
+                                null, null, null, null
+                            ],
+                            backgroundColor: colorSchemes.Payroll.backgroundColor,
+                            borderColor: colorSchemes.Payroll.borderColor,
+                            borderWidth: 1,
+                            hoverBackgroundColor: colorSchemes.Payroll.hoverBackgroundColor
+                        },
+                        {
+                            label: 'Request',
+                            data: [
+                                // Empty values for Communications and Payroll categories
+                                null, null, null, null, null, null, null, null, null, null, null, null,
+                                // Request values
+                                {{ request_subtypes.get('Certificate of Employment', 0) }},
+                                {{ request_subtypes.get('Service Record', 0) }},
+                                {{ request_subtypes.get('Clearance', 0) }},
+                                null  // Empty value for Others category
+                            ],
+                            backgroundColor: colorSchemes.Request.backgroundColor,
+                            borderColor: colorSchemes.Request.borderColor,
+                            borderWidth: 1,
+                            hoverBackgroundColor: colorSchemes.Request.hoverBackgroundColor
+                        },
+                        {
+                            label: 'Others',
+                            data: [
+                                // Empty values for all other categories
+                                null, null, null, null, null, null, null, null, null, null, null,
+                                null, null, null, null,
+                                // Others value
+                                {{ others_count|default(0) }}
+                            ],
+                            backgroundColor: colorSchemes.Others.backgroundColor,
+                            borderColor: colorSchemes.Others.borderColor,
+                            borderWidth: 1,
+                            hoverBackgroundColor: colorSchemes.Others.hoverBackgroundColor
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: false,
+                            title: {
+                                display: true,
+                                text: 'Classification Type'
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Documents'
+                            },
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.raw === null) return '';
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ' - ' + context.label + ': ';
+                                    }
+                                    label += context.raw + ' documents';
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Daily Activities Chart - FIXED
+        const dailyActivityChartElement = document.getElementById('dailyActivityChart');
+        if (dailyActivityChartElement) {
+            const dailyActivityCtx = dailyActivityChartElement.getContext('2d');
+            const dailyActivityChart = new Chart(dailyActivityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Created', 'Leave Created', 'Declined', 'Released', 'Forwarded', 'Resubmitted'],
+                    datasets: [{
+                        label: 'Today\'s Activities',
+                        data: [
+                            {{ daily_metrics.get('Created', 0) }},
+                            {{ daily_metrics.get('Leave Created', 0) }},
+                            {{ daily_metrics.get('Declined', 0) }},
+                            {{ daily_metrics.get('Released', 0) }},
+                            {{ daily_metrics.get('Forwarded', 0) }},
+                            {{ daily_metrics.get('Resubmitted', 0) }}
+                        ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(201, 203, 207, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 159, 64)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 206, 86)',
+                            'rgb(153, 102, 255)',
+                            'rgb(201, 203, 207)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' documents';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Monthly Activities Chart - FIXED
+        const monthlyActivityChartElement = document.getElementById('monthlyActivityChart');
+        if (monthlyActivityChartElement) {
+            const monthlyActivityCtx = monthlyActivityChartElement.getContext('2d');
+            const monthlyActivityChart = new Chart(monthlyActivityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Created', 'Leave Created', 'Declined', 'Released', 'Forwarded', 'Resubmitted'],
+                    datasets: [{
+                        label: 'Monthly Activities',
+                        data: [
+                            {{ monthly_metrics.get('Created', 0) }},
+                            {{ monthly_metrics.get('Leave Created', 0) }},
+                            {{ monthly_metrics.get('Declined', 0) }},
+                            {{ monthly_metrics.get('Released', 0) }},
+                            {{ monthly_metrics.get('Forwarded', 0) }},
+                            {{ monthly_metrics.get('Resubmitted', 0) }}
+                        ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(201, 203, 207, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 159, 64)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 206, 86)',
+                            'rgb(153, 102, 255)',
+                            'rgb(201, 203, 207)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' documents';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Today's Classifications Chart
+        const todayClassCtx = document.getElementById('todayClassChart');
+        if (todayClassCtx) {
+            new Chart(todayClassCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Communications', 'Payroll', 'Request', 'Others', 'Leave'],
+                    datasets: [{
+                        label: 'Documents',
+                        data: [
+                            {{ today_class_metrics.get('Communications', 0) }},
+                            {{ today_class_metrics.get('Payroll', 0) }},
+                            {{ today_class_metrics.get('Request', 0) }},
+                            {{ today_class_metrics.get('Others', 0) }},
+                            {{ today_class_metrics.get('Leave', 0) }}
+                        ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 206, 86)',
+                            'rgb(153, 102, 255)',
+                            'rgb(255, 159, 64)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Today\'s Classifications Distribution'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Monthly Classifications Chart
+        const monthlyClassCtx = document.getElementById('monthlyClassChart');
+        if (monthlyClassCtx) {
+            new Chart(monthlyClassCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Communications', 'Payroll', 'Request', 'Others', 'Leave'],
+                    datasets: [{
+                        label: 'Documents',
+                        data: [
+                            {{ monthly_class_metrics.get('Communications', 0) }},
+                            {{ monthly_class_metrics.get('Payroll', 0) }},
+                            {{ monthly_class_metrics.get('Request', 0) }},
+                            {{ monthly_class_metrics.get('Others', 0) }},
+                            {{ monthly_class_metrics.get('Leave', 0) }}
+                        ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 206, 86)',
+                            'rgb(153, 102, 255)',
+                            'rgb(255, 159, 64)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Classifications Distribution'
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    // Add the missing functions for user management
+    // Filter users by status
+    function filterUsers(status, event) {
+        const rows = document.querySelectorAll('#usersTable tbody tr');
+        rows.forEach(row => {
+            if (status === 'all' || row.getAttribute('data-status') === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update active button state
+        document.querySelectorAll('.btn-group button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
+    }
+
+    // Approve a pending user
+    function approveUser(userId) {
+        if (!confirm('Are you sure you want to approve this user?')) return;
+
+        // Create form data instead of using JSON
+        const formData = new FormData();
+        formData.append('csrf_token', csrfToken);
+
+        fetch('/hrdoctrack/admin/approve_user/' + userId, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData,
+            credentials: 'same-origin'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! Status: ' + response.status);
+                }
+                return response.json();
+            })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // Update user status in the table
+                const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+                if (userRow) {
+                    const statusCell = userRow.querySelector('td:nth-child(4) span');
+                    statusCell.textContent = 'Active';
+                    statusCell.className = 'badge bg-success';
+                    userRow.setAttribute('data-status', 'active');
+                    // Replace the buttons with the toggle status button
+                    const actionCell = userRow.querySelector('td:nth-child(5) div');
+                    actionCell.innerHTML = `
+                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                onclick="toggleUserStatus(${userId})" 
+                                title="Disable User">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                onclick="confirmDeleteUser(${userId}, this.closest('tr').querySelector('td:nth-child(2)').textContent)" 
+                                title="Delete User">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    `;
+                }
+            } else {
+                showToast(data.error || 'Failed to approve user', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error approving user:', error);
+            showToast('An error occurred while approving the user', 'error');
+        });
+    }
+
+    // Decline a pending user
+    function declineUser(userId) {
+        if (!confirm('Are you sure you want to decline this user?')) return;
+
+        // Create form data instead of using JSON
+        const formData = new FormData();
+        formData.append('csrf_token', csrfToken);
+
+        fetch('/hrdoctrack/admin/decline_user/' + userId, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData,
+            credentials: 'same-origin'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! Status: ' + response.status);
+                }
+                return response.json();
+            })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // Update user status in the table
+                const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+                if (userRow) {
+                    const statusCell = userRow.querySelector('td:nth-child(4) span');
+                    statusCell.textContent = 'Declined';
+                    statusCell.className = 'badge bg-danger';
+                    userRow.setAttribute('data-status', 'disabled');
+                    // Replace the buttons with the toggle status button
+                    const actionCell = userRow.querySelector('td:nth-child(5) div');
+                    actionCell.innerHTML = `
+                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                onclick="toggleUserStatus(${userId})" 
+                                title="Enable User">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                onclick="confirmDeleteUser(${userId}, this.closest('tr').querySelector('td:nth-child(2)').textContent)" 
+                                title="Delete User">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    `;
+                }
+            } else {
+                showToast(data.error || 'Failed to decline user', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error declining user:', error);
+            showToast('An error occurred while declining the user', 'error');
+        });
+    }
+
+    // Toggle user status (Active/Disabled)
+    function toggleUserStatus(userId) {
+        if (!confirm('Are you sure you want to toggle this user\'s status?')) return;
+
+        // Create form data instead of using JSON
+        const formData = new FormData();
+        formData.append('csrf_token', csrfToken);
+
+        fetch('/hrdoctrack/admin/toggle_user_status/' + userId, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData,
+            credentials: 'same-origin'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! Status: ' + response.status);
+                }
+                return response.json();
+            })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // Update user status in the table
+                const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+                if (userRow) {
+                    const statusCell = userRow.querySelector('td:nth-child(4) span');
+                    statusCell.textContent = data.newStatus;
+                    statusCell.className = 'badge bg-' + (data.newStatus === 'Active' ? 'success' : 'danger');
+                    userRow.setAttribute('data-status', data.newStatus.toLowerCase());
+                }
+            } else {
+                showToast(data.error || 'Failed to toggle user status', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error toggling user status:', error);
+            showToast('An error occurred while toggling the user status', 'error');
+        });
+    }
+
+    // Confirm and delete a user
+    function confirmDeleteUser(userId, username) {
+        console.log('confirmDeleteUser called for:', userId, username);
+        
+        // Update the modal with user info
+        const usernameSpan = document.getElementById('delete-username');
+        if (usernameSpan) {
+            usernameSpan.textContent = username;
+        } else {
+            console.error('Could not find delete-username element');
+        }
+        
+        // Store the user ID directly in the modal as a data attribute
+        const deleteModal = document.getElementById('deleteUserModal');
+        if (deleteModal) {
+            deleteModal.setAttribute('data-user-id', userId);
+        } else {
+            console.error('Could not find deleteUserModal element');
+            return;
+        }
+        
+        // Set up the confirm button handler with a direct click handler
+        const confirmBtn = document.getElementById('confirmDeleteUserBtn');
+        if (confirmBtn) {
+            // Remove any existing click handlers to prevent duplicates
+            confirmBtn.onclick = null;
+            
+            // Add a new click handler
+            confirmBtn.addEventListener('click', function() {
+                console.log('Delete confirmation button clicked for user ID:', userId);
+                deleteUser(userId);
+            });
+        } else {
+            console.error('Could not find confirmDeleteUserBtn element');
+        }
+        
+        // Show the modal
+        try {
+            const bsModal = new bootstrap.Modal(deleteModal);
+            bsModal.show();
+        } catch (error) {
+            console.error('Error showing modal:', error);
+            alert('Could not show the confirmation dialog. Please try again.');
+        }
+    }
+
+    // Delete a user after confirmation
+    function deleteUser(userId) {
+        console.log('deleteUser called with ID:', userId);
+        
+        // Create FormData object for the request
+        const formData = new FormData();
+        formData.append('csrf_token', csrfToken);
+        
+        // Show loading indicator or disable button
+        const confirmBtn = document.getElementById('confirmDeleteUserBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+        }
+        
+        // Use fetch API instead of form submission
+        fetch('/hrdoctrack/admin/delete_user/' + userId, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData,
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            // Check if the response is JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Error deleting user');
+                    }
+                    return data;
+                });
+            } else {
+                // Handle non-JSON response (likely a redirect)
+                if (!response.ok) {
+                    throw new Error('Server returned an error');
+                }
+                return { success: response.ok, message: 'User deleted successfully' };
+            }
+        })
+        .then(data => {
+            // Success case
+            console.log('Delete success:', data);
+            showToast(data.message || 'User deleted successfully', 'success');
+            
+            // Hide the modal
+            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteUserModal'));
+            if (deleteModal) {
+                deleteModal.hide();
+            }
+            
+            // Reload the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        })
+        .catch(error => {
+            // Error case
+            console.error('Delete error:', error);
+            showToast(error.message || 'Error deleting user', 'error');
+            
+            // Re-enable the button
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-user-minus"></i> Delete User';
+            }
+        });
+    }
+
+    // Function to populate the document modal with data
+    function populateAdminDocumentModal(data) {
+        // Ensure modal opens even if data attributes fail and force z-index/visibility
+        try {
+            var modalEl = document.getElementById('viewDocumentAdminModal');
+            if (modalEl) {
+                // Move modal under <body> to avoid stacking-context issues
+                try {
+                    if (modalEl.parentElement !== document.body) {
+                        document.body.appendChild(modalEl);
+                    }
+                } catch (attachErr) {
+                    console.warn('Could not reattach modal to body:', attachErr);
+                }
+                // Clean any accidental hidden styles/classes
+                modalEl.style.removeProperty('visibility');
+                modalEl.style.removeProperty('opacity');
+                modalEl.classList.remove('d-none');
+
+                var instance = bootstrap.Modal.getInstance(modalEl);
+                if (!instance) {
+                    instance = new bootstrap.Modal(modalEl, { backdrop: true, focus: true, keyboard: true });
+                }
+                instance.show();
+
+                // Force visibility/z-index and ensure dialog is centered
+                setTimeout(function () {
+                    try {
+                        modalEl.style.display = 'block';
+                        modalEl.classList.add('show');
+                        modalEl.style.zIndex = '2000';
+                        var dialog = modalEl.querySelector('.modal-dialog');
+                        if (dialog) {
+                            dialog.classList.add('modal-dialog-centered');
+                            dialog.style.transform = 'none';
+                        }
+                        var bd = document.querySelector('.modal-backdrop');
+                        if (bd) bd.style.zIndex = '1990';
+                        // Debug: log rect to confirm on-screen placement
+                        var rect = modalEl.getBoundingClientRect();
+                        console.log('Admin modal rect:', rect);
+                    } catch (ex) {
+                        console.warn('Unable to force modal visibility/z-index:', ex);
+                    }
+                }, 0);
+            } else {
+                console.error('Admin modal element #viewDocumentAdminModal not found in DOM');
+            }
+        } catch (e) {
+            console.error('Error showing admin document modal:', e);
+        }
+
+        // Populate basic document information
+        document.getElementById('adminDocTitle').textContent = data.title;
+        document.getElementById('adminDocOffice').textContent = data.office;
+        document.getElementById('adminDocClassification').textContent = data.classification;
+        document.getElementById('adminDocBarcode').textContent = data.barcode || 'None';
+        
+        // Format status with badge
+        const statusBadgeClass = {
+            'Pending': 'bg-warning',
+            'Accepted': 'bg-info',
+            'Declined': 'bg-danger',
+            'Released': 'bg-success',
+            'Archived': 'bg-secondary'
+        }[data.status] || 'bg-secondary';
+        
+        document.getElementById('adminDocStatus').innerHTML = 
+            '<span class="badge ' + statusBadgeClass + '">' + data.status + '</span>';
+        
+        document.getElementById('adminDocActionTaken').textContent = data.action_taken || 'None';
+        document.getElementById('adminDocRemarks').textContent = data.remarks || 'None';
+        
+        // Handle attachment with proper URL
+        if (data.attachment && data.attachment !== 'None') {
+            const filename = data.attachment.split(/[/\\]/).pop(); // Handle both forward and backslashes
+            const attachmentUrl = window.location.origin + '/hrdoctrack/uploads/' + encodeURIComponent(filename);
+            document.getElementById('adminDocAttachment').innerHTML = ''
+                + '<a href="' + attachmentUrl + '" class="btn btn-sm btn-outline-primary" target="_blank">'
+                + '    <i class="fas fa-file-download"></i> View PDF'
+                + '</a>';
+        } else {
+            document.getElementById('adminDocAttachment').textContent = 'No attachment available';
+        }
+        
+        // Management information
+        document.getElementById('adminDocCreator').textContent = data.creator;
+        document.getElementById('adminDocRecipient').textContent = data.recipient;
+        document.getElementById('adminDocTimestamp').textContent = data.timestamp;
+        
+        // Timestamps - handle nulls
+        document.getElementById('adminDocAcceptedTimestamp').textContent = data.accepted_timestamp || 'Not accepted yet';
+        document.getElementById('adminDocForwardedTimestamp').textContent = data.forwarded_timestamp || 'Not forwarded yet';
+        document.getElementById('adminDocReleasedTimestamp').textContent = data.released_timestamp || 'Not released yet';
+        
+        // Set up activity log
+        fetchDocumentActivities(data.id);
+        
+        // Handle archive button visibility and data
+        const archiveButton = document.getElementById('archiveButton');
+        const archiveButtonContainer = document.getElementById('archiveButtonContainer');
+        
+        if (data.status !== 'Archived') {
+            archiveButtonContainer.style.display = 'inline';
+            archiveButton.setAttribute('data-document-id', data.id);
+            
+            // Set up the archive form action
+            document.getElementById('archiveForm').action = '/hrdoctrack/archive_document/' + data.id;
+        } else {
+            archiveButtonContainer.style.display = 'none';
+        }
+    }
+    
+    // Function to fetch document activities for the log
+    function fetchDocumentActivities(documentId) {
+        fetch('/hrdoctrack/get_document_activities/' + documentId)
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response failed with status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const activityLogElement = document.getElementById('activityLog');
+                activityLogElement.innerHTML = '';
+                
+                if (data.activities && data.activities.length > 0) {
+                    data.activities.forEach(activity => {
+                        const li = document.createElement('li');
+                        const uname = (activity.user && activity.user.username) ? activity.user.username : 'Unknown';
+                        const actionTxt = activity.action || '';
+                        const remarksTxt = activity.remarks ? ' - Remarks: "' + activity.remarks + '"' : '';
+                        const timeTxt = activity.timestamp || '';
+                        li.innerHTML = '<strong>' + uname + '</strong> ' + actionTxt + remarksTxt + ' <small>(' + timeTxt + ')</small>';
+                        activityLogElement.appendChild(li);
+                    });
+                } else {
+                    activityLogElement.innerHTML = '<li>No activities recorded</li>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading activities:', error);
+                document.getElementById('activityLog').innerHTML = 
+                    '<li class="text-danger"><i class="fas fa-exclamation-circle"></i> Error loading activities: ' + error.message + '</li>';
+            });
+    }
+    
+    // Function for setting the document ID for archiving
+    function setArchiveDocumentId(documentId) {
+        document.getElementById('archiveForm').action = '/hrdoctrack/archive_document/' + documentId;
+    }
+
+    // Delegated click handler to populate and show modal from data-doc attribute
+    document.addEventListener('click', function(evt) {
+        var link = evt.target.closest('a.document-link');
+        if (!link) return;
+        var json = link.getAttribute('data-doc');
+        if (json) {
+            evt.preventDefault();
+            try {
+                var data = JSON.parse(json);
+                populateAdminDocumentModal(data);
+            } catch (e) {
+                console.error('Failed to parse data-doc:', e);
+            }
+        }
+    });
+</script>
+
+
+<!-- Print integration -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('printReportBtn');
+    var ts = document.getElementById('printTimestamp');
+
+    function setTimestamp() {
+        if (ts) {
+            try {
+                ts.textContent = new Date().toLocaleString();
+            } catch(e) {
+                console.warn('Unable to set print timestamp', e);
+            }
+        }
+    }
+
+    setTimestamp();
+    window.addEventListener('beforeprint', setTimestamp);
+
+    // Some browsers support media query change for print
+    if (window.matchMedia) {
+        try {
+            var mq = window.matchMedia('print');
+            if (mq && mq.addEventListener) {
+                mq.addEventListener('change', function() { setTimestamp(); });
+            }
+        } catch(e) { /* no-op */ }
+    }
+
+    if (btn) {
+        btn.addEventListener('click', function() {
+            setTimestamp();
+            window.print();
+        });
+        }
+        // Daily Trend Chart (Created vs Released)
+        const dailyTrendElement = document.getElementById('dailyTrendChart');
+        if (dailyTrendElement) {
+            const dtCtx = dailyTrendElement.getContext('2d');
+            const trendLabels = {{ created_daily_labels|tojson|safe }};
+            const createdSeries = {{ created_daily_counts|tojson|safe }};
+            const releasedSeries = {{ released_daily_counts|tojson|safe }};
+            new Chart(dtCtx, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [
+                        {
+                            label: 'Created',
+                            data: createdSeries,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Processed (Released)',
+                            data: releasedSeries,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    stacked: false,
+                    scales: {
+                        x: {
+                            ticks: { autoSkip: true, maxTicksLimit: 15 },
+                            title: { display: true, text: 'Date' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            title: { display: true, text: 'Documents' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { enabled: true }
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+<!-- Report Text Range Modal -->
+<div class="modal fade" id="reportTextModal" tabindex="-1" aria-labelledby="reportTextModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reportTextModalLabel">
+          <i class="fas fa-file-alt me-2"></i> System Activity Report
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="return false;">
+          <div class="mb-3">
+            <label for="rt_date_from" class="form-label">From</label>
+            <input id="rt_date_from" type="date" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label for="rt_date_to" class="form-label">To</label>
+            <input id="rt_date_to" type="date" class="form-control">
+          </div>
+          <div class="form-text mt-2">
+            If dates are left blank or invalid, the report falls back to the current month or any month/year provided in the URL.
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-outline-primary" onclick="openReportText('txt')">
+          <i class="fas fa-file-download me-1"></i> Download TXT
+        </button>
+        <button type="button" class="btn btn-primary" onclick="openReportText('print')">
+          <i class="fas fa-print me-1"></i> Print
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openReportText(action) {
+  try {
+    var dfEl = document.getElementById('rt_date_from');
+    var dtEl = document.getElementById('rt_date_to');
+    var incEl = document.getElementById('rt_include_details');
+    var df = dfEl && dfEl.value ? dfEl.value.trim() : '';
+    var dt = dtEl && dtEl.value ? dtEl.value.trim() : '';
+    var include = incEl && incEl.checked;
+
+    var base = "{{ url_for('main.print_text_report') }}";
+    var params = new URLSearchParams();
+    if (df) params.set('date_from', df);
+    if (dt) params.set('date_to', dt);
+    params.set('include_details', include ? '1' : '0');
+    if (action === 'print') {
+      params.set('autoprint', '1');
+    } else if (action === 'txt') {
+      params.set('autoprint', '0');
+      params.set('format', 'txt');
+    }
+    var url = base + '?' + params.toString();
+    window.open(url, '_blank', 'noopener');
+  } catch(e) {
+    console.error('openReportText error:', e);
+  }
+}
+</script>
+
+
+<!-- Print integration -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('printReportBtn');
+    var ts = document.getElementById('printTimestamp');
+
+    function setTimestamp() {
+        if (ts) {
+            try {
+                ts.textContent = new Date().toLocaleString();
+            } catch(e) {
+                console.warn('Unable to set print timestamp', e);
+            }
+        }
+    }
+
+    setTimestamp();
+    window.addEventListener('beforeprint', setTimestamp);
+
+    // Some browsers support media query change for print
+    if (window.matchMedia) {
+        try {
+            var mq = window.matchMedia('print');
+            if (mq && mq.addEventListener) {
+                mq.addEventListener('change', function() { setTimestamp(); });
+            }
+        } catch(e) { /* no-op */ }
+    }
+
+    if (btn) {
+        btn.addEventListener('click', function() {
+            setTimestamp();
+            window.print();
+        });
+        }
+        // Daily Trend Chart (Created vs Released)
+        const dailyTrendElement = document.getElementById('dailyTrendChart');
+        if (dailyTrendElement) {
+            const dtCtx = dailyTrendElement.getContext('2d');
+            const trendLabels = {{ created_daily_labels|tojson|safe }};
+            const createdSeries = {{ created_daily_counts|tojson|safe }};
+            const releasedSeries = {{ released_daily_counts|tojson|safe }};
+            new Chart(dtCtx, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [
+                        {
+                            label: 'Created',
+                            data: createdSeries,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Processed (Released)',
+                            data: releasedSeries,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    stacked: false,
+                    scales: {
+                        x: {
+                            ticks: { autoSkip: true, maxTicksLimit: 15 },
+                            title: { display: true, text: 'Date' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            title: { display: true, text: 'Documents' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { enabled: true }
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+<!-- Report Text Range Modal -->
+<div class="modal fade" id="reportTextModal" tabindex="-1" aria-labelledby="reportTextModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reportTextModalLabel">
+          <i class="fas fa-file-alt me-2"></i> System Activity Report
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="return false;">
+          <div class="mb-3">
+            <label for="rt_date_from" class="form-label">From</label>
+            <input id="rt_date_from" type="date" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label for="rt_date_to" class="form-label">To</label>
+            <input id="rt_date_to" type="date" class="form-control">
+          </div>
+          <div class="form-text mt-2">
+            If dates are left blank or invalid, the report falls back to the current month or any month/year provided in the URL.
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-outline-primary" onclick="openReportText('txt')">
+          <i class="fas fa-file-download me-1"></i> Download TXT
+        </button>
+        <button type="button" class="btn btn-primary" onclick="openReportText('print')">
+          <i class="fas fa-print me-1"></i> Print
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openReportText(action) {
+  try {
+    var dfEl = document.getElementById('rt_date_from');
+    var dtEl = document.getElementById('rt_date_to');
+    var incEl = document.getElementById('rt_include_details');
+    var df = dfEl && dfEl.value ? dfEl.value.trim() : '';
+    var dt = dtEl && dtEl.value ? dtEl.value.trim() : '';
+    var include = incEl && incEl.checked;
+
+    var base = "{{ url_for('main.print_text_report') }}";
+    var params = new URLSearchParams();
+    if (df) params.set('date_from', df);
+    if (dt) params.set('date_to', dt);
+    params.set('include_details', include ? '1' : '0');
+    if (action === 'print') {
+      params.set('autoprint', '1');
+    } else if (action === 'txt') {
+      params.set('autoprint', '0');
+      params.set('format', 'txt');
+    }
+    var url = base + '?' + params.toString();
+    window.open(url, '_blank', 'noopener');
+  } catch(e) {
+    console.error('openReportText error:', e);
+  }
+}
+</script>
+{% endblock %}

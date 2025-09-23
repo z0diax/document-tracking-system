@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cute Cat Paw Loader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @keyframes pawBounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+
+      .animate-paw {
+        animation: pawBounce 1.2s ease-in-out infinite;
+      }
+    </style>
+  </head>
+  <body class="flex items-center justify-center h-screen bg-pink-50">
+    <div class="relative w-24 h-24 animate-paw">
+      <!-- Main Paw Pad -->
+      <div class="w-24 h-24 bg-pink-200 rounded-full shadow-md relative">
+        <!-- Center Pad -->
+        <div
+          class="absolute w-10 h-10 bg-pink-300 rounded-full top-[60%] left-[50%] transform -translate-x-1/2 -translate-y-1/2"
+        ></div>
+
+        <!-- Toe Beans -->
+        <div class="absolute w-6 h-6 bg-pink-300 rounded-full top-4 left-4"></div>
+        <div
+          class="absolute w-6 h-6 bg-pink-300 rounded-full top-2 left-[50%] transform -translate-x-1/2"
+        ></div>
+        <div class="absolute w-6 h-6 bg-pink-300 rounded-full top-4 right-4"></div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+<ul class="notifications-list">
+    {% for notification in current_user.notifications %}
+        <li class="notification-item" onclick="markNotificationAsRead(event, {{ notification.id }})">
+            You have received a new Document: {{ notification.document_name }}
+        </li>
+    {% endfor %}
+</ul>

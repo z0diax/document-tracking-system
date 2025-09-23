@@ -1,0 +1,181 @@
+/* Winter theme styles: background, snow overlay, and animated snowman */
+
+:root {
+  --winter-sky-1: #e9f4ff;
+  --winter-sky-2: #f6fbff;
+  --winter-snow: #ffffff;
+}
+
+/* Subtle winter background */
+body {
+  background: linear-gradient(180deg, var(--winter-sky-1) 0%, var(--winter-sky-2) 50%, var(--winter-snow) 100%) !important;
+  background-attachment: fixed;
+}
+
+/* Fullscreen snow canvas overlay */
+#snow-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none; /* keep UI fully interactive */
+  z-index: 0; /* render behind navbar content within navbar stacking context */
+  image-rendering: optimizeQuality;
+}
+
+/* Snowman container (interactive on hover, bottom-right) */
+#snowman-container {
+  position: fixed;
+  right: 16px;
+  bottom: 12px;
+  width: 120px;
+  height: auto;
+  z-index: 1044;
+  opacity: 0.95;
+  pointer-events: none; /* avoid intercepting clicks; hover simulated via proximity (JS) */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  animation: snowman-bob 4s ease-in-out infinite;
+  transition: transform 200ms ease;
+}
+
+/* Ground snow overlay (added by JS as #snow-ground) */
+#snow-ground {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 96px;
+  z-index: 1044;
+  pointer-events: none; /* keep UI interactive */
+}
+
+/* Hover effects on snowman */
+#snowman-container.hover-active {
+  transform: translateY(-2px) scale(1.05) rotate(-2deg);
+}
+
+/* On hover: stronger arm wave and faster cycle */
+#snowman-container.hover-active .arm {
+  animation-name: arm-wave-strong;
+  animation-duration: 1.6s;
+}
+
+/* Carrot wiggle on hover */
+#snowman-container.hover-active .carrot {
+  animation: carrot-wiggle 0.8s ease-in-out infinite;
+}
+
+/* Slight bobbing animation */
+@keyframes snowman-bob {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+/* Arms wave animation (CSS targets parts inside the SVG by class) */
+#snowman-container .arm {
+  transform-origin: center left;
+  animation: arm-wave 3s ease-in-out infinite;
+}
+
+/* Right arm different origin and phase */
+#snowman-container .arm.arm-right {
+  transform-origin: center right;
+  animation-delay: 0.8s;
+}
+
+@keyframes arm-wave {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(-8deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Stronger arm wave for hover state */
+@keyframes arm-wave-strong {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(-14deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Carrot wiggle animation */
+@keyframes carrot-wiggle {
+  0%   { transform: rotate(0deg) translateX(0); }
+  50%  { transform: rotate(6deg) translateX(0.5px); }
+  100% { transform: rotate(0deg) translateX(0); }
+}
+
+/* Optional: twinkle on coal buttons/eyes */
+#snowman-container .coal {
+  animation: coal-twinkle 2.4s ease-in-out infinite;
+}
+#snowman-container .coal:nth-child(odd) {
+  animation-delay: 0.6s;
+}
+@keyframes coal-twinkle {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.25); }
+}
+
+/* Small devices: make snowman a bit smaller and tucked in */
+@media (max-width: 576px) {
+  #snowman-container {
+    right: 8px;
+    bottom: 8px;
+    width: 90px;
+  }
+
+  #snow-ground {
+    height: 72px;
+  }
+}
+
+/* Greeting bubble near the snowman */
+#snowman-greeting {
+  position: fixed;
+  left: 0; /* will be positioned via JS */
+  top: 0;  /* will be positioned via JS */
+  transform: translateY(6px);
+  background: rgba(255,255,255,0.98);
+  color: #111827; /* slate-900 */
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 1046; /* above snowman (1044), below modals (2000) */
+  max-width: 80vw;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+#snowman-greeting.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Dark mode adjustments for greeting */
+html[data-theme="dark"] #snowman-greeting {
+  background: rgba(17,17,17,0.95);
+  color: #f9fafb;
+  border-color: rgba(255,255,255,0.08);
+}
+
+/* Snow hills overlay inside navbar */
+nav.navbar #snow-hills-nav {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px; /* taller hills to fit trees */
+  pointer-events: none; /* do not block navbar interactions */
+  z-index: 0; /* render below navbar content, same as canvas; DOM order puts it above canvas */
+}
+nav.navbar #snow-hills-nav svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+

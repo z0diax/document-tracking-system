@@ -1,0 +1,652 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <!-- Process flash messages as toasts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    {% for category, message in messages %}
+                        // Convert Bootstrap alert categories to toast categories
+                        let toastCategory = '{{ category }}';
+                        if (toastCategory === 'danger') toastCategory = 'error';
+                        showToast('{{ message }}', toastCategory);
+                    {% endfor %}
+                });
+            </script>
+        {% endif %}
+    {% endwith %}
+
+    <div class="auth-card">
+        <div class="brand-header">
+            <h1>Welcome to <span class="brand-name">DocTrack</span></h1>
+            <p class="brand-subtitle">HR - Document Tracking System</p>
+        </div>
+        
+        <div class="card-tabs">
+            <button class="card-tab-btn active" onclick="switchTab('login')">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+            <button class="card-tab-btn" onclick="switchTab('register')">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+        </div>
+
+        <div id="login" class="card-content active">
+                {% if messages %}
+                    {% for category, message in messages %} 
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            
+            <!-- Add account status message panel -->
+            <div id="account-status-message" class="d-none"></div>
+            
+            <form method="POST" action="{{ url_for('main.login') }}" class="auth-form">
+                {{ login_form.hidden_tag() }}
+                <div class="form-floating">
+                    {{ login_form.username(class="form-control", placeholder="") }}
+                    {{ login_form.username.label }}
+                    {% if login_form.username.errors %}
+                        {% for error in login_form.username.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="form-floating">
+                    {{ login_form.password(class="form-control", placeholder="") }}
+                    {{ login_form.password.label }}
+                    {% if login_form.password.errors %}
+                        {% for error in login_form.password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="form-check">
+                    {{ login_form.remember(class="form-check-input") }}
+                    {{ login_form.remember.label(class="form-check-label") }}
+                </div>
+                <div class="form-group">
+                    {{ login_form.submit(class="btn btn-primary w-100") }}
+                </div>
+            </form>
+        </div>
+
+        <div id="register" class="card-content">
+            <form method="POST" action="{{ url_for('main.register') }}" class="auth-form" id="registerForm">
+                {{ register_form.hidden_tag() }}
+                <div class="form-floating">
+                    {{ register_form.username(id="register_username", class="form-control", placeholder="") }}
+                    {{ register_form.username.label }}
+                    <div class="validation-feedback" id="username-feedback"></div>
+                </div>
+                <div class="form-floating">
+                    {{ register_form.email(class="form-control", placeholder="") }}
+                    {{ register_form.email.label }}
+                    <div class="validation-feedback" id="email-feedback"></div>
+                </div>
+                <div class="form-floating">
+                    {{ register_form.password(class="form-control", placeholder="") }}
+                    {{ register_form.password.label }}
+                    {% if register_form.password.errors %}
+                        {% for error in register_form.password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="form-floating">
+                    {{ register_form.confirm_password(class="form-control", placeholder="") }}
+                    {{ register_form.confirm_password.label }}
+                    {% if register_form.confirm_password.errors %}
+                        {% for error in register_form.confirm_password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ register_form.submit(class="btn btn-primary w-100") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-container {
+    height: 100vh; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+   
+}
+
+.auth-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 450px;
+    padding: 2rem;
+    max-height: 90vh;      
+    overflow-y: auto;     
+}
+
+.brand-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.brand-name {
+    color: #4a90e2;
+    font-weight: 700;
+}
+
+.brand-subtitle {
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.card-tabs {
+    display: flex;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #eee;
+}
+
+.card-tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.card-tab-btn.active {
+    color: #4a90e2;
+    border-bottom: 2px solid #4a90e2;
+    margin-bottom: -2px;
+}
+
+.card-content {
+    display: none;
+}
+
+.card-content.active {
+    display: block;
+}
+
+.auth-form .form-floating {
+    margin-bottom: 1rem;
+}
+
+.form-floating > label {
+    left: 0.75rem;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 0.75rem 1rem;
+    height: auto;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    border-color: #4a90e2;
+}
+
+.form-check {
+    margin: 1rem 0;
+}
+
+.btn-primary {
+    background: #4a90e2;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #357abd;
+    transform: translateY(-1px);
+}
+
+.alert {
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Add these new styles */
+.validation-feedback {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    min-height: 20px;
+}
+
+.validation-feedback.valid {
+    color: #198754;
+}
+
+.validation-feedback.invalid {
+    color: #dc3545;
+}
+
+.form-control.checking {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath fill='%23333' d='M20.201 5.169c-8.254 0-14.946 6.692-14.946 14.946 0 8.255 6.692 14.946 14.946 14.946s14.946-6.691 14.946-14.946c-.001-8.254-6.692-14.946-14.946-14.946zm0 26.58c-6.425 0-11.634-5.208-11.634-11.634 0-6.425 5.209-11.634 11.634-11.634 6.425 0 11.633 5.209 11.633 11.634 0 6.426-5.208 11.634-11.633 11.634z'%3E%3C/path%3E%3Cpath fill='%23333' d='M26.013 10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012v3.312c2.119 0 4.1.576 5.812 1.566z'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 20 20' to='360 20 20' dur='0.8s' repeatCount='indefinite'/%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px 20px;
+}
+</style>
+
+<script>
+// Store a reference to Chart if it exists
+const OriginalChart = window.Chart;
+
+// Safely disable Chart.js on this page
+if (typeof window.Chart !== 'undefined') {
+    // Create dummy functions before nullifying Chart
+    const noop = function() { console.log('Chart operation blocked'); };
+    
+    // For any existing Chart instances
+    if (window.Chart.prototype) {
+        window.Chart.prototype.update = noop;
+        window.Chart.prototype.render = noop;
+        window.Chart.prototype.destroy = noop;
+    }
+    
+    window.Chart = function() {
+        console.log('Chart initialization blocked');
+        return {
+            update: noop,
+            render: noop,
+            destroy: noop
+        };
+    };
+}
+
+// Explicitly disable any Chart.js initialization attempts
+window.disableCharts = true;
+
+// Add CSRF token for AJAX requests
+const csrfToken = "{{ csrf_token() }}";
+
+// Define switchTab globally, outside any event listener
+function switchTab(tabName) {
+    console.log(`Switching to tab: ${tabName}`);
+    // Hide all tab contents
+    document.querySelectorAll('.card-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Deactivate all tab buttons
+    document.querySelectorAll('.card-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab content and activate button
+    document.getElementById(tabName).classList.add('active');
+    
+    // Find and activate the clicked button
+    const button = event.currentTarget;
+    if (button) {
+        button.classList.add('active');
+    }
+    
+    // Reset validation states when switching to register tab
+    if (tabName === 'register') {
+        resetValidationStates();
+    }
+}
+
+// Helper function to reset validation states
+function resetValidationStates() {
+    const usernameInput = document.getElementById('register_username');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    
+    if (usernameInput) {
+        usernameInput.classList.remove('is-valid', 'is-invalid');
+        const usernameFeedback = document.getElementById('username-feedback');
+        if (usernameFeedback) usernameFeedback.textContent = '';
+    }
+    
+    if (emailInput) {
+        emailInput.classList.remove('is-valid', 'is-invalid');
+        const emailFeedback = document.getElementById('email-feedback');
+        if (emailFeedback) emailFeedback.textContent = '';
+    }
+    
+    if (passwordInput && confirmPasswordInput) {
+        passwordInput.classList.remove('is-valid', 'is-invalid');
+        confirmPasswordInput.classList.remove('is-valid', 'is-invalid');
+        const passwordFeedback = confirmPasswordInput.parentElement.querySelector('.validation-feedback');
+        if (passwordFeedback) passwordFeedback.remove();
+    }
+}
+
+// Global validation variables
+let passwordsMatch = false;
+let usernameTimer = null;
+let emailTimer = null;
+
+// Password validation function
+function validatePasswords() {
+    console.log('Validating passwords');
+    
+    const passwordInput = document.querySelector('#register #password');
+    const confirmPasswordInput = document.querySelector('#register #confirm_password');
+    
+    if (!passwordInput || !confirmPasswordInput) {
+        console.error('Password input fields not found');
+        return;
+    }
+    
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+    
+    // Remove any existing feedback
+    const existingFeedback = confirmPasswordInput.parentElement.querySelector('.validation-feedback');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
+    
+    if (!confirmPassword) return;
+    
+    const feedback = document.createElement('div');
+    feedback.className = 'validation-feedback';
+    
+    if (password === confirmPassword) {
+        feedback.textContent = 'Passwords match';
+        feedback.classList.add('valid');
+        confirmPasswordInput.classList.add('is-valid');
+        confirmPasswordInput.classList.remove('is-invalid');
+        passwordsMatch = true;
+        console.log('Passwords match');
+    } else {
+        feedback.textContent = 'Passwords do not match';
+        feedback.classList.add('invalid');
+        confirmPasswordInput.classList.add('is-invalid');
+        confirmPasswordInput.classList.remove('is-valid');
+        passwordsMatch = false;
+        console.log('Passwords do not match');
+    }
+    confirmPasswordInput.parentElement.appendChild(feedback);
+}
+
+// Initialize all validations on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing form validations');
+    
+    // Account status check
+    function checkAccountStatus() {
+        const usernameField = document.getElementById('username');
+        if (!usernameField) return;
+        
+        const username = usernameField.value;
+        if (!username) return;
+        
+        console.log('Checking account status for:', username);
+        
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('csrf_token', csrfToken);
+        
+        fetch('{{ url_for("main.check_account_status") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+            },
+            body: formData,
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+           /* const statusMsgDiv = document.getElementById('account-status-message');
+            if (data.exists) {
+                if (data.status === 'Pending') {
+                    statusMsgDiv.innerHTML = '<div class="alert alert-warning">Your account is pending approval by an administrator.</div>';
+                    statusMsgDiv.className = 'd-block';
+                } else if (data.status === 'Declined') {
+                    statusMsgDiv.innerHTML = '<div class="alert alert-danger">Your account has been declined. Please contact an administrator.</div>';
+                    statusMsgDiv.className = 'd-block';
+                } else {
+                    statusMsgDiv.className = 'd-none';
+                }
+            } else {
+                statusMsgDiv.className = 'd-none';
+            } */
+        })
+        .catch(error => {
+            console.error('Error checking account status:', error);
+        });
+    }
+
+    // Add event listener to username field to check status on blur
+    document.getElementById('username')?.addEventListener('blur', checkAccountStatus);
+
+    // Set up username validation
+    setupUsernameValidation();
+    
+    // Set up email validation
+    setupEmailValidation();
+    
+    // Set up password validation
+    setupPasswordValidation();
+    
+    // Set up form submission validation
+    setupFormSubmitValidation();
+});
+
+// Function to set up username validation
+function setupUsernameValidation() {
+    const usernameInput = document.querySelector('#register #register_username');
+    
+    if (usernameInput) {
+        console.log('Username input found, setting up validation');
+        usernameInput.addEventListener('input', function(e) {
+            const username = e.target.value.trim();
+            const feedback = document.getElementById('username-feedback');
+            const input = e.target;
+            
+            if (!feedback) {
+                console.error('Username feedback element not found');
+                return;
+            }
+            
+            if (usernameTimer) {
+                clearTimeout(usernameTimer);
+            }
+            
+            feedback.textContent = '';
+            feedback.className = 'validation-feedback';
+            
+            if (!username) {
+                feedback.textContent = 'Username is required';
+                feedback.classList.add('invalid');
+                return;
+            }
+            
+            input.classList.add('checking');
+            console.log('Checking username:', username);
+            
+            usernameTimer = setTimeout(() => {
+                const formData = new FormData();
+                formData.append('username', username);
+                
+                fetch('{{ url_for("main.check_username") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Username validation response:', data);
+                    input.classList.remove('checking');
+                    feedback.textContent = data.message;
+                    feedback.classList.add(data.valid ? 'valid' : 'invalid');
+                    input.classList.toggle('is-valid', data.valid);
+                    input.classList.toggle('is-invalid', !data.valid);
+                })
+                .catch(error => {
+                    input.classList.remove('checking');
+                    feedback.textContent = 'Error checking username';
+                    feedback.classList.add('invalid');
+                    console.error('Username validation error:', error);
+                });
+            }, 500);
+        });
+    } else {
+        console.error('Username input not found');
+    }
+}
+
+// Function to set up email validation
+function setupEmailValidation() {
+    const emailInput = document.querySelector('#register #email');
+    
+    if (emailInput) {
+        console.log('Email input found, setting up validation');
+        emailInput.addEventListener('input', function(e) {
+            const email = e.target.value.trim();
+            const feedback = document.getElementById('email-feedback');
+            const input = e.target;
+            
+            if (!feedback) {
+                console.error('Email feedback element not found');
+                return;
+            }
+            
+            if (emailTimer) {
+                clearTimeout(emailTimer);
+            }
+            
+            feedback.textContent = '';
+            feedback.className = 'validation-feedback';
+            
+            if (!email) {
+                feedback.textContent = 'Email is required';
+                feedback.classList.add('invalid');
+                return;
+            }
+            
+            if (!email.includes('@') || !email.includes('.')) {
+                feedback.textContent = 'Invalid email format';
+                feedback.classList.add('invalid');
+                return;
+            }
+            
+            input.classList.add('checking');
+            console.log('Checking email:', email);
+            
+            emailTimer = setTimeout(() => {
+                const formData = new FormData();
+                formData.append('email', email);
+                
+                fetch('{{ url_for("main.check_email") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Email validation response:', data);
+                    input.classList.remove('checking');
+                    feedback.textContent = data.message;
+                    feedback.classList.add(data.valid ? 'valid' : 'invalid');
+                    input.classList.toggle('is-valid', data.valid);
+                    input.classList.toggle('is-invalid', !data.valid);
+                })
+                .catch(error => {
+                    console.error('Email validation error:', error);
+                    input.classList.remove('checking');
+                    feedback.textContent = 'Error checking email';
+                    feedback.classList.add('invalid');
+                });
+            }, 500);
+        });
+    } else {
+        console.error('Email input not found');
+    }
+}
+
+// Function to set up password validation
+function setupPasswordValidation() {
+    const passwordInput = document.querySelector('#register #password');
+    const confirmPasswordInput = document.querySelector('#register #confirm_password');
+    
+    if (passwordInput && confirmPasswordInput) {
+        console.log('Password inputs found, setting up validation');
+        passwordInput.addEventListener('input', validatePasswords);
+        confirmPasswordInput.addEventListener('input', validatePasswords);
+    } else {
+        console.error('Password input fields not found');
+    }
+}
+
+// Function to set up form submission validation
+function setupFormSubmitValidation() {
+    const registerForm = document.getElementById('registerForm');
+    
+    if (registerForm) {
+        console.log('Register form found, setting up submission validation');
+        registerForm.addEventListener('submit', function(e) {
+            console.log('Form submission attempted');
+            
+            // First validate passwords
+            validatePasswords();
+            
+            if (!passwordsMatch) {
+                console.log('Preventing form submission - passwords do not match');
+                e.preventDefault();
+                
+                const confirmPasswordInput = document.querySelector('#register #confirm_password');
+                if (confirmPasswordInput) {
+                    const feedback = document.createElement('div');
+                    feedback.className = 'validation-feedback invalid';
+                    feedback.textContent = 'Please make sure your passwords match before submitting.';
+                    
+                    // Remove any existing error message
+                    const existingFeedback = confirmPasswordInput.parentElement.querySelector('.validation-feedback');
+                    if (existingFeedback) {
+                        existingFeedback.remove();
+                    }
+                    
+                    confirmPasswordInput.parentElement.appendChild(feedback);
+                    confirmPasswordInput.classList.add('is-invalid');
+                }
+            }
+        });
+    } else {
+        console.error('Register form not found');
+    }
+}
+</script>
+{% endblock %}

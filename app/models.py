@@ -128,7 +128,7 @@ class Document(db.Model):
         """Return the last user who sent the document and the timestamp"""
         last_activity = ActivityLog.query.filter(
             ActivityLog.document_id == self.id,
-            ActivityLog.action.in_(['Forwarded', 'Created', 'Resubmitted'])
+            ActivityLog.action.in_(['Batch Forwarded', 'Forwarded', 'Resubmitted', 'Created'])
         ).order_by(ActivityLog.timestamp.desc()).first()
         
         if last_activity:

@@ -15,7 +15,7 @@ from sqlalchemy.exc import OperationalError, ProgrammingError
 import json
 from werkzeug.security import generate_password_hash, check_password_hash
 import mimetypes
-from app.utils import get_upload_path, get_file_url, calculate_business_hours
+from app.utils import get_upload_path, get_file_url, calculate_business_hours, is_allowed_file
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 # form choices
@@ -566,6 +566,9 @@ def create_document():
             attachment_path = None
             if form.attachment.data:
                 file = form.attachment.data
+                if not is_allowed_file(file.filename):
+                    flash('Invalid attachment file type.', 'danger')
+                    return redirect(url_for('main.dashboard'))
                 attachment_path = get_upload_path(file.filename)
                 file_path = os.path.join(current_app.root_path, attachment_path)
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -1161,10 +1164,14 @@ def edit_document(document_id):
         try:
             if form.attachment.data:
                 file = form.attachment.data
-                filename = secure_filename(file.filename)
-                attachment_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                file.save(attachment_path)
-                document.attachment = attachment_path
+                if not is_allowed_file(file.filename):
+                    flash('Invalid attachment file type.', 'danger')
+                    return redirect(url_for('main.dashboard'))
+                attachment_rel = get_upload_path(file.filename)
+                file_path = os.path.join(current_app.root_path, attachment_rel)
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                file.save(file_path)
+                document.attachment = attachment_rel
 
             classification = request.form.get('full_classification')
             if not classification:
@@ -1329,11 +1336,9 @@ def decline_document(document_id):
             user=document.creator, 
             message=f"Your document '{document.title}' has been declined. Reason: {form.reason.data}" 
         )
-        
-        # Save both document update and notification
         db.session.add(notification)
-        db.session.commit()
 
+        # Log the decline action
         activity_log = ActivityLog(
             user=current_user,
             document_id=document.id,
@@ -1341,6 +1346,8 @@ def decline_document(document_id):
             remarks=form.reason.data
         )
         db.session.add(activity_log)
+
+        # Commit once for atomicity
         db.session.commit()
 
         flash('Document declined successfully.', 'success')
@@ -1479,11 +1486,8 @@ def archive_document(document_id):
         return redirect(url_for('main.dashboard'))
 
     try:
-        # Archive the document
+        # Archive the document and log in a single transaction
         document.status = 'Archived'
-        db.session.commit()
-
-        # Log the archiving action
         activity_log = ActivityLog(
             user=current_user,
             document_id=document.id,

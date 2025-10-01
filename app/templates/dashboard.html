@@ -253,7 +253,7 @@
         </thead>
         <tbody>
             {% for document in received_documents %}
-            <tr>
+            <tr data-status="{{ document.status }}">
                 <td>
                     {% if document.recipient == current_user and document.status not in ['Released', 'Declined'] %}
                         <input type="checkbox" class="document-checkbox" value="{{ document.id }}" onchange="updateBatchControls()">
@@ -3090,12 +3090,11 @@ function updateBatchControls() {
         
         checkedBoxes.forEach(function(checkbox) {
             const row = checkbox.closest('tr');
-            const statusBadge = row.querySelector('td:nth-child(6) .badge');
-            const statusText = statusBadge ? statusBadge.textContent.trim() : '';
+            const status = (row && row.dataset && row.dataset.status) ? row.dataset.status.trim() : '';
             
-            if (statusText === 'Pending' || statusText === 'Forwarded') {
+            if (status === 'Pending' || status === 'Forwarded') {
                 hasPendingOrForwarded = true;
-            } else if (statusText === 'Processing') { // This is how 'Accepted' is displayed
+            } else if (status === 'Accepted') {
                 hasAccepted = true;
             }
         });

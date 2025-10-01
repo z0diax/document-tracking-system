@@ -62,6 +62,17 @@ def get_upload_path(filename):
     secure_name = secure_filename(filename)
     return os.path.join('uploads', secure_name).replace('\\', '/')
 
+def is_allowed_file(filename):
+    """Validate uploaded file extension against ALLOWED_EXTENSIONS config"""
+    if not filename:
+        return False
+    allowed = current_app.config.get('ALLOWED_EXTENSIONS', set()) or set()
+    # Normalize to extension without leading dot, lowercased
+    _, ext = os.path.splitext(filename)
+    ext_norm = (ext or '').lower().lstrip('.')
+    allowed_norm = {str(x).lower().lstrip('.') for x in allowed}
+    return ext_norm in allowed_norm
+
 def get_file_url(filepath):
     """Convert relative file path to URL"""
     if not filepath:

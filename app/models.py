@@ -123,6 +123,14 @@ class Document(db.Model):
     # Update processing_logs relationship to use back_populates
     processing_logs = db.relationship('ProcessingLog', cascade='all, delete-orphan', back_populates='document')
 
+    __table_args__ = (
+        db.Index('ix_doc_recipient_status', 'recipient_id', 'status'),
+        db.Index('ix_doc_creator_status', 'creator_id', 'status'),
+        db.Index('ix_doc_timestamp', 'timestamp'),
+        db.Index('ix_doc_barcode', 'barcode'),
+        db.Index('ix_doc_classification', 'classification'),
+    )
+
     @property
     def last_activity_details(self):
         """Return the last user who sent the document and the timestamp"""

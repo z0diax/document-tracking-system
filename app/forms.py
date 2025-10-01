@@ -60,11 +60,9 @@ class DocumentForm(FlaskForm):
     classification = SelectField('Classification', choices=[
         ('', 'Select a classification'),
         ('Communications', 'Communications'),
-        ('Memorandum', 'Memorandum'),
-        ('Letter', 'Letter'),
-        ('Report', 'Report'),
-        ('Certificate', 'Certificate'),
-        ('Others', 'Others')  # Added Others option
+        ('Payroll', 'Payroll'),
+        ('Request', 'Request'),
+        ('Others', 'Others')
     ])
     custom_classification = StringField('Enter Classification', 
         validators=[Length(max=20)],  # Add character limit

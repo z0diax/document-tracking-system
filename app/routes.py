@@ -580,6 +580,7 @@ def create_document():
 
             recipient_user = User.query.get(form.recipient.data)
             barcode_value = form.barcode.data.strip() if form.barcode.data else None
+            barcode_suggested_flag = True if (request.form.get('barcode_from_suggestion') == '1') else False
             document = Document(
                 title=form.title.data, 
                 office=form.office.data, 
@@ -610,6 +611,25 @@ def create_document():
                 remarks=form.remarks.data if form.remarks.data else ""
             )
             db.session.add(activity_log)
+            if barcode_suggested_flag:
+                # Capture original and selected barcodes for tooltip display
+                try:
+                    original_barcode = (request.form.get('original_barcode') or '').strip()
+                except Exception:
+                    original_barcode = ''
+                selected_barcode = barcode_value or ''
+                if original_barcode and selected_barcode:
+                    remark_text = f"Original: {original_barcode} — Selected: {selected_barcode}"
+                elif selected_barcode:
+                    remark_text = f"Selected: {selected_barcode}"
+                else:
+                    remark_text = "Barcode chosen from suggestion feature"
+                db.session.add(ActivityLog(
+                    user=current_user,
+                    document_id=document.id,
+                    action="Barcode Suggested",
+                    remarks=remark_text
+                ))
             db.session.commit()
 
             flash('Document created successfully.', 'success')
@@ -2884,7 +2904,8 @@ def check_barcode():
     return jsonify({
         'valid': False,
         'message': 'This barcode is already in use',
-        'suggestions': suggestions
+        'suggestions': suggestions,
+        'document': (existing_document.to_dict() if existing_document else None)
     })
 
 import os

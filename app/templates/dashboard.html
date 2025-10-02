@@ -146,6 +146,11 @@
                         {{ form.barcode.label(class="form-label") }}
                         {{ form.barcode(class="form-control", placeholder="Enter document barcode", id="barcode-input") }}
                         <div class="validation-feedback" id="barcode-feedback"></div>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge rounded-pill bg-info text-dark" id="barcode-suggested-indicator" style="display:none;" title="Selected from suggestions"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
+                        </div>
+                        <input type="hidden" name="barcode_from_suggestion" id="barcode-from-suggestion" value="0">
+                        <input type="hidden" name="original_barcode" id="original-barcode" value="">
                         <!-- Container for barcode suggestions -->
                         <div class="barcode-suggestions mt-2" id="barcode-suggestions"></div>
                     </div>
@@ -262,7 +267,14 @@
                 <td>{{ document.title }}</td>
                 <td>{{ document.office }}</td>
                 <td>{{ document.classification }}</td>
-                <td>{{ document.barcode }}</td>
+                <td>
+                    {{ document.barcode }}
+                    {% set suggested = (document.activities_json | default([])) | selectattr('action', 'equalto', 'Barcode Suggested') | list %}
+                    {% if suggested|length > 0 %}
+                        {% set _tooltip = (suggested[-1].remarks if (suggested[-1] is defined and suggested[-1].remarks) else 'Selected from suggestions') %}
+                        <span class="badge rounded-pill bg-info text-dark ms-1" title="{{ _tooltip }}"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
+                    {% endif %}
+                </td>
                 <td>
                     {% if document.status == 'Accepted' %}
                         <span class="badge bg-info status-accepted">
@@ -1582,7 +1594,14 @@
                 <td>{{ document.title }}</td>
                 <td>{{ document.office }}</td>
                 <td>{{ document.classification }}</td>
-                <td>{{ document.barcode }}</td>
+                <td>
+                    {{ document.barcode }}
+                    {% set suggested = (document.activities_json | default([])) | selectattr('action', 'equalto', 'Barcode Suggested') | list %}
+                    {% if suggested|length > 0 %}
+                        {% set _tooltip = (suggested[-1].remarks if (suggested[-1] is defined and suggested[-1].remarks) else 'Selected from suggestions') %}
+                        <span class="badge rounded-pill bg-info text-dark ms-1" title="{{ _tooltip }}"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
+                    {% endif %}
+                </td>
     <td>
         <span class="badge bg-{{ {
             'Pending': 'warning',
@@ -2810,6 +2829,8 @@ function setArchiveDocumentId(documentId) {
 
     const barcodeFeedback = document.getElementById('barcode-feedback');
     const barcodeSuggestions = document.getElementById('barcode-suggestions');
+    const barcodeSuggestedIndicator = document.getElementById('barcode-suggested-indicator');
+    const barcodeFromSuggestion = document.getElementById('barcode-from-suggestion');
     
     let barcodeTimer = null;
     
@@ -2817,6 +2838,9 @@ function setArchiveDocumentId(documentId) {
         barcodeInput.addEventListener('input', function() {
             // Clear all validation states
             clearBarcodeValidation();
+            // reset suggestion flag on manual typing
+            if (barcodeFromSuggestion) barcodeFromSuggestion.value = '0';
+            if (barcodeSuggestedIndicator) barcodeSuggestedIndicator.style.display = 'none';
             
             const barcode = this.value.trim();
             
@@ -2870,42 +2894,93 @@ function setArchiveDocumentId(documentId) {
         .then(data => {
             // Remove checking class
             barcodeInput.classList.remove('checking');
-            
-            // Display validation message
-            barcodeFeedback.textContent = data.message;
-            
+
+            // Reset feedback area
+            barcodeFeedback.textContent = '';
+            barcodeFeedback.className = 'validation-feedback';
+
             if (data.valid) {
                 // Valid barcode
+                barcodeFeedback.textContent = data.message || 'Barcode is available';
                 barcodeFeedback.classList.add('valid');
                 barcodeInput.classList.add('is-valid');
+
+                // If the value came from suggestion, show the indicator
+                if (barcodeFromSuggestion && barcodeFromSuggestion.value === '1' && barcodeSuggestedIndicator) {
+                    barcodeSuggestedIndicator.style.display = 'inline-block';
+                }
             } else {
                 // Invalid barcode
                 barcodeFeedback.classList.add('invalid');
                 barcodeInput.classList.add('is-invalid');
-                
+
+                // Prefer enhanced message with clickable document link if provided
+                if (data.document) {
+                    try {
+                        // Build: "Barcode is already used by the document <a>Title</a>"
+                        const prefix = document.createTextNode('Barcode is already used by the document ');
+                        const anchor = document.createElement('a');
+                        anchor.href = '#';
+                        anchor.textContent = (data.document.title || 'View document details');
+                        anchor.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            try {
+                                // Populate and show existing single view modal
+                                if (typeof populateViewModal === 'function') {
+                                    populateViewModal(data.document);
+                                }
+                                const modalEl = document.getElementById('viewDocumentModal');
+                                if (modalEl) {
+                                    const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                                    bsModal.show();
+                                }
+                            } catch (err) {
+                                console.error('Failed to open document modal:', err);
+                            }
+                        });
+                        // Clear and append
+                        barcodeFeedback.innerHTML = '';
+                        barcodeFeedback.appendChild(prefix);
+                        barcodeFeedback.appendChild(anchor);
+                    } catch (err) {
+                        console.error('Failed to render clickable feedback link:', err);
+                        barcodeFeedback.textContent = data.message || 'This barcode is already in use';
+                    }
+                } else {
+                    // Fallback to plain message
+                    barcodeFeedback.textContent = data.message || 'This barcode is already in use';
+                }
+
                 // Display suggestions if available
                 if (data.suggestions && data.suggestions.length > 0) {
+                    // Persist originally entered barcode for tooltip usage on creation
+                    const originalHidden = document.getElementById('original-barcode');
+                    if (originalHidden) { originalHidden.value = barcode; }
+
                     const suggestionHeader = document.createElement('p');
                     suggestionHeader.className = 'mb-1 small text-muted';
                     suggestionHeader.textContent = 'Suggested available barcodes:';
                     barcodeSuggestions.appendChild(suggestionHeader);
-                    
+
                     const suggestionsList = document.createElement('div');
                     suggestionsList.className = 'd-flex flex-wrap gap-2';
-                    
+
                     data.suggestions.forEach(function(suggestion) {
                         const badge = document.createElement('span');
                         badge.className = 'badge bg-primary suggestion-badge';
                         badge.textContent = suggestion;
                         badge.style.cursor = 'pointer';
                         badge.addEventListener('click', function() {
+                            // Apply suggestion and mark flag for persistence
                             barcodeInput.value = suggestion;
+                            if (barcodeFromSuggestion) barcodeFromSuggestion.value = '1';
+                            if (barcodeSuggestedIndicator) barcodeSuggestedIndicator.style.display = 'none';
                             clearBarcodeValidation();
                             validateBarcode(suggestion);
                         });
                         suggestionsList.appendChild(badge);
                     });
-                    
+
                     barcodeSuggestions.appendChild(suggestionsList);
                 }
             }

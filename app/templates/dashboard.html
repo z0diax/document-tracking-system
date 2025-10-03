@@ -338,7 +338,7 @@
                         <!-- Modal Footer -->
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <form action="{{ url_for('main.accept_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}" method="POST" style="display:inline;">
+<form action="{{ url_for('main.accept_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received'), search=request.args.get('search', '')) }}" method="POST" style="display:inline;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-success">Confirm Accept</button>
                             </form>
@@ -365,7 +365,7 @@
                         <!-- Modal Footer -->
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <form action="{{ url_for('main.release_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}" method="POST" style="display:inline;">
+                            <form action="{{ url_for('main.release_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received'), search=request.args.get('search', '')) }}" method="POST" style="display:inline;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-info">Confirm Release</button>
                             </form>
@@ -383,7 +383,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.decline_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}">
+<form method="POST" action="{{ url_for('main.decline_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received'), search=request.args.get('search', '')) }}">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <div class="mb-3">
                                     {{ decline_form.reason.label(class="form-label") }}
@@ -408,7 +408,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.forward_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}">
+<form method="POST" action="{{ url_for('main.forward_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received'), search=request.args.get('search', '')) }}">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <div class="mb-3">
                                     {{ forward_form.action_taken.label(class="form-label") }}
@@ -445,7 +445,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <form action="{{ url_for('main.release_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received')) }}" method="POST" style="display:inline;">
+                            <form action="{{ url_for('main.release_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'received'), search=request.args.get('search', '')) }}" method="POST" style="display:inline;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-success">Confirm Release</button>
                             </form>
@@ -1086,7 +1086,17 @@
                         <td>{{ l.barcode or '-' }}</td>
                         <td>{{ l.employee_name }}</td>
                         <td>{{ l.office }}</td>
-                        <td>{{ l.leave_type }}{% if l.subtype %} — {{ l.subtype }}{% endif %}</td>
+<td>
+    {% set display_subtype = l.subtype %}
+    {% if l.leave_type == 'Sick Leave' and l.subtype and 'Specify Illness' in l.subtype and l.subtype_detail %}
+        {% set display_subtype = l.subtype|replace('(Specify Illness)', '(' ~ l.subtype_detail ~ ')') %}
+    {% elif l.leave_type == 'Vacation Leave' and l.subtype and 'Abroad (Specify)' in l.subtype and l.subtype_detail %}
+        {% set display_subtype = l.subtype|replace('(Specify)', '(' ~ l.subtype_detail ~ ')') %}
+    {% elif l.leave_type == 'Special Privilege Leave' and l.subtype and 'Abroad (Specify)' in l.subtype and l.subtype_detail %}
+        {% set display_subtype = l.subtype|replace('(Specify)', '(' ~ l.subtype_detail ~ ')') %}
+    {% endif %}
+    {{ l.leave_type }}{% if display_subtype %} — {{ display_subtype }}{% endif %}
+</td>
                         <td>
                             {% if l.date_ranges and l.date_ranges|length > 1 %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#leaveDatesModal-{{ l.id }}">
@@ -1534,7 +1544,7 @@
         <ul class="pagination justify-content-center">
             {% if leave_pagination.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', page=leave_pagination.prev_num) }}">Previous</a>
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=leave_pagination.prev_num, search=request.args.get('search', '')) }}">Previous</a>
                 </li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Previous</span></li>
@@ -1543,7 +1553,7 @@
             {% for page_num in leave_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
                 {% if page_num %}
                     <li class="page-item {% if page_num == leave_pagination.page %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for('main.dashboard', view='leave', page=page_num) }}">{{ page_num }}</a>
+                        <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled"><span class="page-link">…</span></li>
@@ -1552,7 +1562,7 @@
 
             {% if leave_pagination.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', page=leave_pagination.next_num) }}">Next</a>
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=leave_pagination.next_num, search=request.args.get('search', '')) }}">Next</a>
                 </li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Next</span></li>
@@ -1713,7 +1723,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{{ url_for('main.edit_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created')) }}" enctype="multipart/form-data">
+<form method="POST" action="{{ url_for('main.edit_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created'), search=request.args.get('search', '')) }}" enctype="multipart/form-data">
                         {{ form.csrf_token }}
                         {{ form.hidden_tag() }}
                         <div class="mb-3">
@@ -1805,7 +1815,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form action="{{ url_for('main.delete_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created')) }}" method="POST" style="display:inline;">
+<form action="{{ url_for('main.delete_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created'), search=request.args.get('search', '')) }}" method="POST" style="display:inline;">
                         {{ form.csrf_token }}
                         <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
@@ -2025,7 +2035,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{{ url_for('main.resubmit_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created')) }}">
+<form method="POST" action="{{ url_for('main.resubmit_document', document_id=document.id, page=request.args.get('page', 1), view=request.args.get('view', 'created'), search=request.args.get('search', '')) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="mb-3">
                             <label for="action_taken-{{ document.id }}" class="form-label">Action Taken</label>

@@ -136,13 +136,67 @@ def add_employee():
                 flash(f'Biometric number is already taken by employee {existing.employee_name}.', 'danger')
                 return redirect(url_for('main.employee_list'))
 
+            # Compute employee_name from surname and first name if provided
+            _surname = (form.surname.data or '').strip() if hasattr(form, 'surname') else ''
+            _first = (form.first_name.data or '').strip() if hasattr(form, 'first_name') else ''
+            _composed_name = (f"{_surname}, {_first}".strip(', ').strip()) if (_surname or _first) else ((form.employee_name.data or '').strip() if hasattr(form, 'employee_name') else '')
             employee = Employee(
                 bio_number=form.bio_number.data.strip(),
-                employee_name=form.employee_name.data.strip(),
+                employee_name=_composed_name,
                 office=form.office.data,
                 position=form.position.data,
-                status=form.status.data
+                status=(form.status.data or 'Active') if hasattr(form, 'status') else 'Active'
             )
+
+            # Personal Information (optional fields)
+            employee.surname = (form.surname.data or '').strip() if hasattr(form, 'surname') else None
+            employee.first_name = (form.first_name.data or '').strip() if hasattr(form, 'first_name') else None
+            employee.middle_name = (form.middle_name.data or '').strip() if hasattr(form, 'middle_name') else None
+            employee.name_extension = (form.name_extension.data or '').strip() if hasattr(form, 'name_extension') else None
+
+            employee.date_of_birth = (form.date_of_birth.data or '').strip() if hasattr(form, 'date_of_birth') else None
+            employee.place_of_birth = (form.place_of_birth.data or '').strip() if hasattr(form, 'place_of_birth') else None
+
+            employee.sex = (form.sex.data or '').strip() if hasattr(form, 'sex') else None
+            employee.civil_status = (form.civil_status.data or '').strip() if hasattr(form, 'civil_status') else None
+
+            employee.height_m = (form.height_m.data or '').strip() if hasattr(form, 'height_m') else None
+            employee.weight_kg = (form.weight_kg.data or '').strip() if hasattr(form, 'weight_kg') else None
+            employee.blood_type = (form.blood_type.data or '').strip() if hasattr(form, 'blood_type') else None
+
+            employee.gsis_id_no = (form.gsis_id_no.data or '').strip() if hasattr(form, 'gsis_id_no') else None
+            employee.pagibig_id_no = (form.pagibig_id_no.data or '').strip() if hasattr(form, 'pagibig_id_no') else None
+            employee.philhealth_no = (form.philhealth_no.data or '').strip() if hasattr(form, 'philhealth_no') else None
+            employee.sss_no = (form.sss_no.data or '').strip() if hasattr(form, 'sss_no') else None
+            employee.tin = (form.tin.data or '').strip() if hasattr(form, 'tin') else None
+            employee.agency_employee_no = (form.agency_employee_no.data or '').strip() if hasattr(form, 'agency_employee_no') else None
+
+            employee.citizenship = (form.citizenship.data or '').strip() if hasattr(form, 'citizenship') else None
+            employee.citizenship_details = (form.citizenship_details.data or '').strip() if hasattr(form, 'citizenship_details') else None
+
+            # Residential Address
+            employee.res_house_lot = (form.res_house_lot.data or '').strip() if hasattr(form, 'res_house_lot') else None
+            employee.res_street = (form.res_street.data or '').strip() if hasattr(form, 'res_street') else None
+            employee.res_subdivision = (form.res_subdivision.data or '').strip() if hasattr(form, 'res_subdivision') else None
+            employee.res_barangay = (form.res_barangay.data or '').strip() if hasattr(form, 'res_barangay') else None
+            employee.res_city_municipality = (form.res_city_municipality.data or '').strip() if hasattr(form, 'res_city_municipality') else None
+            employee.res_province = (form.res_province.data or '').strip() if hasattr(form, 'res_province') else None
+            employee.res_zip_code = (form.res_zip_code.data or '').strip() if hasattr(form, 'res_zip_code') else None
+
+            # Permanent Address
+            employee.perm_house_lot = (form.perm_house_lot.data or '').strip() if hasattr(form, 'perm_house_lot') else None
+            employee.perm_street = (form.perm_street.data or '').strip() if hasattr(form, 'perm_street') else None
+            employee.perm_subdivision = (form.perm_subdivision.data or '').strip() if hasattr(form, 'perm_subdivision') else None
+            employee.perm_barangay = (form.perm_barangay.data or '').strip() if hasattr(form, 'perm_barangay') else None
+            employee.perm_city_municipality = (form.perm_city_municipality.data or '').strip() if hasattr(form, 'perm_city_municipality') else None
+            employee.perm_province = (form.perm_province.data or '').strip() if hasattr(form, 'perm_province') else None
+            employee.perm_zip_code = (form.perm_zip_code.data or '').strip() if hasattr(form, 'perm_zip_code') else None
+
+            # Contact
+            employee.telephone_no = (form.telephone_no.data or '').strip() if hasattr(form, 'telephone_no') else None
+            employee.mobile_no = (form.mobile_no.data or '').strip() if hasattr(form, 'mobile_no') else None
+            employee.email_address = (form.email_address.data or '').strip() if hasattr(form, 'email_address') else None
+
             db.session.add(employee)
             db.session.commit()
             flash('Employee added successfully.', 'success')
@@ -177,7 +231,64 @@ def edit_employee(employee_id):
             employee.employee_name = form.employee_name.data.strip()
             employee.office = form.office.data
             employee.position = form.position.data
-            employee.status = form.status.data
+            # Only update status if provided; otherwise keep current (status is managed via profile modal)
+            if hasattr(form, 'status') and (form.status.data or '').strip():
+                employee.status = form.status.data
+
+            # Personal Information (optional fields)
+            employee.surname = (form.surname.data or '').strip() if hasattr(form, 'surname') else employee.surname
+            employee.first_name = (form.first_name.data or '').strip() if hasattr(form, 'first_name') else employee.first_name
+            employee.middle_name = (form.middle_name.data or '').strip() if hasattr(form, 'middle_name') else employee.middle_name
+            employee.name_extension = (form.name_extension.data or '').strip() if hasattr(form, 'name_extension') else employee.name_extension
+
+            employee.date_of_birth = (form.date_of_birth.data or '').strip() if hasattr(form, 'date_of_birth') else employee.date_of_birth
+            employee.place_of_birth = (form.place_of_birth.data or '').strip() if hasattr(form, 'place_of_birth') else employee.place_of_birth
+
+            employee.sex = (form.sex.data or '').strip() if hasattr(form, 'sex') else employee.sex
+            employee.civil_status = (form.civil_status.data or '').strip() if hasattr(form, 'civil_status') else employee.civil_status
+
+            employee.height_m = (form.height_m.data or '').strip() if hasattr(form, 'height_m') else employee.height_m
+            employee.weight_kg = (form.weight_kg.data or '').strip() if hasattr(form, 'weight_kg') else employee.weight_kg
+            employee.blood_type = (form.blood_type.data or '').strip() if hasattr(form, 'blood_type') else employee.blood_type
+
+            employee.gsis_id_no = (form.gsis_id_no.data or '').strip() if hasattr(form, 'gsis_id_no') else employee.gsis_id_no
+            employee.pagibig_id_no = (form.pagibig_id_no.data or '').strip() if hasattr(form, 'pagibig_id_no') else employee.pagibig_id_no
+            employee.philhealth_no = (form.philhealth_no.data or '').strip() if hasattr(form, 'philhealth_no') else employee.philhealth_no
+            employee.sss_no = (form.sss_no.data or '').strip() if hasattr(form, 'sss_no') else employee.sss_no
+            employee.tin = (form.tin.data or '').strip() if hasattr(form, 'tin') else employee.tin
+            employee.agency_employee_no = (form.agency_employee_no.data or '').strip() if hasattr(form, 'agency_employee_no') else employee.agency_employee_no
+
+            employee.citizenship = (form.citizenship.data or '').strip() if hasattr(form, 'citizenship') else employee.citizenship
+            employee.citizenship_details = (form.citizenship_details.data or '').strip() if hasattr(form, 'citizenship_details') else employee.citizenship_details
+
+            # Residential Address
+            employee.res_house_lot = (form.res_house_lot.data or '').strip() if hasattr(form, 'res_house_lot') else employee.res_house_lot
+            employee.res_street = (form.res_street.data or '').strip() if hasattr(form, 'res_street') else employee.res_street
+            employee.res_subdivision = (form.res_subdivision.data or '').strip() if hasattr(form, 'res_subdivision') else employee.res_subdivision
+            employee.res_barangay = (form.res_barangay.data or '').strip() if hasattr(form, 'res_barangay') else employee.res_barangay
+            employee.res_city_municipality = (form.res_city_municipality.data or '').strip() if hasattr(form, 'res_city_municipality') else employee.res_city_municipality
+            employee.res_province = (form.res_province.data or '').strip() if hasattr(form, 'res_province') else employee.res_province
+            employee.res_zip_code = (form.res_zip_code.data or '').strip() if hasattr(form, 'res_zip_code') else employee.res_zip_code
+
+            # Permanent Address
+            employee.perm_house_lot = (form.perm_house_lot.data or '').strip() if hasattr(form, 'perm_house_lot') else employee.perm_house_lot
+            employee.perm_street = (form.perm_street.data or '').strip() if hasattr(form, 'perm_street') else employee.perm_street
+            employee.perm_subdivision = (form.perm_subdivision.data or '').strip() if hasattr(form, 'perm_subdivision') else employee.perm_subdivision
+            employee.perm_barangay = (form.perm_barangay.data or '').strip() if hasattr(form, 'perm_barangay') else employee.perm_barangay
+            employee.perm_city_municipality = (form.perm_city_municipality.data or '').strip() if hasattr(form, 'perm_city_municipality') else employee.perm_city_municipality
+            employee.perm_province = (form.perm_province.data or '').strip() if hasattr(form, 'perm_province') else employee.perm_province
+            employee.perm_zip_code = (form.perm_zip_code.data or '').strip() if hasattr(form, 'perm_zip_code') else employee.perm_zip_code
+
+            # Contact
+            employee.telephone_no = (form.telephone_no.data or '').strip() if hasattr(form, 'telephone_no') else employee.telephone_no
+            employee.mobile_no = (form.mobile_no.data or '').strip() if hasattr(form, 'mobile_no') else employee.mobile_no
+            employee.email_address = (form.email_address.data or '').strip() if hasattr(form, 'email_address') else employee.email_address
+
+            # Re-compose display name from surname and first name if available
+            _ed_surname = (form.surname.data or '').strip() if hasattr(form, 'surname') else ''
+            _ed_first = (form.first_name.data or '').strip() if hasattr(form, 'first_name') else ''
+            if _ed_surname or _ed_first:
+                employee.employee_name = f"{_ed_surname}, {_ed_first}".strip(', ').strip()
 
             db.session.commit()
             flash('Employee updated successfully.', 'success')
@@ -205,6 +316,122 @@ def delete_employee(employee_id):
         flash(f'Error deleting employee: {str(e)}', 'danger')
 
     return redirect(url_for('main.employee_list'))
+
+
+@main.route('/employees/toggle_status/<int:employee_id>', methods=['POST'])
+@login_required
+def toggle_employee_status(employee_id):
+    if not current_user.is_admin:
+        flash('You are not authorized to modify employees.', 'danger')
+        return redirect(url_for('main.employee_list'))
+    try:
+        employee = Employee.query.get_or_404(employee_id)
+        employee.status = 'Inactive' if (employee.status == 'Active') else 'Active'
+        db.session.commit()
+        flash(f'Employee status updated to {employee.status}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating employee status: {str(e)}', 'danger')
+    return redirect(url_for('main.employee_list'))
+
+
+@main.route('/employees/update_profile/<int:employee_id>', methods=['POST'])
+@login_required
+def update_employee_profile(employee_id):
+    """
+    Inline update of personal information fields from the profile modal.
+    Accepts form-encoded fields; updates only provided keys.
+    Returns JSON with updated values and composed display name.
+    """
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    try:
+        employee = Employee.query.get_or_404(employee_id)
+
+        # Allowed keys for inline profile editing (Personal Information, address/contact, and employment core)
+        allowed_fields = [
+            # Personal Information
+            'surname', 'first_name', 'middle_name', 'name_extension',
+            'date_of_birth', 'place_of_birth', 'sex', 'civil_status',
+            'height_m', 'weight_kg', 'blood_type',
+            'gsis_id_no', 'pagibig_id_no', 'philhealth_no', 'sss_no', 'tin', 'agency_employee_no',
+            'citizenship', 'citizenship_details',
+            # Residential Address
+            'res_house_lot', 'res_street', 'res_subdivision', 'res_barangay',
+            'res_city_municipality', 'res_province', 'res_zip_code',
+            # Permanent Address
+            'perm_house_lot', 'perm_street', 'perm_subdivision', 'perm_barangay',
+            'perm_city_municipality', 'perm_province', 'perm_zip_code',
+            # Contact
+            'telephone_no', 'mobile_no', 'email_address',
+            # Employment core (auto-filled section) - allow inline changes
+            'bio_number', 'office', 'position', 'status'
+        ]
+
+        # Read values from form (support both form and JSON for flexibility)
+        data = request.form if request.form else (request.get_json(silent=True) or {})
+
+        # Pre-validate special cases
+        # 1) bio_number uniqueness
+        if 'bio_number' in data:
+            new_bio = (data.get('bio_number') or '').strip()
+            if new_bio and new_bio != (employee.bio_number or ''):
+                dupe = Employee.query.filter(Employee.bio_number == new_bio, Employee.id != employee.id).first()
+                if dupe:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Biometric number is already taken by employee {dupe.employee_name}'
+                    }), 400
+
+        # 2) office must be in OFFICE_CHOICES (value list) if provided
+        if 'office' in data:
+            off = (data.get('office') or '').strip()
+            valid_offices = {v for (v, _lbl) in OFFICE_CHOICES}
+            if off and off not in valid_offices:
+                return jsonify({'success': False, 'message': 'Invalid office selection'}), 400
+
+        # 3) position - keep current simple whitelist (if you later expand, adjust here)
+        if 'position' in data:
+            pos = (data.get('position') or '').strip()
+            valid_positions = {'Job Order Worker', 'Contract of Service'}
+            if pos and pos not in valid_positions:
+                return jsonify({'success': False, 'message': 'Invalid position selection'}), 400
+
+        # 4) status allowed values
+        if 'status' in data:
+            st = (data.get('status') or '').strip()
+            if st and st not in {'Active', 'Inactive'}:
+                return jsonify({'success': False, 'message': 'Invalid status value'}), 400
+
+        updated = {}
+        for key in allowed_fields:
+            if key in data:
+                val = (data.get(key) or '').strip()
+                setattr(employee, key, val if val != '' else None)
+                updated[key] = getattr(employee, key)
+
+        # Re-compose display name from surname and first_name if any of them provided
+        if ('surname' in data) or ('first_name' in data):
+            s = (employee.surname or '').strip()
+            f = (employee.first_name or '').strip()
+            employee.employee_name = f"{s}, {f}".strip(', ').strip()
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Profile updated successfully.',
+            'updated': updated,
+            'employee_name': employee.employee_name or '',
+            'id': employee.id
+        })
+    except Exception as e:
+        db.session.rollback()
+        try:
+            current_app.logger.error(f"Inline profile update error: {e}")
+        except Exception:
+            pass
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @main.route('/employees/check_bio_number', methods=['POST'])

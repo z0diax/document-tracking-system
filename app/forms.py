@@ -135,17 +135,84 @@ class EWPForm(FlaskForm):
     submit = SubmitField('Create EWP')
 
 class EmployeeForm(FlaskForm):
+    # Core fields
     bio_number = StringField('Biometric', validators=[DataRequired()])
-    employee_name = StringField('Name', validators=[DataRequired(), Length(min=1, max=120)])
+    # Name will be composed from surname + first_name during creation; keep optional to avoid validation failures on Add
+    employee_name = StringField('Name', validators=[Optional(), Length(min=0, max=120)])
     office = SelectField('Office', choices=[], validators=[DataRequired()])
     position = SelectField('Position', choices=[
         ('Job Order Worker', 'Job Order Worker'),
         ('Contract of Service', 'Contract of Service')
     ], validators=[DataRequired()])
+    # Status defaults to Active; allow optional in forms (status toggled via profile modal)
     status = SelectField('Status', choices=[
         ('Active', 'Active'),
         ('Inactive', 'Inactive')
-    ], validators=[DataRequired()])
+    ], validators=[Optional()])
+
+    # Personal Information
+    surname = StringField('Surname', validators=[DataRequired(), Length(max=120)])
+    first_name = StringField('First Name', validators=[DataRequired(), Length(max=120)])
+    middle_name = StringField('Middle Name', validators=[Optional(), Length(max=120)])
+    name_extension = StringField('Name Extension (Jr., Sr., II, etc.)', validators=[Optional(), Length(max=20)])
+
+    date_of_birth = StringField('Date of Birth (mm/dd/yyyy)', validators=[Optional(), Length(max=20)])
+    place_of_birth = StringField('Place of Birth', validators=[Optional(), Length(max=200)])
+
+    sex = SelectField('Sex', choices=[('', 'Select'), ('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], validators=[Optional()])
+    civil_status = SelectField('Civil Status', choices=[
+        ('', 'Select'),
+        ('Single', 'Single'),
+        ('Married', 'Married'),
+        ('Widowed', 'Widowed'),
+        ('Separated', 'Separated'),
+        ('Other', 'Other')
+    ], validators=[Optional()])
+
+    height_m = StringField('Height (m)', validators=[Optional(), Length(max=10)])
+    weight_kg = StringField('Weight (kg)', validators=[Optional(), Length(max=10)])
+    blood_type = SelectField('Blood Type', choices=[
+        ('', 'Select'),
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-'),
+        ('Unknown', 'Unknown')
+    ], validators=[Optional()])
+
+    gsis_id_no = StringField('GSIS ID No.', validators=[Optional(), Length(max=120)])
+    pagibig_id_no = StringField('PAG-IBIG ID No.', validators=[Optional(), Length(max=120)])
+    philhealth_no = StringField('PhilHealth No.', validators=[Optional(), Length(max=120)])
+    sss_no = StringField('SSS No.', validators=[Optional(), Length(max=120)])
+    tin = StringField('TIN', validators=[Optional(), Length(max=120)])
+    agency_employee_no = StringField('Agency Employee No.', validators=[Optional(), Length(max=120)])
+
+    citizenship = StringField('Citizenship', validators=[Optional(), Length(max=120)])
+    citizenship_details = TextAreaField('Citizenship Details (e.g., by birth/naturalization; dual citizenship info)', validators=[Optional(), Length(max=1000)])
+
+    # Residential Address
+    res_house_lot = StringField('Residential - House/Block/Lot', validators=[Optional(), Length(max=150)])
+    res_street = StringField('Residential - Street', validators=[Optional(), Length(max=150)])
+    res_subdivision = StringField('Residential - Subdivision/Village', validators=[Optional(), Length(max=150)])
+    res_barangay = StringField('Residential - Barangay', validators=[Optional(), Length(max=150)])
+    res_city_municipality = StringField('Residential - City/Municipality', validators=[Optional(), Length(max=150)])
+    res_province = StringField('Residential - Province', validators=[Optional(), Length(max=150)])
+    res_zip_code = StringField('Residential - ZIP Code', validators=[Optional(), Length(max=10)])
+
+    # Permanent Address
+    perm_house_lot = StringField('Permanent - House/Block/Lot', validators=[Optional(), Length(max=150)])
+    perm_street = StringField('Permanent - Street', validators=[Optional(), Length(max=150)])
+    perm_subdivision = StringField('Permanent - Subdivision/Village', validators=[Optional(), Length(max=150)])
+    perm_barangay = StringField('Permanent - Barangay', validators=[Optional(), Length(max=150)])
+    perm_city_municipality = StringField('Permanent - City/Municipality', validators=[Optional(), Length(max=150)])
+    perm_province = StringField('Permanent - Province', validators=[Optional(), Length(max=150)])
+    perm_zip_code = StringField('Permanent - ZIP Code', validators=[Optional(), Length(max=10)])
+
+    # Contact
+    telephone_no = StringField('Telephone No.', validators=[Optional(), Length(max=120)])
+    mobile_no = StringField('Mobile No.', validators=[Optional(), Length(max=120)])
+    email_address = StringField('E-mail Address', validators=[Optional(), Email(), Length(max=120)])
+
     submit = SubmitField('Add Employee')
 
 # Batch Action Forms

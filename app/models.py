@@ -364,6 +364,55 @@ class Employee(db.Model):
     position = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(50), nullable=False, default='Active', server_default='Active')  # Active/Inactive account status
 
+    # Personal Information (Phase 1)
+    surname = db.Column(db.String(120), nullable=True)
+    first_name = db.Column(db.String(120), nullable=True)
+    middle_name = db.Column(db.String(120), nullable=True)
+    name_extension = db.Column(db.String(20), nullable=True)
+
+    date_of_birth = db.Column(db.String(20), nullable=True)  # store as string mm/dd/yyyy for simplicity
+    place_of_birth = db.Column(db.String(200), nullable=True)
+
+    sex = db.Column(db.String(20), nullable=True)  # Male/Female/Other
+    civil_status = db.Column(db.String(20), nullable=True)  # Single/Married/...
+
+    height_m = db.Column(db.String(10), nullable=True)
+    weight_kg = db.Column(db.String(10), nullable=True)
+    blood_type = db.Column(db.String(10), nullable=True)
+
+    gsis_id_no = db.Column(db.String(120), nullable=True)
+    pagibig_id_no = db.Column(db.String(120), nullable=True)
+    philhealth_no = db.Column(db.String(120), nullable=True)
+    sss_no = db.Column(db.String(120), nullable=True)
+    tin = db.Column(db.String(120), nullable=True)
+    agency_employee_no = db.Column(db.String(120), nullable=True)
+
+    citizenship = db.Column(db.String(120), nullable=True)
+    citizenship_details = db.Column(db.Text, nullable=True)
+
+    # Residential Address
+    res_house_lot = db.Column(db.String(150), nullable=True)
+    res_street = db.Column(db.String(150), nullable=True)
+    res_subdivision = db.Column(db.String(150), nullable=True)
+    res_barangay = db.Column(db.String(150), nullable=True)
+    res_city_municipality = db.Column(db.String(150), nullable=True)
+    res_province = db.Column(db.String(150), nullable=True)
+    res_zip_code = db.Column(db.String(10), nullable=True)
+
+    # Permanent Address
+    perm_house_lot = db.Column(db.String(150), nullable=True)
+    perm_street = db.Column(db.String(150), nullable=True)
+    perm_subdivision = db.Column(db.String(150), nullable=True)
+    perm_barangay = db.Column(db.String(150), nullable=True)
+    perm_city_municipality = db.Column(db.String(150), nullable=True)
+    perm_province = db.Column(db.String(150), nullable=True)
+    perm_zip_code = db.Column(db.String(10), nullable=True)
+
+    # Contact
+    telephone_no = db.Column(db.String(120), nullable=True)
+    mobile_no = db.Column(db.String(120), nullable=True)
+    email_address = db.Column(db.String(120), nullable=True)
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -371,5 +420,41 @@ class Employee(db.Model):
             'employee_name': self.employee_name,
             'office': self.office,
             'position': self.position,
-            'status': self.status
+            'status': self.status,
+            'surname': self.surname,
+            'first_name': self.first_name,
+            'middle_name': self.middle_name,
+            'name_extension': self.name_extension,
+            'date_of_birth': self.date_of_birth,
+            'place_of_birth': self.place_of_birth,
+            'sex': self.sex,
+            'civil_status': self.civil_status,
+            'height_m': self.height_m,
+            'weight_kg': self.weight_kg,
+            'blood_type': self.blood_type,
+            'gsis_id_no': self.gsis_id_no,
+            'pagibig_id_no': self.pagibig_id_no,
+            'philhealth_no': self.philhealth_no,
+            'sss_no': self.sss_no,
+            'tin': self.tin,
+            'agency_employee_no': self.agency_employee_no,
+            'citizenship': self.citizenship,
+            'citizenship_details': self.citizenship_details,
+            'res_house_lot': self.res_house_lot,
+            'res_street': self.res_street,
+            'res_subdivision': self.res_subdivision,
+            'res_barangay': self.res_barangay,
+            'res_city_municipality': self.res_city_municipality,
+            'res_province': self.res_province,
+            'res_zip_code': self.res_zip_code,
+            'perm_house_lot': self.perm_house_lot,
+            'perm_street': self.perm_street,
+            'perm_subdivision': self.perm_subdivision,
+            'perm_barangay': self.perm_barangay,
+            'perm_city_municipality': self.perm_city_municipality,
+            'perm_province': self.perm_province,
+            'perm_zip_code': self.perm_zip_code,
+            'telephone_no': self.telephone_no,
+            'mobile_no': self.mobile_no,
+            'email_address': self.email_address
         }

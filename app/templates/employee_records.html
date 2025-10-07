@@ -73,7 +73,7 @@
                 <tbody>
                     {% if employees %}
                         {% for e in employees %}
-                        <tr>
+                        <tr data-employee-id="{{ e.id }}">
                             <td>{{ e.bio_number }}</td>
                             <td>{{ e.employee_name }}</td>
                             <td>{{ e.office }}</td>
@@ -88,9 +88,9 @@
                                 </span>
                             </td>
                             <td class="text-nowrap">
-                                <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editEmployeeModal-{{ e.id }}" title="Edit">
-                                    <i class="fas fa-pen-to-square" aria-hidden="true"></i>
-                                    <span class="visually-hidden">Edit</span>
+                                <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="modal" data-bs-target="#viewEmployeeModal-{{ e.id }}" title="View">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                    <span class="visually-hidden">View</span>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteEmployeeModal-{{ e.id }}" title="Delete">
                                     <i class="fas fa-trash" aria-hidden="true"></i>
@@ -157,9 +157,15 @@
             {{ form.bio_number(class="form-control", id="add-bio-number") }}
             <div class="invalid-feedback" id="add-bio-feedback"></div>
           </div>
-          <div class="mb-3">
-            {{ form.employee_name.label(class="form-label") }}
-            {{ form.employee_name(class="form-control") }}
+          <div class="row g-3">
+            <div class="col-md-6">
+              {{ form.surname.label(class="form-label") }}
+              {{ form.surname(class="form-control") }}
+            </div>
+            <div class="col-md-6">
+              {{ form.first_name.label(class="form-label") }}
+              {{ form.first_name(class="form-control") }}
+            </div>
           </div>
           <div class="mb-3">
             {{ form.office.label(class="form-label") }}
@@ -168,10 +174,6 @@
           <div class="mb-3">
             {{ form.position.label(class="form-label") }}
             {{ form.position(class="form-select") }}
-          </div>
-          <div class="mb-3">
-            {{ form.status.label(class="form-label") }}
-            {{ form.status(class="form-select") }}
           </div>
         </div>
         <div class="modal-footer">
@@ -185,44 +187,393 @@
 
 <!-- Edit Employee Modals -->
 {% for e in employees %}
-<div class="modal fade" id="editEmployeeModal-{{ e.id }}" tabindex="-1" aria-labelledby="editEmployeeModalLabel-{{ e.id }}" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST" action="{{ url_for('main.edit_employee', employee_id=e.id) }}" id="editEmployeeForm-{{ e.id }}">
-        {{ form.csrf_token }}
-        <div class="modal-header">
-          <h5 class="modal-title" id="editEmployeeModalLabel-{{ e.id }}">Edit Employee</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            {{ form.bio_number.label(class="form-label") }}
-            {{ form.bio_number(class="form-control", id="edit-bio-number-{{ e.id }}", value=e.bio_number) }}
-            <div class="invalid-feedback" id="edit-bio-feedback-{{ e.id }}"></div>
+<!-- View Employee Modal (Profile-style with side tabs) -->
+<div class="modal fade" id="viewEmployeeModal-{{ e.id }}" tabindex="-1" aria-labelledby="viewEmployeeModalLabel-{{ e.id }}" aria-hidden="true" data-update-url="{{ url_for('main.update_employee_profile', employee_id=e.id) }}">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+    <div class="modal-content profile-modal">
+      <div class="modal-header bg-primary text-white">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center me-3" style="width:48px;height:48px;">
+            <i class="fas fa-user"></i>
           </div>
-          <div class="mb-3">
-            {{ form.employee_name.label(class="form-label") }}
-            {{ form.employee_name(class="form-control", value=e.employee_name) }}
-          </div>
-          <div class="mb-3">
-            {{ form.office.label(class="form-label") }}
-            {{ form.office(class="form-select", value=e.office) }}
-          </div>
-          <div class="mb-3">
-            {{ form.position.label(class="form-label") }}
-            {{ form.position(class="form-select", value=e.position) }}
-          </div>
-          <div class="mb-3">
-            {{ form.status.label(class="form-label") }}
-            {{ form.status(class="form-select", value=e.status) }}
+          <div>
+            <h5 class="modal-title mb-0" id="viewEmployeeModalLabel-{{ e.id }}">{{ e.employee_name }}</h5>
+            <small class="text-white-50">Biometric: {{ e.bio_number }} • {{ e.position }} • {{ e.office }}</small>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          {{ form.submit(class="btn btn-primary") }}
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <!-- Side tabs -->
+          <div class="col-12 col-md-3">
+            <ul class="nav nav-pills flex-md-column gap-2" id="profileTabs-{{ e.id }}" role="tablist" aria-orientation="vertical">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active d-flex align-items-center" id="tab-btn-pi-{{ e.id }}" data-bs-toggle="pill" data-bs-target="#tab-pi-{{ e.id }}" type="button" role="tab" aria-controls="tab-pi-{{ e.id }}" aria-selected="true">
+                  <i class="fas fa-user me-2"></i> I. Personal Information
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center" id="tab-btn-fb-{{ e.id }}" data-bs-toggle="pill" data-bs-target="#tab-fb-{{ e.id }}" type="button" role="tab" aria-controls="tab-fb-{{ e.id }}" aria-selected="false">
+                  <i class="fas fa-people-group me-2"></i> II. Family Background
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center" id="tab-btn-eb-{{ e.id }}" data-bs-toggle="pill" data-bs-target="#tab-eb-{{ e.id }}" type="button" role="tab" aria-controls="tab-eb-{{ e.id }}" aria-selected="false">
+                  <i class="fas fa-graduation-cap me-2"></i> III. Educational Background
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center" id="tab-btn-cse-{{ e.id }}" data-bs-toggle="pill" data-bs-target="#tab-cse-{{ e.id }}" type="button" role="tab" aria-controls="tab-cse-{{ e.id }}" aria-selected="false">
+                  <i class="fas fa-id-card me-2"></i> IV. Civil Service Eligibility
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center" id="tab-btn-we-{{ e.id }}" data-bs-toggle="pill" data-bs-target="#tab-we-{{ e.id }}" type="button" role="tab" aria-controls="tab-we-{{ e.id }}" aria-selected="false">
+                  <i class="fas fa-briefcase me-2"></i> V. Work Experience
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center" id="tab-btn-vw-{{ e.id }}" data-bs-toggle="pill" data-bs-target="#tab-vw-{{ e.id }}" type="button" role="tab" aria-controls="tab-vw-{{ e.id }}" aria-selected="false">
+                  <i class="fas fa-hand-holding-heart me-2"></i> VI. Voluntary Work
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center" id="tab-btn-ld-{{ e.id }}" data-bs-toggle="pill" data-bs-target="#tab-ld-{{ e.id }}" type="button" role="tab" aria-controls="tab-ld-{{ e.id }}" aria-selected="false">
+                  <i class="fas fa-chalkboard-teacher me-2"></i> VII. Learning & Development
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Content area -->
+          <div class="col-12 col-md-9">
+            <div class="tab-content" id="profileTabsContent-{{ e.id }}">
+              <!-- I. Personal Information -->
+              <div class="tab-pane fade show active" id="tab-pi-{{ e.id }}" role="tabpanel" aria-labelledby="tab-btn-pi-{{ e.id }}">
+                <div class="card shadow-sm border-0">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-3">I. Personal Information</h6>
+                    {% set _name_parts = (e.employee_name or '').split(',') %}
+                    {% set _fallback_surname = _name_parts[0]|trim if _name_parts|length > 0 else '' %}
+                    {% set _fallback_first = _name_parts[1]|trim if _name_parts|length > 1 else '' %}
+                    <!-- Personal Information Fields -->
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <div class="text-muted small">Surname</div>
+                        <div class="fw-semibold">{{ e.surname or _fallback_surname }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">First Name</div>
+                        <div class="fw-semibold">{{ e.first_name or _fallback_first }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">Middle Name</div>
+                        <div class="fw-semibold">{{ e.middle_name|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">Name Extension (Jr., Sr., II, etc.)</div>
+                        <div class="fw-semibold">{{ e.name_extension|default('', true) }}</div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="text-muted small">Date of Birth (mm/dd/yyyy)</div>
+                        <div class="fw-semibold">{{ e.date_of_birth|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">Place of Birth</div>
+                        <div class="fw-semibold">{{ e.place_of_birth|default('', true) }}</div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="text-muted small">Sex</div>
+                        <div class="fw-semibold">{{ e.sex|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">Civil Status</div>
+                        <div class="fw-semibold">{{ e.civil_status|default('', true) }}</div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="text-muted small">Height (m)</div>
+                        <div class="fw-semibold">{{ e.height_m|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">Weight (kg)</div>
+                        <div class="fw-semibold">{{ e.weight_kg|default('', true) }}</div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="text-muted small">Blood Type</div>
+                        <div class="fw-semibold">{{ e.blood_type|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">Citizenship</div>
+                        <div class="fw-semibold">{{ e.citizenship|default('', true) }}</div>
+                        <small class="text-muted d-block">{{ e.citizenship_details|default('', true) }}</small>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="text-muted small">GSIS ID No.</div>
+                        <div class="fw-semibold">{{ e.gsis_id_no|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">PAG-IBIG ID No.</div>
+                        <div class="fw-semibold">{{ e.pagibig_id_no|default('', true) }}</div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="text-muted small">PhilHealth No.</div>
+                        <div class="fw-semibold">{{ e.philhealth_no|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">SSS No.</div>
+                        <div class="fw-semibold">{{ e.sss_no|default('', true) }}</div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="text-muted small">TIN</div>
+                        <div class="fw-semibold">{{ e.tin|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-muted small">Agency Employee No.</div>
+                        <div class="fw-semibold">{{ e.agency_employee_no|default('', true) }}</div>
+                      </div>
+                    </div>
+
+                    <hr class="my-3"/>
+
+                    <!-- Residential Address -->
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <div class="text-muted small mb-1">Residential Address</div>
+                        <div class="row g-2">
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">House/Block/Lot</small>
+                            <div class="fw-semibold">{{ e.res_house_lot|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Street</small>
+                            <div class="fw-semibold">{{ e.res_street|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Subdivision/Village</small>
+                            <div class="fw-semibold">{{ e.res_subdivision|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Barangay</small>
+                            <div class="fw-semibold">{{ e.res_barangay|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">City/Municipality</small>
+                            <div class="fw-semibold">{{ e.res_city_municipality|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Province</small>
+                            <div class="fw-semibold">{{ e.res_province|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">ZIP Code</small>
+                            <div class="fw-semibold">{{ e.res_zip_code|default('', true) }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <hr class="my-3"/>
+
+                    <!-- Permanent Address -->
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <div class="text-muted small mb-1">Permanent Address</div>
+                        <div class="row g-2">
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">House/Block/Lot</small>
+                            <div class="fw-semibold">{{ e.perm_house_lot|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Street</small>
+                            <div class="fw-semibold">{{ e.perm_street|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Subdivision/Village</small>
+                            <div class="fw-semibold">{{ e.perm_subdivision|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Barangay</small>
+                            <div class="fw-semibold">{{ e.perm_barangay|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">City/Municipality</small>
+                            <div class="fw-semibold">{{ e.perm_city_municipality|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Province</small>
+                            <div class="fw-semibold">{{ e.perm_province|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">ZIP Code</small>
+                            <div class="fw-semibold">{{ e.perm_zip_code|default('', true) }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <hr class="my-3"/>
+
+                    <!-- Contact Information -->
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <div class="text-muted small">Telephone No.</div>
+                        <div class="fw-semibold">{{ e.telephone_no|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="text-muted small">Mobile No.</div>
+                        <div class="fw-semibold">{{ e.mobile_no|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="text-muted small">E-mail Address</div>
+                        <div class="fw-semibold">{{ e.email_address|default('', true) }}</div>
+                      </div>
+                    </div>
+
+                    <!-- Employment Auto-filled (from existing employee record) -->
+                    <div class="mt-4">
+                      <h6 class="text-uppercase text-muted small mb-2">Employment Details (Auto-filled)</h6>
+                      <div class="row g-3">
+                        <div class="col-md-3">
+                          <div class="text-muted small">Biometric</div>
+                          <div class="fw-semibold">{{ e.bio_number }}</div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="text-muted small">Office</div>
+                          <div class="fw-semibold">{{ e.office }}</div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="text-muted small">Position</div>
+                          <div>
+                            <span class="badge {% if e.position == 'Job Order Worker' %}bg-info text-dark{% elif e.position == 'Contract of Service' %}bg-primary{% else %}bg-secondary{% endif %}">{{ e.position }}</span>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="text-muted small">Status</div>
+                          <div>
+                            <span class="badge {{ 'bg-success' if e.status == 'Active' else 'bg-secondary' }}">{{ e.status }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- II. Family Background -->
+              <div class="tab-pane fade" id="tab-fb-{{ e.id }}" role="tabpanel" aria-labelledby="tab-btn-fb-{{ e.id }}">
+                <div class="card shadow-sm border-0">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-3">II. Family Background</h6>
+                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
+                      <i class="fas fa-file-alt fa-2x mb-2"></i>
+                      <div>Scribd</div>
+                      <small class="d-block mt-1">Embed the Family Background document here.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- III. Educational Background -->
+              <div class="tab-pane fade" id="tab-eb-{{ e.id }}" role="tabpanel" aria-labelledby="tab-btn-eb-{{ e.id }}">
+                <div class="card shadow-sm border-0">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-3">III. Educational Background</h6>
+                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
+                      <i class="fas fa-file-alt fa-2x mb-2"></i>
+                      <div>Scribd</div>
+                      <small class="d-block mt-1">Embed the Educational Background document here.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- IV. Civil Service Eligibility -->
+              <div class="tab-pane fade" id="tab-cse-{{ e.id }}" role="tabpanel" aria-labelledby="tab-btn-cse-{{ e.id }}">
+                <div class="card shadow-sm border-0">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-3">IV. Civil Service Eligibility</h6>
+                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
+                      <i class="fas fa-file-alt fa-2x mb-2"></i>
+                      <div>Scribd</div>
+                      <small class="d-block mt-1">Embed the Civil Service Eligibility document here.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- V. Work Experience -->
+              <div class="tab-pane fade" id="tab-we-{{ e.id }}" role="tabpanel" aria-labelledby="tab-btn-we-{{ e.id }}">
+                <div class="card shadow-sm border-0">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-3">V. Work Experience</h6>
+                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
+                      <i class="fas fa-file-alt fa-2x mb-2"></i>
+                      <div>Scribd</div>
+                      <small class="d-block mt-1">Embed the Work Experience document here.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- VI. Voluntary Work -->
+              <div class="tab-pane fade" id="tab-vw-{{ e.id }}" role="tabpanel" aria-labelledby="tab-btn-vw-{{ e.id }}">
+                <div class="card shadow-sm border-0">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-3">VI. Voluntary Work</h6>
+                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
+                      <i class="fas fa-file-alt fa-2x mb-2"></i>
+                      <div>Scribd</div>
+                      <small class="d-block mt-1">Embed the Voluntary Work document here.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- VII. Learning & Development -->
+              <div class="tab-pane fade" id="tab-ld-{{ e.id }}" role="tabpanel" aria-labelledby="tab-btn-ld-{{ e.id }}">
+                <div class="card shadow-sm border-0">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-3">VII. Learning &amp; Development (L&amp;D)</h6>
+                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
+                      <i class="fas fa-file-alt fa-2x mb-2"></i>
+                      <div>Scribd</div>
+                      <small class="d-block mt-1">Embed the L&amp;D/Training Programs document here.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </form>
-</div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge {{ 'bg-success' if e.status == 'Active' else 'bg-secondary' }}">
+            {{ e.status }}
+          </span>
+          <form method="POST" action="{{ url_for('main.toggle_employee_status', employee_id=e.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Toggle Status">
+              <i class="fas fa-toggle-on me-1"></i> Toggle Status
+            </button>
+          </form>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-primary btn-sm" data-action="toggle-edit" data-employee-id="{{ e.id }}">
+            <i class="fas fa-pen-to-square me-1"></i> Edit Details
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <!-- Delete Employee Modal -->
@@ -247,6 +598,25 @@
   </div>
 </div>
 {% endfor %}
+
+<!-- Profile Save Confirmation Modal -->
+<div class="modal fade" id="profileSaveConfirmModal" tabindex="-1" aria-labelledby="profileSaveConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="profileSaveConfirmModalLabel">Confirm Save</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="profileSaveConfirmModalBody">
+        Are you sure you want to save these changes?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="profileSaveConfirmBtn">Confirm Save</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* eslint-disable */
@@ -329,43 +699,6 @@
         });
     }
 
-    // Edit Employee modals live validation
-    const editInputs = document.querySelectorAll('[id^="edit-bio-number-"]');
-    editInputs.forEach(function(inputEl) {
-        const suffix = inputEl.id.replace('edit-bio-number-', '');
-        const excludeId = parseInt(suffix, 10) || null;
-        const feedbackEl = document.getElementById('edit-bio-feedback-' + suffix);
-        const formEl = document.getElementById('editEmployeeForm-' + suffix);
-
-        const handler = debounce(async function() {
-            const val = (inputEl.value || '').trim();
-            if (!val) { clearState(inputEl, feedbackEl); return; }
-            try {
-                const data = await checkBio(val, excludeId);
-                if (data && data.valid) {
-                    setValid(inputEl, feedbackEl);
-                } else {
-                    const msg = (data && data.message) ? data.message : 'Biometric number is already taken';
-                    setInvalid(inputEl, feedbackEl, msg);
-                }
-            } catch (e) {
-                clearState(inputEl, feedbackEl);
-            }
-        }, 400);
-
-        inputEl.addEventListener('input', function() {
-            clearState(inputEl, feedbackEl);
-            handler();
-        });
-
-        if (formEl) {
-            formEl.addEventListener('submit', function(e) {
-                if (inputEl.classList.contains('is-invalid')) {
-                    e.preventDefault();
-                }
-            });
-        }
-    });
 })();
 </script>
 
@@ -452,6 +785,64 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
 }
 </style>
 
+<style>
+/* Profile modal styles */
+.profile-modal .modal-body { padding-top: 1rem; }
+.profile-modal .nav-pills .nav-link {
+  background: #f8f9fa !important;
+  color: #0d6efd !important;
+  border: 1px solid rgba(13,110,253,0.25) !important;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+}
+.profile-modal .nav-pills .nav-link:hover {
+  background: #eef4ff !important;
+  color: #0b5ed7 !important;
+}
+.profile-modal .nav-pills .nav-link:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.25) !important;
+  outline: none;
+}
+.profile-modal .nav-pills .nav-link.active {
+  background: #0d6efd !important;
+  color: #fff !important;
+  border-color: #0d6efd !important;
+}
+.profile-modal .card {
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.profile-modal .card-body { padding: 1rem 1rem; }
+.profile-modal .scribd-embed-placeholder {
+  background: linear-gradient(180deg, #f8fafc, #ffffff);
+}
+@media (max-width: 767.98px) {
+  .profile-modal .nav { flex-direction: row !important; overflow-x: auto; }
+  .profile-modal .nav .nav-link { white-space: nowrap; }
+}
+/* Dark theme overrides (using data-theme attribute) */
+[data-theme="dark"] .profile-modal .nav-pills .nav-link {
+  background: #111827 !important;
+  color: #cfe2ff !important;
+  border-color: rgba(255,255,255,0.18) !important;
+}
+[data-theme="dark"] .profile-modal .nav-pills .nav-link:hover {
+  background: #0b1320 !important;
+  color: #e3f2ff !important;
+}
+[data-theme="dark"] .profile-modal .nav-pills .nav-link:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.35) !important;
+}
+[data-theme="dark"] .profile-modal .nav-pills .nav-link.active {
+  background: #0d6efd !important;
+  color: #fff !important;
+  border-color: #0d6efd !important;
+}
+[data-theme="dark"] .profile-modal .card { background: #1f2937; color: #e5e7eb; }
+[data-theme="dark"] .profile-modal .scribd-embed-placeholder { background: linear-gradient(180deg, #111827, #0f172a); }
+</style>
+
 <div class="floating-dock-container" aria-label="Employee Records Dock">
   <div class="floating-dock" role="tablist" aria-label="Quick actions">
     <button class="dock-item" role="tab" aria-selected="false" id="dock-tab-dashboard" aria-controls="dock-content-dashboard">
@@ -488,7 +879,8 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
     if (sectionDashboard) sectionDashboard.hidden = !showDashboard;
     if (sectionEmployees) sectionEmployees.hidden = showDashboard;
     if (mainHeader) {
-      const label = tabEl?.querySelector('span')?.textContent || (showDashboard ? 'Dashboard' : 'Employees');
+      var spanEl = (tabEl && typeof tabEl.querySelector === 'function') ? tabEl.querySelector('span') : null;
+      var label = (spanEl && spanEl.textContent) ? spanEl.textContent : (showDashboard ? 'Dashboard' : 'Employees');
       mainHeader.textContent = label;
     }
   }
@@ -519,6 +911,540 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
     setActive(empTab);
     updateSections(empTab);
   }
+})();
+</script>
+<script>
+/* Inline edit for Profile modal across Personal, Address, and Employment sections */
+(function() {
+  const profileCsrf = "{{ csrf_token() }}";
+  const SELECT_CLASS = 'form-select form-select-sm pi-input';
+  const INPUT_CLASS = 'form-control form-control-sm pi-input';
+  const CHECK_BIO_ENDPOINT = "{{ url_for('main.check_bio_number') }}";
+  const OFFICE_CHOICES = (function(){ try { return JSON.parse('{{ (form and form.office and form.office.choices) and (form.office.choices|tojson|safe) or "[]" }}'); } catch(e) { return []; } })();
+  const OFFICE_VALUES = (Array.isArray(OFFICE_CHOICES) ? OFFICE_CHOICES.map(c => c[0]) : []);
+  const POSITION_CHOICES = ['Job Order Worker', 'Contract of Service'];
+  const STATUS_CHOICES = ['Active', 'Inactive'];
+
+  // Reusable helpers
+  function createInputControl(desc, value) {
+    if (desc.type === 'select') {
+      const sel = document.createElement('select');
+      sel.className = SELECT_CLASS;
+      const options = (desc.options || []);
+      options.forEach(function(opt) {
+        const o = document.createElement('option');
+        o.value = opt;
+        o.textContent = opt === '' ? 'Select' : opt;
+        if ((value || '') === opt) o.selected = true;
+        sel.appendChild(o);
+      });
+      return sel;
+    }
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = INPUT_CLASS;
+    input.value = (value || '');
+    if (desc.placeholder) input.placeholder = desc.placeholder;
+    return input;
+  }
+
+  function debounce(fn, delay) {
+    let t;
+    return function(...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), delay);
+    };
+  }
+
+  async function checkBio(value, excludeId) {
+    const fd = new FormData();
+    fd.append('bio_number', value || '');
+    if (excludeId) fd.append('exclude_id', String(excludeId));
+    fd.append('csrf_token', profileCsrf);
+    const res = await fetch(CHECK_BIO_ENDPOINT, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': profileCsrf },
+      body: fd,
+      credentials: 'same-origin'
+    });
+    try { return await res.json(); } catch { return { valid: true }; }
+  }
+
+  // Map for Personal Information labels
+  const personalFieldMap = {
+    'Surname':            { key: 'surname', type: 'text' },
+    'First Name':         { key: 'first_name', type: 'text' },
+    'Middle Name':        { key: 'middle_name', type: 'text' },
+    'Name Extension (Jr., Sr., II, etc.)': { key: 'name_extension', type: 'text' },
+    'Date of Birth (mm/dd/yyyy)': { key: 'date_of_birth', type: 'text', placeholder: 'mm/dd/yyyy' },
+    'Place of Birth':     { key: 'place_of_birth', type: 'text' },
+    'Sex':                { key: 'sex', type: 'select', options: ['', 'Male', 'Female', 'Other'] },
+    'Civil Status':       { key: 'civil_status', type: 'select', options: ['', 'Single', 'Married', 'Widowed', 'Separated', 'Other'] },
+    'Height (m)':         { key: 'height_m', type: 'text', placeholder: 'e.g., 1.70' },
+    'Weight (kg)':        { key: 'weight_kg', type: 'text', placeholder: 'e.g., 65' },
+    'Blood Type':         { key: 'blood_type', type: 'select', options: ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] },
+    'GSIS ID No.':        { key: 'gsis_id_no', type: 'text' },
+    'PAG-IBIG ID No.':    { key: 'pagibig_id_no', type: 'text' },
+    'PhilHealth No.':     { key: 'philhealth_no', type: 'text' },
+    'SSS No.':            { key: 'sss_no', type: 'text' },
+    'TIN':                { key: 'tin', type: 'text' },
+    'Agency Employee No.':{ key: 'agency_employee_no', type: 'text' },
+    'Citizenship':        { key: 'citizenship', type: 'text' },
+    'Telephone No.':      { key: 'telephone_no', type: 'text' },
+    'Mobile No.':         { key: 'mobile_no', type: 'text' },
+    'E-mail Address':     { key: 'email_address', type: 'text' }
+  };
+
+  // Address label -> suffix mapping (we will prefix with res_/perm_)
+  const addressLabelToSuffix = {
+    'House/Block/Lot': 'house_lot',
+    'Street': 'street',
+    'Subdivision/Village': 'subdivision',
+    'Barangay': 'barangay',
+    'City/Municipality': 'city_municipality',
+    'Province': 'province',
+    'ZIP Code': 'zip_code'
+  };
+
+  // Employment label map
+  const employmentFieldMap = {
+    'Biometric': { key: 'bio_number', type: 'text' }, // add live duplicate verifier
+    'Office':    { key: 'office', type: 'select', options: OFFICE_VALUES },
+    'Position':  { key: 'position', type: 'select', options: POSITION_CHOICES },
+    'Status':    { key: 'status', type: 'select', options: STATUS_CHOICES }
+  };
+
+  function enterEdit(modal) {
+    if (!modal) return;
+    const employeeId = modal.getAttribute('id').replace('viewEmployeeModal-', '');
+    const piTab = modal.querySelector('#tab-pi-' + employeeId);
+    if (!piTab) return;
+    const cardBody = piTab.querySelector('.card-body');
+    if (!cardBody) return;
+
+    // Helper to attach editor to label/value pair
+    function attachEditor(valueEl, desc, currentText) {
+      if (valueEl.querySelector('.pi-input')) return;
+      valueEl.setAttribute('data-original-text', currentText);
+      valueEl.innerHTML = '';
+      const input = createInputControl(desc, currentText);
+      input.setAttribute('data-key', desc.key);
+      valueEl.appendChild(input);
+      return input;
+    }
+
+    // Personal Information grid (top section) - labels as div.text-muted.small
+    const personalCols = cardBody.querySelectorAll('.row.g-3 > [class^="col-"]');
+    personalCols.forEach(function(col) {
+      const labelEl = col.querySelector('.text-muted.small');
+      const valueEl = col.querySelector('.fw-semibold');
+      if (!labelEl || !valueEl) return;
+      const label = (labelEl.textContent || '').trim();
+      const desc = personalFieldMap[label];
+      if (!desc) return;
+      const currentText = (valueEl.textContent || '').trim();
+      attachEditor(valueEl, desc, currentText);
+    });
+
+    // Residential and Permanent Address sections
+    const sectionHeaders = cardBody.querySelectorAll('.text-muted.small.mb-1');
+    sectionHeaders.forEach(function(hdr) {
+      const sectionTitle = (hdr.textContent || '').trim();
+      const isRes = sectionTitle === 'Residential Address';
+      const isPerm = sectionTitle === 'Permanent Address';
+      if (!isRes && !isPerm) return;
+      const row = hdr.parentElement && hdr.parentElement.querySelector('.row.g-2');
+      if (!row) return;
+      const cols = row.querySelectorAll('[class^="col-"]');
+      cols.forEach(function(col) {
+        const labelEl = col.querySelector('small.text-muted');
+        const valueEl = col.querySelector('.fw-semibold');
+        if (!labelEl || !valueEl) return;
+        const label = (labelEl.textContent || '').trim();
+        const suffix = addressLabelToSuffix[label];
+        if (!suffix) return;
+        const key = (isRes ? 'res_' : 'perm_') + suffix;
+        const desc = { key, type: 'text' };
+        const currentText = (valueEl.textContent || '').trim();
+        attachEditor(valueEl, desc, currentText);
+      });
+    });
+
+    // Employment Details (Auto-filled) - a row.g-3 after its header
+    const empHeader = Array.from(cardBody.querySelectorAll('h6.text-uppercase.text-muted.small'))
+      .find(h => (h.textContent || '').includes('Employment Details'));
+    if (empHeader) {
+      const empRow = empHeader.parentElement && empHeader.parentElement.querySelector('.row.g-3');
+      if (empRow) {
+        const cols = empRow.querySelectorAll('[class^="col-"]');
+        cols.forEach(function(col) {
+          const labelEl = col.querySelector('.text-muted.small');
+          const valueEl = col.querySelector('.fw-semibold, span.badge, div.fw-semibold');
+          if (!labelEl || !valueEl) return;
+          const lbl = (labelEl.textContent || '').trim();
+          const map = employmentFieldMap[lbl];
+          if (!map) return;
+          const currentText = (valueEl.textContent || '').trim();
+          const input = attachEditor(col.querySelector('.fw-semibold') || valueEl, map, currentText);
+
+          // Biometric duplicate verification inline
+          if (map.key === 'bio_number' && input) {
+            const excludeId = parseInt(employeeId, 10) || null;
+            const runCheck = debounce(async function() {
+              const val = (input.value || '').trim();
+              if (!val) { input.classList.remove('is-invalid'); return; }
+              try {
+                const data = await checkBio(val, excludeId);
+                if (data && data.valid) {
+                  input.classList.remove('is-invalid');
+                  input.removeAttribute('title');
+                } else {
+                  input.classList.add('is-invalid');
+                  input.setAttribute('title', (data && data.message) ? data.message : 'Biometric number is already taken');
+                }
+              } catch {
+                input.classList.remove('is-invalid');
+                input.removeAttribute('title');
+              }
+            }, 400);
+            input.addEventListener('input', () => { input.classList.remove('is-invalid'); runCheck(); });
+          }
+
+          // Replace badges (Position/Status) with selects in DOM location showing text
+          if ((map.key === 'position' || map.key === 'status') && input && input.tagName === 'SELECT') {
+            // Nothing extra needed; attachEditor already set select
+          }
+        });
+      }
+    }
+
+    modal.setAttribute('data-editing', '1');
+    const btn = modal.querySelector('[data-action="toggle-edit"]');
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-save me-1"></i> Save';
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-success');
+    }
+  }
+
+  function exitEdit(modal, updatedMap) {
+    if (!modal) return;
+    const employeeId = modal.getAttribute('id').replace('viewEmployeeModal-', '');
+    const piTab = modal.querySelector('#tab-pi-' + employeeId);
+    if (!piTab) return;
+    const cardBody = piTab.querySelector('.card-body');
+    if (!cardBody) return;
+
+    function restoreValue(valueEl, mapKey) {
+      const input = valueEl.querySelector('.pi-input');
+      let newValue = (input && 'value' in input) ? input.value : (valueEl.getAttribute('data-original-text') || '');
+      if (updatedMap && mapKey && (mapKey in updatedMap)) {
+        newValue = updatedMap[mapKey] || '';
+      }
+      valueEl.innerHTML = '';
+      valueEl.textContent = newValue;
+      valueEl.removeAttribute('data-original-text');
+    }
+
+    // Personal top grid
+    const personalCols = cardBody.querySelectorAll('.row.g-3 > [class^="col-"]');
+    personalCols.forEach(function(col) {
+      const labelEl = col.querySelector('.text-muted.small');
+      const valueEl = col.querySelector('.fw-semibold');
+      if (!labelEl || !valueEl) return;
+      const label = (labelEl.textContent || '').trim();
+      const desc = personalFieldMap[label];
+      if (!desc) return;
+      restoreValue(valueEl, desc.key);
+    });
+
+    // Residential / Permanent
+    const sectionHeaders = cardBody.querySelectorAll('.text-muted.small.mb-1');
+    sectionHeaders.forEach(function(hdr) {
+      const sectionTitle = (hdr.textContent || '').trim();
+      const isRes = sectionTitle === 'Residential Address';
+      const isPerm = sectionTitle === 'Permanent Address';
+      if (!isRes && !isPerm) return;
+      const row = hdr.parentElement && hdr.parentElement.querySelector('.row.g-2');
+      if (!row) return;
+      const cols = row.querySelectorAll('[class^="col-"]');
+      cols.forEach(function(col) {
+        const labelEl = col.querySelector('small.text-muted');
+        const valueEl = col.querySelector('.fw-semibold');
+        if (!labelEl || !valueEl) return;
+        const label = (labelEl.textContent || '').trim();
+        const suffix = addressLabelToSuffix[label];
+        if (!suffix) return;
+        const key = (isRes ? 'res_' : 'perm_') + suffix;
+        restoreValue(valueEl, key);
+      });
+    });
+
+    // Employment
+    const empHeader = Array.from(cardBody.querySelectorAll('h6.text-uppercase.text-muted.small'))
+      .find(h => (h.textContent || '').includes('Employment Details'));
+    if (empHeader) {
+      const empRow = empHeader.parentElement && empHeader.parentElement.querySelector('.row.g-3');
+      if (empRow) {
+        const cols = empRow.querySelectorAll('[class^="col-"]');
+        cols.forEach(function(col) {
+          const labelEl = col.querySelector('.text-muted.small');
+          const valueEl = col.querySelector('.fw-semibold') || col.querySelector('div.fw-semibold');
+          if (!labelEl || !valueEl) return;
+          const lbl = (labelEl.textContent || '').trim();
+          const map = employmentFieldMap[lbl];
+          if (!map) return;
+          restoreValue(valueEl, map.key);
+        });
+      }
+    }
+
+    modal.removeAttribute('data-editing');
+    const btn = modal.querySelector('[data-action="toggle-edit"]');
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-pen-to-square me-1"></i> Edit Details';
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-primary');
+    }
+  }
+
+  function requestSave(modal) {
+    const employeeId = modal.getAttribute('id').replace('viewEmployeeModal-', '');
+    const piTab = modal.querySelector('#tab-pi-' + employeeId);
+    if (!piTab) return;
+
+    // Detect changes
+    const inputs = piTab.querySelectorAll('.pi-input');
+    let hasChanges = false;
+    inputs.forEach(function(input){
+      const container = input.closest('.fw-semibold');
+      const original = container ? String(container.getAttribute('data-original-text') || '').trim() : '';
+      const current = String(input.value || '').trim();
+      if (current !== original) { hasChanges = true; }
+    });
+    if (!hasChanges) {
+      // Nothing changed; simply exit edit mode
+      exitEdit(modal, null);
+      return;
+    }
+
+    // Show confirmation modal consistent with app design
+    var cmEl = document.getElementById('profileSaveConfirmModal');
+    var confirmBtn = document.getElementById('profileSaveConfirmBtn');
+    var bodyEl = document.getElementById('profileSaveConfirmModalBody');
+    if (bodyEl) {
+      var header = modal.querySelector('#viewEmployeeModalLabel-' + employeeId);
+      var name = header ? header.textContent : '';
+      bodyEl.textContent = name ? ('Are you sure you want to save changes to "' + name + '"?') : 'Are you sure you want to save these changes?';
+    }
+    if (cmEl && confirmBtn && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+      var inst = bootstrap.Modal.getInstance(cmEl) || new bootstrap.Modal(cmEl);
+      var handler = function() {
+        try { confirmBtn.removeEventListener('click', handler); } catch(e) {}
+        inst.hide();
+        saveEdit(modal);
+      };
+      confirmBtn.addEventListener('click', handler);
+      inst.show();
+    } else {
+      // Fallback to direct save if modal not available
+      saveEdit(modal);
+    }
+  }
+
+  async function saveEdit(modal) {
+    const updateUrl = modal.getAttribute('data-update-url');
+    const employeeId = modal.getAttribute('id').replace('viewEmployeeModal-', '');
+    const piTab = modal.querySelector('#tab-pi-' + employeeId);
+    if (!updateUrl || !piTab) return;
+
+    // Block save if any invalid input (e.g., duplicate bio_number)
+    const invalid = piTab.querySelector('.pi-input.is-invalid');
+    if (invalid) {
+      invalid.focus();
+      return;
+    }
+
+    // Collect values
+    const inputs = piTab.querySelectorAll('.pi-input');
+    var fd = new FormData();
+    fd.append('csrf_token', profileCsrf);
+    inputs.forEach(function(input) {
+      const key = input.getAttribute('data-key');
+      if (!key) return;
+      let val = (input.value || '').trim();
+      fd.append(key, val);
+    });
+
+    // Submit
+    let res;
+    try {
+      res = await fetch(updateUrl, {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+        headers: { 'X-CSRFToken': profileCsrf }
+      });
+    } catch (e) {
+      // Network error, just exit edit without changes
+      exitEdit(modal, null);
+      return;
+    }
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (e) {
+      data = null;
+    }
+    if (res.ok && data && data.success) {
+      // Update display name in header if provided
+      try {
+        const header = modal.querySelector('#viewEmployeeModalLabel-' + employeeId);
+        if (header && data.employee_name) {
+          header.textContent = data.employee_name;
+        }
+        // Update subtitle if bio/position/office changed (no optional chaining for compatibility)
+        const subtitle = modal.querySelector('.text-white-50');
+        if (subtitle && data.updated) {
+          var subText = subtitle.textContent || '';
+          var mBio = subText.match(/Biometric: ([^ •]+)/);
+          var mPos = subText.match(/• ([^•]+) •/);
+          var parts = subText.split('•');
+          var lastPart = parts.length ? parts[parts.length - 1] : '';
+          var bio = (typeof data.updated.bio_number !== 'undefined' && data.updated.bio_number !== null && data.updated.bio_number !== '')
+            ? data.updated.bio_number
+            : (mBio && mBio[1] ? mBio[1] : '');
+          var posText = (mPos && mPos[1]) ? mPos[1] : '';
+          var pos = (typeof data.updated.position !== 'undefined' && data.updated.position !== null && data.updated.position !== '')
+            ? data.updated.position
+            : posText.trim();
+          var offText = lastPart ? String(lastPart).trim() : '';
+          var off = (typeof data.updated.office !== 'undefined' && data.updated.office !== null && data.updated.office !== '')
+            ? data.updated.office
+            : offText;
+          subtitle.textContent = 'Biometric: ' + bio + ' • ' + pos + ' • ' + off;
+        }
+      } catch (e) {}
+
+      // Update table row cells immediately after save
+      try {
+        const row = document.querySelector('tr[data-employee-id="' + employeeId + '"]');
+        if (row && data.updated) {
+          const u = data.updated;
+
+          // Biometric (col 0)
+          if ('bio_number' in u && row.cells[0]) {
+            row.cells[0].textContent = u.bio_number || '';
+          }
+          // Name (col 1)
+          if (data.employee_name && row.cells[1]) {
+            row.cells[1].textContent = data.employee_name;
+          }
+          // Office (col 2)
+          if ('office' in u && row.cells[2]) {
+            row.cells[2].textContent = u.office || '';
+          }
+          // Position (col 3) with badge styling
+          if ('position' in u && row.cells[3]) {
+            const posCell = row.cells[3];
+            let badge = posCell.querySelector('.badge');
+            if (!badge) {
+              badge = document.createElement('span');
+              badge.className = 'badge';
+              posCell.innerHTML = '';
+              posCell.appendChild(badge);
+            }
+            // reset and apply classes based on position
+            badge.classList.remove('bg-info','text-dark','bg-primary','bg-secondary');
+            const pos = u.position || '';
+            if (pos === 'Job Order Worker') {
+              badge.classList.add('bg-info','text-dark');
+            } else if (pos === 'Contract of Service') {
+              badge.classList.add('bg-primary');
+            } else {
+              badge.classList.add('bg-secondary');
+            }
+            badge.textContent = pos;
+          }
+          // Status (col 4) with badge styling
+          if ('status' in u && row.cells[4]) {
+            const stCell = row.cells[4];
+            let sBadge = stCell.querySelector('.badge');
+            if (!sBadge) {
+              sBadge = document.createElement('span');
+              sBadge.className = 'badge';
+              stCell.innerHTML = '';
+              stCell.appendChild(sBadge);
+            }
+            sBadge.classList.remove('bg-success','bg-secondary');
+            const st = u.status || '';
+            if (st === 'Active') {
+              sBadge.classList.add('bg-success');
+            } else {
+              sBadge.classList.add('bg-secondary');
+            }
+            sBadge.textContent = st;
+          }
+        }
+      } catch (e) {}
+
+      // Update footer status badge if changed
+      try {
+        if (data.updated && 'status' in data.updated) {
+          const footerBadge = modal.querySelector('.modal-footer .badge');
+          if (footerBadge) {
+            footerBadge.classList.remove('bg-success','bg-secondary');
+            const st = data.updated.status || '';
+            if (st === 'Active') footerBadge.classList.add('bg-success');
+            else footerBadge.classList.add('bg-secondary');
+            footerBadge.textContent = st || footerBadge.textContent;
+          }
+        }
+      } catch (e) {}
+
+      // Success notification: show global toast and also inline within the open modal
+      try {
+        var openModal = document.querySelector('.modal.show') || modal;
+        if (openModal) {
+          var bodyEl = openModal.querySelector('.modal-body');
+          if (bodyEl) {
+            var alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.setAttribute('role', 'alert');
+            alertDiv.innerHTML = '<strong>Saved.</strong> Changes were saved successfully.'
+              + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            bodyEl.insertBefore(alertDiv, bodyEl.firstChild);
+            setTimeout(function(){ try { alertDiv.classList.remove('show'); alertDiv.remove(); } catch(e){} }, 2500);
+          }
+        }
+        if (typeof window.showToast === 'function') {
+          window.showToast('Employee profile saved successfully', 'success');
+        }
+      } catch (e) {}
+
+      const updated = data.updated || {};
+      exitEdit(modal, updated);
+    } else {
+      // On error, revert
+      exitEdit(modal, null);
+    }
+  }
+
+  // Event delegation for Edit/Save button
+  document.addEventListener('click', function(ev) {
+    const btn = ev.target.closest('[data-action="toggle-edit"]');
+    if (!btn) return;
+    const modal = btn.closest('.modal');
+    if (!modal) return;
+    const editing = modal.getAttribute('data-editing') === '1';
+    if (!editing) {
+      // Enter edit mode
+      enterEdit(modal);
+    } else {
+      // Save with confirmation modal
+      requestSave(modal);
+    }
+  });
 })();
 </script>
 {% endblock %}

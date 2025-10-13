@@ -877,7 +877,7 @@
                                 <div class="notification-item {% if not notification.is_read %}unread{% else %}read{% endif %}"
                                    data-notification-id="{{ notification.id }}"
                                    onclick="markNotificationAsRead(event, {{ notification.id }});">
-                                    <div class="message">{{ notification.message }}</div>
+                                    <div class="message">{{ notification.message|strip_sla_key }}</div>
                                     <div class="timestamp">
                                         {{ notification.timestamp|local_time("%B %d, %Y at %I:%M %p") }}
                                     </div>
@@ -1009,10 +1009,25 @@
                     .then(data => {
                         const container = document.getElementById('notification-container');
                         if(page === 1) { container.innerHTML = ''; }
+                        const stripSlaKeyText = (message) => {
+                            if (!message) {
+                                return '';
+                            }
+                            const trimmed = message.trim();
+                            if (trimmed.endsWith(']')) {
+                                const idx = trimmed.lastIndexOf('[');
+                                if (idx !== -1) {
+                                    return trimmed.slice(0, idx).trim();
+                                }
+                            }
+                            return trimmed;
+                        };
+
                         data.notifications.forEach(function(notification) {
                             const div = document.createElement('div');
                             div.className = "notification-item";
-                            div.innerHTML = `<p>${notification.message}</p>
+                            const cleanMessage = stripSlaKeyText(notification.message);
+                            div.innerHTML = `<p>${cleanMessage}</p>
                                  <small>${new Date(notification.timestamp).toLocaleString()}</small>`;
                             container.appendChild(div);
                         });

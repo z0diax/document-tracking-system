@@ -37,6 +37,9 @@ Timezone and metrics are localized to Asia/Manila, and analytics focus on busine
 - Activity Logging & Notifications
   - ActivityLog for document events (Created, Accepted, Forwarded, Released, Declined, Resubmitted, Archived, etc.)
   - Notifications for key events (received doc, accepted, declined, released), with mark-read/mark-all/delete-all
+- SLA Monitoring
+  - Background job evaluates pending SLAs for Documents, Leave Requests, and EWP records on a rolling schedule
+  - Sends automated warnings to owners and escalations to admins when thresholds are breached (business-hour aware for documents)
 
 - Leave Management
   - Create/Edit/Delete Leave requests with multiple date ranges

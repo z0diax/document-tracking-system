@@ -16,6 +16,7 @@ import json
 from werkzeug.security import generate_password_hash, check_password_hash
 import mimetypes
 from app.utils import get_upload_path, get_file_url, calculate_business_hours, is_allowed_file
+from app.sla_monitor import _resolve_document_anchor, _elapsed_hours, _format_elapsed_duration
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 # form choices
@@ -1880,6 +1881,79 @@ def unarchive_document(document_id):
 from datetime import datetime, timedelta
 from sqlalchemy import func
 
+def _describe_sla_key(dedupe_key: str):
+    if not dedupe_key:
+        return None
+    parts = dedupe_key.split(':')
+    if len(parts) < 3:
+        return {'raw': dedupe_key}
+
+    entity_raw, status_raw, severity_raw = parts[0], parts[1], parts[2]
+
+    entity_type = entity_raw
+    entity_id = None
+    entity_label = entity_raw
+    if '#' in entity_raw:
+        entity_type, id_part = entity_raw.split('#', 1)
+        entity_label = f"{entity_type} #{id_part}"
+        try:
+            entity_id = int(id_part)
+        except (TypeError, ValueError):
+            entity_id = None
+
+    status_label = status_raw.replace('_', ' ').title()
+    severity_label = 'Escalation' if severity_raw.lower() == 'escalate' else severity_raw.title()
+
+    return {
+        'raw': dedupe_key,
+        'entity': entity_label,
+        'entity_type': entity_type,
+        'entity_id': entity_id,
+        'status_value': status_raw,
+        'status_label': status_label,
+        'severity_value': severity_raw,
+        'severity_label': severity_label,
+    }
+
+
+def _compute_duration_label(key_info):
+    if not key_info:
+        return None
+
+    entity_type = key_info.get('entity_type')
+    entity_id = key_info.get('entity_id')
+    if not entity_type or entity_id is None:
+        return None
+
+    now = datetime.utcnow()
+
+    try:
+        if entity_type == 'Document':
+            document = Document.query.get(entity_id)
+            if not document:
+                return None
+            anchor = _resolve_document_anchor(document) or document.timestamp
+            if not anchor:
+                return None
+            hours = _elapsed_hours(anchor, now, use_business_hours=True)
+            return _format_elapsed_duration(hours, True)
+        elif entity_type == 'LeaveRequest':
+            leave = LeaveRequest.query.get(entity_id)
+            if not leave or not leave.created_timestamp:
+                return None
+            hours = _elapsed_hours(leave.created_timestamp, now, use_business_hours=False)
+            return _format_elapsed_duration(hours, False)
+        elif entity_type == 'EWPRecord':
+            record = EWPRecord.query.get(entity_id)
+            if not record or not record.created_timestamp:
+                return None
+            hours = _elapsed_hours(record.created_timestamp, now, use_business_hours=False)
+            return _format_elapsed_duration(hours, False)
+    except Exception:
+        return None
+
+    return None
+
 @main.route('/admin')
 @login_required
 def admin_dashboard():
@@ -2510,6 +2584,95 @@ def admin_dashboard():
         leave_total_released=leave_total_released,
         leave_types_labels=leave_types_labels,
         leave_types_counts=leave_types_counts
+    )
+
+
+@main.route('/admin/sla-alerts')
+@login_required
+def admin_sla_alerts():
+    if not current_user.is_admin:
+        flash('You are not authorized to view SLA alerts.', 'danger')
+        return redirect(url_for('main.dashboard'))
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 25
+    search_query = request.args.get('search', '').strip()
+
+    base_query = Notification.query.options(joinedload(Notification.user)).filter(
+        Notification.message.ilike('SLA%')
+    )
+
+    if search_query:
+        pattern = f'%{search_query}%'
+        base_query = base_query.filter(Notification.message.ilike(pattern))
+
+    pagination = base_query.order_by(Notification.timestamp.desc()).paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    alerts = []
+    for alert in pagination.items:
+        raw_message = (alert.message or '').strip()
+        dedupe_key = None
+        if raw_message.endswith(']') and '[' in raw_message:
+            raw_message, tail = raw_message.rsplit('[', 1)
+            raw_message = raw_message.strip()
+            dedupe_key = tail.strip(' ]')
+
+        severity = 'escalate' if 'SLA Escalate' in raw_message else (
+            'warn' if 'SLA Warn' in raw_message else 'info'
+        )
+
+        key_info = _describe_sla_key(dedupe_key) if dedupe_key else None
+        duration_label = _compute_duration_label(key_info) if key_info else None
+        friendly_message = None
+        if key_info and duration_label:
+            status_phrase = key_info['status_label'].lower()
+            friendly_message = (
+                f"{key_info['severity_label']}: {key_info['entity']} "
+                f"has been {status_phrase} for {duration_label}"
+            )
+
+        alerts.append({
+            'id': alert.id,
+            'user': alert.user,
+            'message': raw_message,
+            'dedupe_key': dedupe_key,
+            'timestamp': alert.timestamp,
+            'is_read': alert.is_read,
+            'severity': severity,
+            'key_info': key_info,
+            'friendly_message': friendly_message,
+            'duration_label': duration_label,
+        })
+
+    window_hours = 24
+    window_start = datetime.utcnow() - timedelta(hours=window_hours)
+    summary_query = Notification.query.filter(
+        Notification.message.ilike('SLA%'),
+        Notification.timestamp >= window_start
+    )
+    summary_total = summary_query.count()
+    summary_escalations = summary_query.filter(
+        Notification.message.ilike('%SLA Escalate%')
+    ).count()
+    summary_warnings = summary_query.filter(
+        Notification.message.ilike('%SLA Warn%')
+    ).count()
+
+    return render_template(
+        'admin_sla_alerts.html',
+        alerts=alerts,
+        pagination=pagination,
+        search_query=search_query,
+        summary={
+            'total': summary_total,
+            'escalations': summary_escalations,
+            'warnings': summary_warnings,
+            'window_hours': window_hours
+        }
     )
 
 @main.route('/admin/toggle_user_status/<int:user_id>', methods=['POST'])

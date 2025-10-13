@@ -42,6 +42,69 @@ class Config:
     # App specifics
     ALLOWED_EXTENSIONS = {"pdf", "png", "jpg", "jpeg"}
     TIMEZONE = os.environ.get("TIMEZONE", "Asia/Manila")
+    SLA_RULES = {
+        "Document": {
+            "Pending": {
+                "warn_after_hours": float(os.environ.get("SLA_DOC_PENDING_WARN_HOURS", "8")),
+                "escalate_after_hours": float(os.environ.get("SLA_DOC_PENDING_ESCALATE_HOURS", "16")),
+                "use_business_hours": True,
+                "notify_creator": True,
+                "notify_recipient": True,
+                "escalate_to_admins": True,
+                "dedupe_hours": float(os.environ.get("SLA_DOC_PENDING_DEDUPE_HOURS", "6")),
+                "escalation_dedupe_hours": float(os.environ.get("SLA_DOC_PENDING_ESC_DEDUPE_HOURS", "12")),
+            }
+        },
+        "LeaveRequest": {
+            "Pending": {
+                "warn_after_hours": float(os.environ.get("SLA_LEAVE_PENDING_WARN_HOURS", "24")),
+                "escalate_after_hours": float(os.environ.get("SLA_LEAVE_PENDING_ESCALATE_HOURS", "48")),
+                "use_business_hours": False,
+                "notify_creator": True,
+                "escalate_to_admins": True,
+                "dedupe_hours": float(os.environ.get("SLA_LEAVE_PENDING_DEDUPE_HOURS", "12")),
+                "escalation_dedupe_hours": float(os.environ.get("SLA_LEAVE_PENDING_ESC_DEDUPE_HOURS", "24")),
+            },
+            "For Computation": {
+                "warn_after_hours": float(os.environ.get("SLA_LEAVE_FORCOMP_WARN_HOURS", "24")),
+                "escalate_after_hours": float(os.environ.get("SLA_LEAVE_FORCOMP_ESCALATE_HOURS", "48")),
+                "use_business_hours": False,
+                "notify_creator": True,
+                "escalate_to_admins": True,
+                "dedupe_hours": float(os.environ.get("SLA_LEAVE_FORCOMP_DEDUPE_HOURS", "12")),
+                "escalation_dedupe_hours": float(os.environ.get("SLA_LEAVE_FORCOMP_ESC_DEDUPE_HOURS", "24")),
+            },
+            "For Signature": {
+                "warn_after_hours": float(os.environ.get("SLA_LEAVE_FORSIG_WARN_HOURS", "16")),
+                "escalate_after_hours": float(os.environ.get("SLA_LEAVE_FORSIG_ESCALATE_HOURS", "32")),
+                "use_business_hours": False,
+                "notify_creator": True,
+                "escalate_to_admins": True,
+                "dedupe_hours": float(os.environ.get("SLA_LEAVE_FORSIG_DEDUPE_HOURS", "12")),
+                "escalation_dedupe_hours": float(os.environ.get("SLA_LEAVE_FORSIG_ESC_DEDUPE_HOURS", "24")),
+            },
+        },
+        "EWPRecord": {
+            "Pending": {
+                "warn_after_hours": float(os.environ.get("SLA_EWP_PENDING_WARN_HOURS", "24")),
+                "escalate_after_hours": float(os.environ.get("SLA_EWP_PENDING_ESCALATE_HOURS", "48")),
+                "use_business_hours": False,
+                "notify_creator": True,
+                "escalate_to_admins": True,
+                "dedupe_hours": float(os.environ.get("SLA_EWP_PENDING_DEDUPE_HOURS", "12")),
+                "escalation_dedupe_hours": float(os.environ.get("SLA_EWP_PENDING_ESC_DEDUPE_HOURS", "24")),
+            },
+            "For Computation": {
+                "warn_after_hours": float(os.environ.get("SLA_EWP_FORCOMP_WARN_HOURS", "16")),
+                "escalate_after_hours": float(os.environ.get("SLA_EWP_FORCOMP_ESCALATE_HOURS", "36")),
+                "use_business_hours": False,
+                "notify_creator": True,
+                "escalate_to_admins": True,
+                "dedupe_hours": float(os.environ.get("SLA_EWP_FORCOMP_DEDUPE_HOURS", "12")),
+                "escalation_dedupe_hours": float(os.environ.get("SLA_EWP_FORCOMP_ESC_DEDUPE_HOURS", "24")),
+            },
+        },
+    }
 
     # Host/Port
     HOST = os.environ.get("HOST", "0.0.0.0")

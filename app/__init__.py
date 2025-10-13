@@ -134,6 +134,19 @@ def create_app(config_class=Config):
         except:
             return 'Error calculating time'
 
+    @app.template_filter('strip_sla_key')
+    def strip_sla_key_filter(message: str) -> str:
+        """
+        Drop trailing SLA dedupe keys (e.g., '[Document#1363:Pending:escalate]')
+        so user-facing notifications stay readable.
+        """
+        if not message:
+            return ''
+        if message.endswith(']') and '[' in message:
+            base, _ = message.rsplit('[', 1)
+            return base.rstrip()
+        return message
+
     # Initialize the scheduler
     init_scheduler(app)
 
@@ -150,7 +163,31 @@ def init_scheduler(app):
     """
     from apscheduler.schedulers.background import BackgroundScheduler
     from app.auto_archive import archive_old_documents
+    from app.sla_monitor import run_sla_checks
+    from functools import wraps
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(archive_old_documents, 'cron', hour=0, minute=0)  # Run daily at midnight
+    def _with_app_context(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            with app.app_context():
+                return func(*args, **kwargs)
+        return _wrapper
+
+    scheduler.add_job(
+        _with_app_context(archive_old_documents),
+        'cron',
+        hour=0,
+        minute=0,
+        id='auto_archive_documents',
+        replace_existing=True
+    )
+    scheduler.add_job(
+        _with_app_context(run_sla_checks),
+        'interval',
+        minutes=30,
+        id='sla_monitor',
+        replace_existing=True
+    )
     scheduler.start()
+    app.scheduler = scheduler

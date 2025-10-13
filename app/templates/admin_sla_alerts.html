@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">SLA Alerts</h2>
+            <p class="text-muted mb-0">Monitoring window: last {{ summary.window_hours }} hour{{ 's' if summary.window_hours != 1 else '' }}</p>
+        </div>
+        <div class="btn-group d-print-none">
+            <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_dashboard') }}">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+            <a class="btn btn-outline-primary" href="{{ url_for('main.admin_sla_alerts', search=search_query, page=pagination.page) }}">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4 col-lg-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-2">24-hour Summary</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Total alerts</span>
+                        <span class="fw-semibold">{{ summary.total }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Escalations</span>
+                        <span class="badge bg-danger">{{ summary.escalations }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Warnings</span>
+                        <span class="badge bg-warning text-dark">{{ summary.warnings }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form class="row g-2 align-items-center" method="get" action="{{ url_for('main.admin_sla_alerts') }}">
+                        <div class="col-sm-8 col-md-6 col-lg-5">
+                            <label for="slaSearch" class="visually-hidden">Search alerts</label>
+                            <input type="text" class="form-control" id="slaSearch" name="search" placeholder="Search alerts (document, user, status…)" value="{{ search_query }}">
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                        {% if search_query %}
+                        <div class="col-sm-auto">
+                            <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_sla_alerts') }}">
+                                Clear
+                            </a>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="width: 8rem;">Severity</th>
+                            <th scope="col">Message</th>
+                            <th scope="col" style="width: 12rem;">Target User</th>
+                            <th scope="col" style="width: 10rem;">Dedupe Key</th>
+                            <th scope="col" style="width: 11rem;">Created</th>
+                            <th scope="col" style="width: 6rem;">Read?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if alerts %}
+                            {% for alert in alerts %}
+                                {% set badge_class = 'bg-secondary' %}
+                                {% if alert.severity == 'escalate' %}
+                                    {% set badge_class = 'bg-danger' %}
+                                {% elif alert.severity == 'warn' %}
+                                    {% set badge_class = 'bg-warning text-dark' %}
+                                {% endif %}
+                                <tr>
+                                    <td>
+                                        <span class="badge {{ badge_class }} px-3">
+                                            {{ alert.severity.capitalize() if alert.severity != 'info' else 'Info' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if alert.friendly_message %}
+                                            <div class="fw-semibold">{{ alert.friendly_message }}</div>
+                                        {% else %}
+                                            <div class="fw-semibold">{{ alert.message|strip_sla_key }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alert.user %}
+                                            {{ alert.user.username }}
+                                        {% else %}
+                                            <span class="text-muted">System</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alert.key_info %}
+                                            <div class="fw-semibold">{{ alert.key_info.entity }}</div>
+                                            <div class="small text-muted">{{ alert.key_info.status_label }} &bull; {{ alert.key_info.severity_label }}</div>
+                                            {% if alert.duration_label %}
+                                                <div class="small text-muted">Elapsed: {{ alert.duration_label }}</div>
+                                            {% endif %}
+                                        {% elif alert.dedupe_key %}
+                                            <code class="small">{{ alert.dedupe_key }}</code>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ alert.timestamp|local_time('%b %d, %Y %I:%M %p') }}</td>
+                                    <td>
+                                        {% if alert.is_read %}
+                                            <span class="badge bg-success">Yes</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                                    <div>No SLA alerts found for the current filters.</div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if pagination.pages > 1 %}
+        <div class="card-footer bg-light">
+            <nav aria-label="SLA alert pagination">
+                <ul class="pagination justify-content-end mb-0">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.admin_sla_alerts', page=pagination.prev_num, search=search_query) }}" tabindex="-1" aria-disabled="{{ 'true' if not pagination.has_prev else 'false' }}">Previous</a>
+                    </li>
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('main.admin_sla_alerts', page=page_num, search=search_query) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.admin_sla_alerts', page=pagination.next_num, search=search_query) }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+

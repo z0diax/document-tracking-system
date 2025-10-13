@@ -126,7 +126,10 @@ html {
 <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="mb-0">Admin Dashboard</h2>
     <div class="d-print-none">
-        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#reportTextModal">
+        <a class="btn btn-sm btn-outline-primary me-2" href="{{ url_for('main.admin_sla_alerts') }}">
+            <i class="fas fa-stopwatch me-1"></i> SLA Alerts
+        </a>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#reportTextModal">
             <i class="fas fa-file-alt me-1"></i> Print Text Report
         </button>
     </div>

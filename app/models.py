@@ -1,4 +1,5 @@
 import pytz
+import json
 from datetime import datetime
 from flask_login import UserMixin
 from app import db, login_manager
@@ -8,6 +9,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+EDUCATION_FIELD_NAMES = (
+    'school_name',
+    'basic_education',
+    'period_from',
+    'period_to',
+    'highest_level',
+    'year_graduated',
+    'scholarships'
+)
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -241,6 +252,62 @@ class Notification(db.Model):
         local_time = self.timestamp.replace(tzinfo=pytz.UTC).astimezone(manila_tz)
         return local_time
 
+
+class SLAAlertPreference(db.Model):
+    __tablename__ = 'sla_alert_preferences'
+
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(50), unique=True, nullable=False)
+    enabled = db.Column(db.Boolean, nullable=False, default=True, server_default='1')
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )
+
+    DEFAULTS = {
+        'documents': True,
+        'leave_requests': True,
+        'ewp_records': True,
+    }
+
+    @classmethod
+    def ensure_defaults(cls):
+        """
+        Ensure default preference rows exist. Safe to call multiple times.
+        """
+        created = False
+        for key, default in cls.DEFAULTS.items():
+            if not cls.query.filter_by(category=key).first():
+                db.session.add(cls(category=key, enabled=default))
+                created = True
+        if created:
+            db.session.flush()
+
+    @classmethod
+    def get_preferences_map(cls):
+        """
+        Return a dictionary of category -> enabled, falling back to defaults.
+        """
+        cls.ensure_defaults()
+        prefs = {row.category: row.enabled for row in cls.query.all()}
+        for key, default in cls.DEFAULTS.items():
+            prefs.setdefault(key, default)
+        return prefs
+
+    @classmethod
+    def set_enabled(cls, category: str, enabled: bool):
+        """
+        Persist a boolean preference for a category, creating it if needed.
+        """
+        pref = cls.query.filter_by(category=category).first()
+        if not pref:
+            pref = cls(category=category)
+            db.session.add(pref)
+        pref.enabled = bool(enabled)
+
+
 class ProcessingLog(db.Model):
     __tablename__ = 'processing_logs'
     id = db.Column(db.Integer, primary_key=True)
@@ -413,6 +480,124 @@ class Employee(db.Model):
     mobile_no = db.Column(db.String(120), nullable=True)
     email_address = db.Column(db.String(120), nullable=True)
 
+    # Family Background
+    spouse_surname = db.Column(db.String(120), nullable=True)
+    spouse_first_name = db.Column(db.String(120), nullable=True)
+    spouse_middle_name = db.Column(db.String(120), nullable=True)
+    spouse_occupation = db.Column(db.String(120), nullable=True)
+    spouse_employer_name = db.Column(db.String(150), nullable=True)
+    spouse_business_address = db.Column(db.String(255), nullable=True)
+    spouse_telephone_no = db.Column(db.String(120), nullable=True)
+
+    father_surname = db.Column(db.String(120), nullable=True)
+    father_first_name = db.Column(db.String(120), nullable=True)
+    father_middle_name = db.Column(db.String(120), nullable=True)
+    father_extension = db.Column(db.String(20), nullable=True)
+
+    mother_maiden_surname = db.Column(db.String(120), nullable=True)
+    mother_maiden_first_name = db.Column(db.String(120), nullable=True)
+    mother_maiden_middle_name = db.Column(db.String(120), nullable=True)
+
+    children_info = db.Column(db.Text, nullable=True)
+
+    # Educational Background - Elementary
+    elem_school_name = db.Column(db.String(255), nullable=True)
+    elem_basic_education = db.Column(db.String(255), nullable=True)
+    elem_period_from = db.Column(db.String(20), nullable=True)
+    elem_period_to = db.Column(db.String(20), nullable=True)
+    elem_highest_level = db.Column(db.String(255), nullable=True)
+    elem_year_graduated = db.Column(db.String(10), nullable=True)
+    elem_scholarships = db.Column(db.String(255), nullable=True)
+
+    # Educational Background - Secondary
+    sec_school_name = db.Column(db.String(255), nullable=True)
+    sec_basic_education = db.Column(db.String(255), nullable=True)
+    sec_period_from = db.Column(db.String(20), nullable=True)
+    sec_period_to = db.Column(db.String(20), nullable=True)
+    sec_highest_level = db.Column(db.String(255), nullable=True)
+    sec_year_graduated = db.Column(db.String(10), nullable=True)
+    sec_scholarships = db.Column(db.String(255), nullable=True)
+
+    # Educational Background - Vocational
+    voc_school_name = db.Column(db.String(255), nullable=True)
+    voc_basic_education = db.Column(db.String(255), nullable=True)
+    voc_period_from = db.Column(db.String(20), nullable=True)
+    voc_period_to = db.Column(db.String(20), nullable=True)
+    voc_highest_level = db.Column(db.String(255), nullable=True)
+    voc_year_graduated = db.Column(db.String(10), nullable=True)
+    voc_scholarships = db.Column(db.String(255), nullable=True)
+
+    # Educational Background - College
+    college_school_name = db.Column(db.String(255), nullable=True)
+    college_basic_education = db.Column(db.String(255), nullable=True)
+    college_period_from = db.Column(db.String(20), nullable=True)
+    college_period_to = db.Column(db.String(20), nullable=True)
+    college_highest_level = db.Column(db.String(255), nullable=True)
+    college_year_graduated = db.Column(db.String(10), nullable=True)
+    college_scholarships = db.Column(db.String(255), nullable=True)
+
+    # Educational Background - Graduate Studies
+    grad_school_name = db.Column(db.String(255), nullable=True)
+    grad_basic_education = db.Column(db.String(255), nullable=True)
+    grad_period_from = db.Column(db.String(20), nullable=True)
+    grad_period_to = db.Column(db.String(20), nullable=True)
+    grad_highest_level = db.Column(db.String(255), nullable=True)
+    grad_year_graduated = db.Column(db.String(10), nullable=True)
+    grad_scholarships = db.Column(db.String(255), nullable=True)
+
+    elem_records_json = db.Column(db.Text, nullable=True)
+    sec_records_json = db.Column(db.Text, nullable=True)
+    voc_records_json = db.Column(db.Text, nullable=True)
+    college_records_json = db.Column(db.Text, nullable=True)
+    grad_records_json = db.Column(db.Text, nullable=True)
+
+    def _primary_education_entry(self, prefix):
+        entry = {field: (getattr(self, f"{prefix}_{field}", '') or '').strip() for field in EDUCATION_FIELD_NAMES}
+        if any(entry.values()):
+            return entry
+        return {}
+
+    def _education_records(self, prefix):
+        records = []
+        json_field = getattr(self, f"{prefix}_records_json", None)
+        if json_field:
+            try:
+                parsed = json.loads(json_field)
+                if isinstance(parsed, list):
+                    for item in parsed:
+                        if not isinstance(item, dict):
+                            continue
+                        normalized = {field: (item.get(field) or '').strip() for field in EDUCATION_FIELD_NAMES}
+                        if any(normalized.values()):
+                            records.append(normalized)
+            except Exception:
+                records = []
+        if not records:
+            primary = self._primary_education_entry(prefix)
+            if primary:
+                records.append(primary)
+        return records
+
+    @property
+    def elem_records(self):
+        return self._education_records('elem')
+
+    @property
+    def sec_records(self):
+        return self._education_records('sec')
+
+    @property
+    def voc_records(self):
+        return self._education_records('voc')
+
+    @property
+    def college_records(self):
+        return self._education_records('college')
+
+    @property
+    def grad_records(self):
+        return self._education_records('grad')
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -456,5 +641,65 @@ class Employee(db.Model):
             'perm_zip_code': self.perm_zip_code,
             'telephone_no': self.telephone_no,
             'mobile_no': self.mobile_no,
-            'email_address': self.email_address
+            'email_address': self.email_address,
+            'spouse_surname': self.spouse_surname,
+            'spouse_first_name': self.spouse_first_name,
+            'spouse_middle_name': self.spouse_middle_name,
+            'spouse_occupation': self.spouse_occupation,
+            'spouse_employer_name': self.spouse_employer_name,
+            'spouse_business_address': self.spouse_business_address,
+            'spouse_telephone_no': self.spouse_telephone_no,
+            'father_surname': self.father_surname,
+            'father_first_name': self.father_first_name,
+            'father_middle_name': self.father_middle_name,
+            'father_extension': self.father_extension,
+            'mother_maiden_surname': self.mother_maiden_surname,
+            'mother_maiden_first_name': self.mother_maiden_first_name,
+            'mother_maiden_middle_name': self.mother_maiden_middle_name,
+            'children_info': self.children_info,
+            'elem_school_name': self.elem_school_name,
+            'elem_basic_education': self.elem_basic_education,
+            'elem_period_from': self.elem_period_from,
+            'elem_period_to': self.elem_period_to,
+            'elem_highest_level': self.elem_highest_level,
+            'elem_year_graduated': self.elem_year_graduated,
+            'elem_scholarships': self.elem_scholarships,
+            'sec_school_name': self.sec_school_name,
+            'sec_basic_education': self.sec_basic_education,
+            'sec_period_from': self.sec_period_from,
+            'sec_period_to': self.sec_period_to,
+            'sec_highest_level': self.sec_highest_level,
+            'sec_year_graduated': self.sec_year_graduated,
+            'sec_scholarships': self.sec_scholarships,
+            'voc_school_name': self.voc_school_name,
+            'voc_basic_education': self.voc_basic_education,
+            'voc_period_from': self.voc_period_from,
+            'voc_period_to': self.voc_period_to,
+            'voc_highest_level': self.voc_highest_level,
+            'voc_year_graduated': self.voc_year_graduated,
+            'voc_scholarships': self.voc_scholarships,
+            'college_school_name': self.college_school_name,
+            'college_basic_education': self.college_basic_education,
+            'college_period_from': self.college_period_from,
+            'college_period_to': self.college_period_to,
+            'college_highest_level': self.college_highest_level,
+            'college_year_graduated': self.college_year_graduated,
+            'college_scholarships': self.college_scholarships,
+            'grad_school_name': self.grad_school_name,
+            'grad_basic_education': self.grad_basic_education,
+            'grad_period_from': self.grad_period_from,
+            'grad_period_to': self.grad_period_to,
+            'grad_highest_level': self.grad_highest_level,
+            'grad_year_graduated': self.grad_year_graduated,
+            'grad_scholarships': self.grad_scholarships,
+            'elem_records_json': self.elem_records_json,
+            'sec_records_json': self.sec_records_json,
+            'voc_records_json': self.voc_records_json,
+            'college_records_json': self.college_records_json,
+            'grad_records_json': self.grad_records_json,
+            'elem_records': self.elem_records,
+            'sec_records': self.sec_records,
+            'voc_records': self.voc_records,
+            'college_records': self.college_records,
+            'grad_records': self.grad_records
         }

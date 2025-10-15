@@ -13,6 +13,7 @@ from app.models import (
     EWPRecord,
     LeaveRequest,
     Notification,
+    SLAAlertPreference,
     User,
 )
 from app.utils import calculate_business_hours
@@ -23,6 +24,15 @@ _DOCUMENT_STATUS_ANCHORS: Dict[str, List[str]] = {
 }
 
 
+def _load_sla_preferences() -> Dict[str, bool]:
+    defaults = SLAAlertPreference.DEFAULTS.copy()
+    try:
+        return SLAAlertPreference.get_preferences_map()
+    except Exception as exc:
+        current_app.logger.warning("Unable to load SLA preferences in SLA monitor: %s", exc)
+        return defaults
+
+
 def run_sla_checks() -> Dict[str, Dict[str, int]]:
     """
     Entry point for the APScheduler job. Returns per-entity summaries.
@@ -30,10 +40,17 @@ def run_sla_checks() -> Dict[str, Dict[str, int]]:
     now = datetime.utcnow()
     try:
         admins = _collect_admins()
+        preferences = _load_sla_preferences()
         results = {
-            "documents": _monitor_document_slas(now, admins),
-            "leave_requests": _monitor_leave_slas(now, admins),
-            "ewp_records": _monitor_ewp_slas(now, admins),
+            "documents": _monitor_document_slas(
+                now, admins, enabled=preferences.get("documents", True)
+            ),
+            "leave_requests": _monitor_leave_slas(
+                now, admins, enabled=preferences.get("leave_requests", True)
+            ),
+            "ewp_records": _monitor_ewp_slas(
+                now, admins, enabled=preferences.get("ewp_records", True)
+            ),
         }
 
         if db.session.new or db.session.dirty or db.session.deleted:
@@ -47,7 +64,12 @@ def run_sla_checks() -> Dict[str, Dict[str, int]]:
         raise
 
 
-def _monitor_document_slas(now: datetime, admins: List[User]) -> Dict[str, int]:
+def _monitor_document_slas(
+    now: datetime, admins: List[User], *, enabled: bool = True
+) -> Dict[str, int]:
+    if not enabled:
+        return _empty_summary()
+
     rules = _get_rules("Document")
     if not rules:
         return _empty_summary()
@@ -113,7 +135,12 @@ def _monitor_document_slas(now: datetime, admins: List[User]) -> Dict[str, int]:
     return summary
 
 
-def _monitor_leave_slas(now: datetime, admins: List[User]) -> Dict[str, int]:
+def _monitor_leave_slas(
+    now: datetime, admins: List[User], *, enabled: bool = True
+) -> Dict[str, int]:
+    if not enabled:
+        return _empty_summary()
+
     rules = _get_rules("LeaveRequest")
     if not rules:
         return _empty_summary()
@@ -169,7 +196,12 @@ def _monitor_leave_slas(now: datetime, admins: List[User]) -> Dict[str, int]:
     return summary
 
 
-def _monitor_ewp_slas(now: datetime, admins: List[User]) -> Dict[str, int]:
+def _monitor_ewp_slas(
+    now: datetime, admins: List[User], *, enabled: bool = True
+) -> Dict[str, int]:
+    if not enabled:
+        return _empty_summary()
+
     rules = _get_rules("EWPRecord")
     if not rules:
         return _empty_summary()

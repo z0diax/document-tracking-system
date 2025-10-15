@@ -141,6 +141,76 @@
         {% endif %}
 </section>
 
+<section id="dock-content-tardiness" hidden>
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between">
+        <h5 class="mb-0">Tardiness Overview</h5>
+        <span class="badge bg-primary text-uppercase">Preview</span>
+      </div>
+      <p class="text-muted small mb-0">Mock metrics for attendance monitoring. Replace with live data once available.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-sm-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body py-3">
+          <div class="text-muted small">Average Late Minutes</div>
+          <div class="h5 mb-0">18 mins</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body py-3">
+          <div class="text-muted small">Employees With Lates</div>
+          <div class="h5 mb-0">7</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body py-3">
+          <div class="text-muted small">Most Recent Incident</div>
+          <div class="h5 mb-0">2024-11-02</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive mt-3">
+    <table class="table table-bordered align-middle">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Office</th>
+          <th>Late Arrivals</th>
+          <th>Total Minutes Late</th>
+          <th>Last Late</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if tardiness_records is defined and tardiness_records %}
+          {% for entry in tardiness_records %}
+          <tr>
+            <td>{{ entry.employee_name or 'N/A' }}</td>
+            <td>{{ entry.office or 'N/A' }}</td>
+            <td>{{ entry.late_count or 0 }}</td>
+            <td>{{ entry.total_minutes or 0 }}</td>
+            <td>{{ entry.last_late or 'N/A' }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">No tardiness records available yet.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <!-- Add Employee Modal -->
 <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -472,10 +542,107 @@
                 <div class="card shadow-sm border-0">
                   <div class="card-body">
                     <h6 class="text-uppercase text-muted small mb-3">II. Family Background</h6>
-                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
-                      <i class="fas fa-file-alt fa-2x mb-2"></i>
-                      <div>Scribd</div>
-                      <small class="d-block mt-1">Embed the Family Background document here.</small>
+                    <!-- Spouse -->
+                    <div class="row g-3">
+                      <div class="col-md-3">
+                        <div class="text-muted small">Spouse's Surname</div>
+                        <div class="fw-semibold" data-family-key="spouse_surname">{{ e.spouse_surname|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="text-muted small">Spouse's First Name</div>
+                        <div class="fw-semibold" data-family-key="spouse_first_name">{{ e.spouse_first_name|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="text-muted small">Spouse's Middle Name</div>
+                        <div class="fw-semibold" data-family-key="spouse_middle_name">{{ e.spouse_middle_name|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="text-muted small">Spouse's Occupation</div>
+                        <div class="fw-semibold" data-family-key="spouse_occupation">{{ e.spouse_occupation|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="text-muted small">Employer/Business Name</div>
+                        <div class="fw-semibold" data-family-key="spouse_employer_name">{{ e.spouse_employer_name|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-5">
+                        <div class="text-muted small">Business Address</div>
+                        <div class="fw-semibold" data-family-key="spouse_business_address">{{ e.spouse_business_address|default('', true) }}</div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="text-muted small">Telephone No.</div>
+                        <div class="fw-semibold" data-family-key="spouse_telephone_no">{{ e.spouse_telephone_no|default('', true) }}</div>
+                      </div>
+                    </div>
+
+                    <hr class="my-3"/>
+
+                    <!-- Parents -->
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <div class="text-muted small mb-1">Father's Name</div>
+                        <div class="row g-3">
+                          <div class="col-md-3">
+                            <small class="text-muted d-block">Surname</small>
+                            <div class="fw-semibold" data-family-key="father_surname">{{ e.father_surname|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-3">
+                            <small class="text-muted d-block">First Name</small>
+                            <div class="fw-semibold" data-family-key="father_first_name">{{ e.father_first_name|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-3">
+                            <small class="text-muted d-block">Middle Name</small>
+                            <div class="fw-semibold" data-family-key="father_middle_name">{{ e.father_middle_name|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-3">
+                            <small class="text-muted d-block">Extension</small>
+                            <div class="fw-semibold" data-family-key="father_extension">{{ e.father_extension|default('', true) }}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="text-muted small mb-1">Mother's Maiden Name</div>
+                        <div class="row g-3">
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Surname</small>
+                            <div class="fw-semibold" data-family-key="mother_maiden_surname">{{ e.mother_maiden_surname|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">First Name</small>
+                            <div class="fw-semibold" data-family-key="mother_maiden_first_name">{{ e.mother_maiden_first_name|default('', true) }}</div>
+                          </div>
+                          <div class="col-md-4">
+                            <small class="text-muted d-block">Middle Name</small>
+                            <div class="fw-semibold" data-family-key="mother_maiden_middle_name">{{ e.mother_maiden_middle_name|default('', true) }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <hr class="my-3"/>
+
+                    <!-- Children -->
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <div class="text-muted small">Names of Children (Name - Date of Birth per line)</div>
+                        {% set _children_lines = e.children_info.splitlines() if e.children_info else [] %}
+                        <div class="fw-semibold children-info-display" data-family-key="children_info" data-children-raw="{{ e.children_info|default('', true)|replace('\n', '&#10;') }}" data-children='{{ _children_lines|tojson|safe }}'>
+                          {% if _children_lines %}
+                            <div class="d-flex flex-column gap-2">
+                              {% for _child_line in _children_lines %}
+                                {% set _parts = _child_line.split(' - ', 1) %}
+                                <div class="child-display d-flex flex-wrap gap-2 align-items-baseline">
+                                  <span class="fw-semibold">{{ _parts[0]|trim }}</span>
+                                  {% if _parts|length > 1 and _parts[1].strip() %}
+                                    <span class="text-muted">- {{ _parts[1]|trim }}</span>
+                                  {% endif %}
+                                </div>
+                              {% endfor %}
+                            </div>
+                          {% else %}
+                            <span class="text-muted">No children listed</span>
+                          {% endif %}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -486,10 +653,241 @@
                 <div class="card shadow-sm border-0">
                   <div class="card-body">
                     <h6 class="text-uppercase text-muted small mb-3">III. Educational Background</h6>
-                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
-                      <i class="fas fa-file-alt fa-2x mb-2"></i>
-                      <div>Scribd</div>
-                      <small class="d-block mt-1">Embed the Educational Background document here.</small>
+                    <div class="education-section">
+                      {% set _elem_records = e.elem_records %}
+                      <div class="education-level mb-4" data-education-section="elem" data-education-prefix="elem" data-education-label="Elementary" data-education-records='{{ _elem_records|tojson|safe }}'>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <span class="fw-semibold text-primary">Elementary</span>
+                        </div>
+                        <div class="education-display" data-education-display>
+                          {% if _elem_records %}
+                            {% for rec in _elem_records %}
+                              <div class="education-display-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Name of School</div>
+                                    <div class="fw-semibold">{{ rec.school_name|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Basic Education/Degree/Course</div>
+                                    <div class="fw-semibold">{{ rec.basic_education|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance From</div>
+                                    <div class="fw-semibold">{{ rec.period_from|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance To</div>
+                                    <div class="fw-semibold">{{ rec.period_to|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Highest Level/Units Earned</div>
+                                    <div class="fw-semibold">{{ rec.highest_level|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Year Graduated</div>
+                                    <div class="fw-semibold">{{ rec.year_graduated|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-12">
+                                    <div class="text-muted small">Scholarships/Honors Received</div>
+                                    <div class="fw-semibold">{{ rec.scholarships|default('', true) }}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            {% endfor %}
+                          {% else %}
+                            <span class="text-muted">No records listed</span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      {% set _sec_records = e.sec_records %}
+                      <div class="education-level mb-4" data-education-section="sec" data-education-prefix="sec" data-education-label="Secondary" data-education-records='{{ _sec_records|tojson|safe }}'>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <span class="fw-semibold text-primary">Secondary</span>
+                        </div>
+                        <div class="education-display" data-education-display>
+                          {% if _sec_records %}
+                            {% for rec in _sec_records %}
+                              <div class="education-display-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Name of School</div>
+                                    <div class="fw-semibold">{{ rec.school_name|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Basic Education/Degree/Course</div>
+                                    <div class="fw-semibold">{{ rec.basic_education|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance From</div>
+                                    <div class="fw-semibold">{{ rec.period_from|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance To</div>
+                                    <div class="fw-semibold">{{ rec.period_to|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Highest Level/Units Earned</div>
+                                    <div class="fw-semibold">{{ rec.highest_level|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Year Graduated</div>
+                                    <div class="fw-semibold">{{ rec.year_graduated|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-12">
+                                    <div class="text-muted small">Scholarships/Honors Received</div>
+                                    <div class="fw-semibold">{{ rec.scholarships|default('', true) }}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            {% endfor %}
+                          {% else %}
+                            <span class="text-muted">No records listed</span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      {% set _voc_records = e.voc_records %}
+                      <div class="education-level mb-4" data-education-section="voc" data-education-prefix="voc" data-education-label="Vocational / Trade Course" data-education-records='{{ _voc_records|tojson|safe }}'>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <span class="fw-semibold text-primary">Vocational / Trade Course</span>
+                        </div>
+                        <div class="education-display" data-education-display>
+                          {% if _voc_records %}
+                            {% for rec in _voc_records %}
+                              <div class="education-display-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Name of School</div>
+                                    <div class="fw-semibold">{{ rec.school_name|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Basic Education/Degree/Course</div>
+                                    <div class="fw-semibold">{{ rec.basic_education|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance From</div>
+                                    <div class="fw-semibold">{{ rec.period_from|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance To</div>
+                                    <div class="fw-semibold">{{ rec.period_to|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Highest Level/Units Earned</div>
+                                    <div class="fw-semibold">{{ rec.highest_level|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Year Graduated</div>
+                                    <div class="fw-semibold">{{ rec.year_graduated|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-12">
+                                    <div class="text-muted small">Scholarships/Honors Received</div>
+                                    <div class="fw-semibold">{{ rec.scholarships|default('', true) }}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            {% endfor %}
+                          {% else %}
+                            <span class="text-muted">No records listed</span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      {% set _college_records = e.college_records %}
+                      <div class="education-level mb-4" data-education-section="college" data-education-prefix="college" data-education-label="College" data-education-records='{{ _college_records|tojson|safe }}'>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <span class="fw-semibold text-primary">College</span>
+                        </div>
+                        <div class="education-display" data-education-display>
+                          {% if _college_records %}
+                            {% for rec in _college_records %}
+                              <div class="education-display-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Name of School</div>
+                                    <div class="fw-semibold">{{ rec.school_name|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Basic Education/Degree/Course</div>
+                                    <div class="fw-semibold">{{ rec.basic_education|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance From</div>
+                                    <div class="fw-semibold">{{ rec.period_from|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance To</div>
+                                    <div class="fw-semibold">{{ rec.period_to|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Highest Level/Units Earned</div>
+                                    <div class="fw-semibold">{{ rec.highest_level|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Year Graduated</div>
+                                    <div class="fw-semibold">{{ rec.year_graduated|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-12">
+                                    <div class="text-muted small">Scholarships/Honors Received</div>
+                                    <div class="fw-semibold">{{ rec.scholarships|default('', true) }}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            {% endfor %}
+                          {% else %}
+                            <span class="text-muted">No records listed</span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      {% set _grad_records = e.grad_records %}
+                      <div class="education-level" data-education-section="grad" data-education-prefix="grad" data-education-label="Graduate Studies" data-education-records='{{ _grad_records|tojson|safe }}'>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <span class="fw-semibold text-primary">Graduate Studies</span>
+                        </div>
+                        <div class="education-display" data-education-display>
+                          {% if _grad_records %}
+                            {% for rec in _grad_records %}
+                              <div class="education-display-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Name of School</div>
+                                    <div class="fw-semibold">{{ rec.school_name|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-6">
+                                    <div class="text-muted small">Basic Education/Degree/Course</div>
+                                    <div class="fw-semibold">{{ rec.basic_education|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance From</div>
+                                    <div class="fw-semibold">{{ rec.period_from|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Attendance To</div>
+                                    <div class="fw-semibold">{{ rec.period_to|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Highest Level/Units Earned</div>
+                                    <div class="fw-semibold">{{ rec.highest_level|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-md-3">
+                                    <div class="text-muted small">Year Graduated</div>
+                                    <div class="fw-semibold">{{ rec.year_graduated|default('', true) }}</div>
+                                  </div>
+                                  <div class="col-12">
+                                    <div class="text-muted small">Scholarships/Honors Received</div>
+                                    <div class="fw-semibold">{{ rec.scholarships|default('', true) }}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            {% endfor %}
+                          {% else %}
+                            <span class="text-muted">No records listed</span>
+                          {% endif %}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -853,6 +1251,10 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       <i class="fas fa-users" aria-hidden="true"></i>
       <span>Employees</span>
     </button>
+    <button class="dock-item" role="tab" aria-selected="false" id="dock-tab-tardiness" aria-controls="dock-content-tardiness">
+      <i class="fas fa-user-clock" aria-hidden="true"></i>
+      <span>Tardiness</span>
+    </button>
   </div>
 
 </div>
@@ -862,9 +1264,14 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
 (function() {
   const dock = document.querySelector('.floating-dock');
   const tabs = Array.from(dock ? dock.querySelectorAll('.dock-item') : []);
-  const sectionDashboard = document.getElementById('dock-content-dashboard');
-  const sectionEmployees = document.getElementById('dock-content-employees');
   const mainHeader = document.getElementById('main-header');
+  const tabSections = tabs.map(tab => {
+    const controlsId = tab.getAttribute('aria-controls');
+    return {
+      tab,
+      section: controlsId ? document.getElementById(controlsId) : null
+    };
+  });
 
   function setActive(tabEl) {
     tabs.forEach(b => {
@@ -875,12 +1282,14 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
   }
 
   function updateSections(tabEl) {
-    const showDashboard = tabEl && tabEl.id === 'dock-tab-dashboard';
-    if (sectionDashboard) sectionDashboard.hidden = !showDashboard;
-    if (sectionEmployees) sectionEmployees.hidden = showDashboard;
+    tabSections.forEach(({ tab, section }) => {
+      if (section) section.hidden = tab !== tabEl;
+    });
+
     if (mainHeader) {
       var spanEl = (tabEl && typeof tabEl.querySelector === 'function') ? tabEl.querySelector('span') : null;
-      var label = (spanEl && spanEl.textContent) ? spanEl.textContent : (showDashboard ? 'Dashboard' : 'Employees');
+      var label = (spanEl && spanEl.textContent) ? spanEl.textContent.trim() : '';
+      if (!label) label = 'Employees';
       mainHeader.textContent = label;
     }
   }
@@ -906,10 +1315,10 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
   });
 
   // Default to Employees section active
-  const empTab = document.getElementById('dock-tab-employees') || tabs[0];
-  if (empTab) {
-    setActive(empTab);
-    updateSections(empTab);
+  const defaultTab = document.getElementById('dock-tab-employees') || tabs.find(btn => btn.classList.contains('active')) || tabs[0];
+  if (defaultTab) {
+    setActive(defaultTab);
+    updateSections(defaultTab);
   }
 })();
 </script>
@@ -940,11 +1349,21 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       });
       return sel;
     }
+    if (desc.type === 'textarea') {
+      const ta = document.createElement('textarea');
+      ta.className = 'form-control pi-input';
+      ta.rows = desc.rows || 4;
+      ta.value = (value || '');
+      if (desc.placeholder) ta.placeholder = desc.placeholder;
+      if (desc.maxlength) ta.maxLength = desc.maxlength;
+      return ta;
+    }
     const input = document.createElement('input');
-    input.type = 'text';
+    input.type = desc.inputType || 'text';
     input.className = INPUT_CLASS;
     input.value = (value || '');
     if (desc.placeholder) input.placeholder = desc.placeholder;
+    if (desc.maxlength) input.maxLength = desc.maxlength;
     return input;
   }
 
@@ -1014,13 +1433,662 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
     'Status':    { key: 'status', type: 'select', options: STATUS_CHOICES }
   };
 
+  const familyFieldMap = {
+    spouse_surname: { key: 'spouse_surname', type: 'text' },
+    spouse_first_name: { key: 'spouse_first_name', type: 'text' },
+    spouse_middle_name: { key: 'spouse_middle_name', type: 'text' },
+    spouse_occupation: { key: 'spouse_occupation', type: 'text' },
+    spouse_employer_name: { key: 'spouse_employer_name', type: 'text' },
+    spouse_business_address: { key: 'spouse_business_address', type: 'text', placeholder: 'Street, City / Municipality' },
+    spouse_telephone_no: { key: 'spouse_telephone_no', type: 'text', placeholder: 'e.g., (02) 123-4567' },
+    father_surname: { key: 'father_surname', type: 'text' },
+    father_first_name: { key: 'father_first_name', type: 'text' },
+    father_middle_name: { key: 'father_middle_name', type: 'text' },
+    father_extension: { key: 'father_extension', type: 'text', placeholder: 'Jr., Sr., III, etc.' },
+    mother_maiden_surname: { key: 'mother_maiden_surname', type: 'text' },
+    mother_maiden_first_name: { key: 'mother_maiden_first_name', type: 'text' },
+    mother_maiden_middle_name: { key: 'mother_maiden_middle_name', type: 'text' },
+    children_info: { key: 'children_info', type: 'children' }
+  };
+
+  const EDUCATION_LEVELS = [
+    { key: 'elem', prefix: 'elem', label: 'Elementary' },
+    { key: 'sec', prefix: 'sec', label: 'Secondary' },
+    { key: 'voc', prefix: 'voc', label: 'Vocational / Trade Course' },
+    { key: 'college', prefix: 'college', label: 'College' },
+    { key: 'grad', prefix: 'grad', label: 'Graduate Studies' }
+  ];
+
+  const EDUCATION_FIELD_ORDER = [
+    'school_name',
+    'basic_education',
+    'period_from',
+    'period_to',
+    'highest_level',
+    'year_graduated',
+    'scholarships'
+  ];
+
+  const EDUCATION_FIELD_CONFIG = {
+    school_name: { label: 'Name of School', col: 'col-md-6', placeholder: '' },
+    basic_education: { label: 'Basic Education/Degree/Course', col: 'col-md-6', placeholder: '' },
+    period_from: { label: 'Attendance From', col: 'col-md-3', placeholder: 'mm/yyyy' },
+    period_to: { label: 'Attendance To', col: 'col-md-3', placeholder: 'mm/yyyy' },
+    highest_level: { label: 'Highest Level/Units Earned', col: 'col-md-3', placeholder: '' },
+    year_graduated: { label: 'Year Graduated', col: 'col-md-3', placeholder: 'yyyy' },
+    scholarships: { label: 'Scholarships/Honors Received', col: 'col-12', placeholder: '' }
+  };
+
+  const EDUCATION_PREFIX_MAP = EDUCATION_LEVELS.reduce(function(acc, level) {
+    acc[level.key] = level.prefix;
+    return acc;
+  }, {});
+
+  function parseChildrenEntries(source) {
+    if (!source) return [];
+    if (Array.isArray(source)) {
+      return source.map(function(item) {
+        if (typeof item === 'string') {
+          const parts = item.split(' - ');
+          return {
+            name: (parts[0] || '').trim(),
+            dob: parts.length > 1 ? (parts[1] || '').trim() : ''
+          };
+        }
+        if (item && typeof item === 'object') {
+          return {
+            name: (item.name || '').trim(),
+            dob: (item.dob || '').trim()
+          };
+        }
+        return { name: '', dob: '' };
+      }).filter(function(entry) { return entry.name || entry.dob; });
+    }
+    return String(source).split(/\r?\n/).map(function(line) {
+      const trimmed = line.trim();
+      if (!trimmed) return null;
+      const parts = trimmed.split(' - ');
+      return {
+        name: (parts[0] || '').trim(),
+        dob: parts.length > 1 ? (parts[1] || '').trim() : ''
+      };
+    }).filter(Boolean);
+  }
+
+  function getChildrenEntries(container) {
+    if (!container) return [];
+    let entries = [];
+    const json = container.getAttribute('data-children');
+    if (json) {
+      try {
+        const parsed = JSON.parse(json);
+        if (Array.isArray(parsed)) {
+          entries = parseChildrenEntries(parsed);
+        }
+      } catch (e) {
+        entries = [];
+      }
+    }
+    if (!entries.length) {
+      const raw = container.getAttribute('data-children-raw') || '';
+      entries = parseChildrenEntries(raw);
+    }
+    return entries;
+  }
+
+  function formatDateWithSlashes(value) {
+    const digits = (value || '').replace(/\D/g, '').slice(0, 8);
+    if (!digits) return '';
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return digits.slice(0, 2) + '/' + digits.slice(2);
+    return digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
+  }
+
+  function attachDateMaskFormatter(input) {
+    if (!input || input.getAttribute('data-has-date-mask') === '1') return;
+    input.setAttribute('data-has-date-mask', '1');
+    input.addEventListener('input', function() {
+      const prevValue = input.value || '';
+      const caretPos = input.selectionStart || 0;
+      const digitsBeforeCaret = prevValue.slice(0, caretPos).replace(/\D/g, '').length;
+      const formatted = formatDateWithSlashes(prevValue);
+      input.value = formatted;
+
+      // restore caret close to original digit position
+      let newCaret = formatted.length;
+      let digitCount = 0;
+      for (let i = 0; i < formatted.length; i++) {
+        if (/\d/.test(formatted[i])) {
+          digitCount += 1;
+        }
+        if (digitCount >= digitsBeforeCaret) {
+          newCaret = i + 1;
+          break;
+        }
+      }
+      try {
+        input.setSelectionRange(newCaret, newCaret);
+      } catch (e) {}
+    });
+  }
+
+  function isValidChildDob(value) {
+    if (!value) return true;
+    const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value);
+    if (!match) return false;
+    const month = parseInt(match[1], 10);
+    const day = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+    if (month < 1 || month > 12) return false;
+    if (day < 1 || day > 31) return false;
+    const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year || (date.getMonth() + 1) !== month || date.getDate() !== day) {
+      return false;
+    }
+    return true;
+  }
+
+  function attachChildRowValidation(row) {
+    const dobInput = row.querySelector('.child-dob-input');
+    if (!dobInput) return;
+
+    function applyValidity(strict) {
+      const value = (dobInput.value || '').trim();
+      if (!value) {
+        dobInput.classList.remove('is-invalid');
+        dobInput.removeAttribute('title');
+        return;
+      }
+      const formatted = formatDateWithSlashes(value);
+      if (formatted !== value) {
+        dobInput.value = formatted;
+      }
+      if (formatted.length < 10 && !strict) {
+        dobInput.classList.remove('is-invalid');
+        dobInput.removeAttribute('title');
+        return;
+      }
+      if (!isValidChildDob(formatted)) {
+        dobInput.classList.add('is-invalid');
+        dobInput.setAttribute('title', 'Enter a valid date in mm/dd/yyyy format');
+      } else {
+        dobInput.classList.remove('is-invalid');
+        dobInput.removeAttribute('title');
+      }
+    }
+
+    dobInput.addEventListener('blur', function() { applyValidity(true); });
+    dobInput.addEventListener('change', function() { applyValidity(true); });
+    dobInput.addEventListener('input', function() { applyValidity(false); });
+    applyValidity(true);
+  }
+
+  function addChildRow(wrapper, name, dob) {
+    const row = document.createElement('div');
+    row.className = 'child-row d-flex flex-wrap align-items-center gap-2';
+
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'flex-grow-1';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'form-control form-control-sm pi-input child-name-input';
+    nameInput.placeholder = 'Full name';
+    nameInput.value = name || '';
+    nameInput.setAttribute('data-child-input', '1');
+    nameWrap.appendChild(nameInput);
+
+    const dobWrap = document.createElement('div');
+    dobWrap.className = 'flex-grow-1';
+    const dobInput = document.createElement('input');
+    dobInput.type = 'text';
+    dobInput.className = 'form-control form-control-sm pi-input child-dob-input';
+    dobInput.placeholder = 'Date of birth (mm/dd/yyyy)';
+    dobInput.value = dob ? formatDateWithSlashes(dob) : '';
+    dobInput.setAttribute('data-child-input', '1');
+    attachDateMaskFormatter(dobInput);
+    dobWrap.appendChild(dobInput);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-outline-danger btn-sm child-remove-btn';
+    removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    removeBtn.addEventListener('click', function() {
+      wrapper.removeChild(row);
+      if (!wrapper.querySelector('.child-row')) {
+        addChildRow(wrapper, '', '');
+      }
+    });
+
+    row.appendChild(nameWrap);
+    row.appendChild(dobWrap);
+    row.appendChild(removeBtn);
+    wrapper.appendChild(row);
+    attachChildRowValidation(row);
+    return row;
+  }
+
+  function setupChildrenEditor(container) {
+    if (!container) return;
+    const originalRaw = container.getAttribute('data-children-raw') || '';
+    container.setAttribute('data-original-text', originalRaw);
+    container.setAttribute('data-children-editor', '1');
+    container.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'children-edit-wrapper d-flex flex-column gap-2';
+    container.appendChild(wrapper);
+
+    let entries = getChildrenEntries(container);
+    if (!entries.length) {
+      entries = [{ name: '', dob: '' }];
+    }
+    entries.forEach(function(entry) {
+      addChildRow(wrapper, entry.name, entry.dob);
+    });
+
+    const controls = document.createElement('div');
+    controls.className = 'mt-2';
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-outline-secondary btn-sm';
+    addBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Child';
+    addBtn.addEventListener('click', function() {
+      addChildRow(wrapper, '', '');
+    });
+    controls.appendChild(addBtn);
+    container.appendChild(controls);
+  }
+
+  function collectChildrenValue(container) {
+    if (!container) return '';
+    const wrapper = container.querySelector('.children-edit-wrapper');
+    if (!wrapper) return '';
+    const rows = wrapper.querySelectorAll('.child-row');
+    const lines = [];
+    rows.forEach(function(row) {
+      const nameInput = row.querySelector('.child-name-input');
+      const dobInput = row.querySelector('.child-dob-input');
+      const nameVal = nameInput ? (nameInput.value || '').trim() : '';
+      let dobVal = '';
+      if (dobInput) {
+        dobVal = formatDateWithSlashes(dobInput.value || '');
+        if (dobVal !== (dobInput.value || '')) {
+          dobInput.value = dobVal;
+        }
+        if (dobVal && !isValidChildDob(dobVal)) {
+          dobInput.classList.add('is-invalid');
+          dobInput.setAttribute('title', 'Enter a valid date in mm/dd/yyyy format');
+        } else if (!dobVal) {
+          dobInput.classList.remove('is-invalid');
+          dobInput.removeAttribute('title');
+        } else {
+          dobInput.classList.remove('is-invalid');
+          dobInput.removeAttribute('title');
+        }
+      }
+      if (nameVal || dobVal) {
+        let line = nameVal;
+        if (dobVal) {
+          line = nameVal ? (nameVal + ' - ' + dobVal) : dobVal;
+        }
+        lines.push(line);
+      }
+    });
+    return lines.join('\n');
+  }
+
+  function renderChildrenDisplay(container, rawValue) {
+    if (!container) return;
+    const normalized = (rawValue || '').replace(/\r\n/g, '\n');
+    container.innerHTML = '';
+    container.removeAttribute('data-children-editor');
+    container.removeAttribute('data-original-text');
+    container.setAttribute('data-children-raw', normalized);
+    const lines = normalized ? normalized.split('\n').map(function(line) { return line.trim(); }).filter(Boolean) : [];
+    container.setAttribute('data-children', JSON.stringify(lines));
+
+    if (!lines.length) {
+      const emptyMsg = document.createElement('span');
+      emptyMsg.className = 'text-muted';
+      emptyMsg.textContent = 'No children listed';
+      container.appendChild(emptyMsg);
+      return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'd-flex flex-column gap-2';
+    lines.forEach(function(line) {
+      const parts = line.split(' - ');
+      const row = document.createElement('div');
+      row.className = 'child-display d-flex flex-wrap gap-2 align-items-baseline';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'fw-semibold';
+      nameSpan.textContent = (parts[0] || '').trim();
+      row.appendChild(nameSpan);
+
+      if (parts.length > 1 && parts[1] && parts[1].trim()) {
+        const dobSpan = document.createElement('span');
+        dobSpan.className = 'text-muted';
+        dobSpan.textContent = '- ' + parts[1].trim();
+        row.appendChild(dobSpan);
+      }
+      list.appendChild(row);
+    });
+
+    container.appendChild(list);
+  }
+
+  function getEducationDbKey(levelKey, field) {
+    const prefix = EDUCATION_PREFIX_MAP[levelKey];
+    if (!prefix) return null;
+    return prefix + '_' + field;
+  }
+
+  function normalizeEducationEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+    const normalized = [];
+    entries.forEach(function(entry) {
+      if (!entry || typeof entry !== 'object') return;
+      const normalizedEntry = {};
+      let hasValue = false;
+      EDUCATION_FIELD_ORDER.forEach(function(field) {
+        let value = entry[field];
+        if (typeof value === 'number') value = String(value);
+        if (typeof value !== 'string') value = value ? String(value) : '';
+        value = value.trim();
+        if (value) hasValue = true;
+        normalizedEntry[field] = value;
+      });
+      if (hasValue) {
+        normalized.push(normalizedEntry);
+      }
+    });
+    return normalized;
+  }
+
+  function parseEducationRecordsAttr(section) {
+    if (!section) return [];
+    const raw = section.getAttribute('data-education-records');
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return normalizeEducationEntries(parsed);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function renderEducationDisplay(section, entries) {
+    if (!section) return;
+    const normalized = normalizeEducationEntries(entries);
+    const display = section.querySelector('[data-education-display]');
+    if (display) {
+      display.innerHTML = '';
+      if (!normalized.length) {
+        const emptyMsg = document.createElement('span');
+        emptyMsg.className = 'text-muted';
+        emptyMsg.textContent = 'No records listed';
+        display.appendChild(emptyMsg);
+      } else {
+        normalized.forEach(function(entry, index) {
+          const entryDiv = document.createElement('div');
+          entryDiv.className = 'education-display-entry border rounded p-3';
+          if (index !== normalized.length - 1) entryDiv.classList.add('mb-3');
+          const row = document.createElement('div');
+          row.className = 'row g-3';
+          EDUCATION_FIELD_ORDER.forEach(function(field) {
+            const config = EDUCATION_FIELD_CONFIG[field];
+            if (!config) return;
+            const col = document.createElement('div');
+            col.className = config.col;
+            const label = document.createElement('div');
+            label.className = 'text-muted small';
+            label.textContent = config.label;
+            const valueEl = document.createElement('div');
+            valueEl.className = 'fw-semibold';
+            valueEl.textContent = entry[field] || '';
+            col.appendChild(label);
+            col.appendChild(valueEl);
+            row.appendChild(col);
+          });
+          entryDiv.appendChild(row);
+          display.appendChild(entryDiv);
+        });
+      }
+    }
+    section.setAttribute('data-education-records', JSON.stringify(normalized));
+  }
+
+  function addEducationRow(wrapper, levelKey, record, index, focus) {
+    const entryContainer = document.createElement('div');
+    entryContainer.className = 'education-entry-row border rounded p-3';
+    if (wrapper.querySelector('[data-education-entry]')) {
+      entryContainer.classList.add('mt-2');
+    }
+    entryContainer.setAttribute('data-education-entry', '1');
+
+    const row = document.createElement('div');
+    row.className = 'row g-3';
+    entryContainer.appendChild(row);
+
+    EDUCATION_FIELD_ORDER.forEach(function(field) {
+      const config = EDUCATION_FIELD_CONFIG[field];
+      if (!config) return;
+      const col = document.createElement('div');
+      col.className = config.col;
+      const label = document.createElement('div');
+      label.className = 'text-muted small';
+      label.textContent = config.label;
+      const valueWrap = document.createElement('div');
+      const value = (record && record[field]) ? String(record[field]).trim() : '';
+      valueWrap.setAttribute('data-original-text', value);
+      const inputDesc = { type: 'text' };
+      if (config.placeholder) inputDesc.placeholder = config.placeholder;
+      const input = createInputControl(inputDesc, value);
+      input.classList.add('education-input');
+      input.setAttribute('data-education-level', levelKey);
+      input.setAttribute('data-education-field', field);
+      input.setAttribute('data-education-index', typeof index === 'number' ? String(index) : '');
+      if (typeof index === 'number' && index === 0) {
+        const dbKey = getEducationDbKey(levelKey, field);
+        if (dbKey) input.setAttribute('data-key', dbKey);
+      }
+      valueWrap.appendChild(input);
+      col.appendChild(label);
+      col.appendChild(valueWrap);
+      row.appendChild(col);
+    });
+
+    const actionsCol = document.createElement('div');
+    actionsCol.className = 'col-12 d-flex justify-content-end';
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-outline-danger btn-sm education-remove-btn';
+    removeBtn.setAttribute('data-education-remove', '1');
+    removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    removeBtn.addEventListener('click', function() {
+      const parent = entryContainer.parentElement;
+      if (parent) {
+        parent.removeChild(entryContainer);
+        if (!parent.querySelector('[data-education-entry]')) {
+          addEducationRow(parent, levelKey, {}, 0, true);
+        }
+        renumberEducationRows(parent, levelKey);
+      }
+    });
+    actionsCol.appendChild(removeBtn);
+    row.appendChild(actionsCol);
+
+    wrapper.appendChild(entryContainer);
+
+    if (focus) {
+      const firstInput = entryContainer.querySelector('.education-input');
+      if (firstInput) {
+        try { firstInput.focus(); } catch (e) {}
+      }
+    }
+    return entryContainer;
+  }
+
+  function renumberEducationRows(wrapper, levelKey) {
+    const rows = Array.from(wrapper.querySelectorAll('[data-education-entry]'));
+    rows.forEach(function(row, idx) {
+      row.setAttribute('data-education-index', String(idx));
+      const removeBtn = row.querySelector('[data-education-remove]');
+      if (removeBtn) {
+        if (rows.length <= 1) {
+          removeBtn.classList.add('d-none');
+        } else {
+          removeBtn.classList.remove('d-none');
+        }
+      }
+      const inputs = row.querySelectorAll('.education-input');
+      inputs.forEach(function(input) {
+        input.setAttribute('data-education-index', String(idx));
+        const field = input.getAttribute('data-education-field');
+        const dbKey = getEducationDbKey(levelKey, field);
+        if (idx === 0 && dbKey) {
+          input.setAttribute('data-key', dbKey);
+        } else {
+          input.removeAttribute('data-key');
+        }
+      });
+    });
+  }
+
+  function setupEducationEditor(section) {
+    if (!section || section.getAttribute('data-editing') === '1') return;
+    const levelKey = section.getAttribute('data-education-section');
+    if (!levelKey) return;
+    const records = parseEducationRecordsAttr(section);
+    const workingRecords = records.length ? records : [{}];
+    section.setAttribute('data-editing', '1');
+    section.setAttribute('data-original-json', JSON.stringify(records));
+
+    const display = section.querySelector('[data-education-display]');
+    if (display) display.style.display = 'none';
+
+    const existingWrapper = section.querySelector('[data-education-edit-wrapper]');
+    if (existingWrapper) existingWrapper.remove();
+    const existingControls = section.querySelector('[data-education-controls]');
+    if (existingControls) existingControls.remove();
+
+    const editWrapper = document.createElement('div');
+    editWrapper.className = 'education-edit-wrapper d-flex flex-column';
+    editWrapper.setAttribute('data-education-edit-wrapper', '1');
+    section.appendChild(editWrapper);
+
+    workingRecords.forEach(function(record, index) {
+      addEducationRow(editWrapper, levelKey, record, index, false);
+    });
+    renumberEducationRows(editWrapper, levelKey);
+
+    const controls = document.createElement('div');
+    controls.className = 'mt-2';
+    controls.setAttribute('data-education-controls', '1');
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-outline-secondary btn-sm';
+    addBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add School';
+    addBtn.addEventListener('click', function() {
+      const currentRows = editWrapper.querySelectorAll('[data-education-entry]').length;
+      addEducationRow(editWrapper, levelKey, {}, currentRows, true);
+      renumberEducationRows(editWrapper, levelKey);
+    });
+    controls.appendChild(addBtn);
+    section.appendChild(controls);
+  }
+
+  function enterEducationSections(ebCardBody) {
+    if (!ebCardBody) return;
+    const sections = ebCardBody.querySelectorAll('[data-education-section]');
+    sections.forEach(function(section) {
+      setupEducationEditor(section);
+    });
+  }
+
+  function getEducationEntriesFromSection(section) {
+    if (!section) return [];
+    const editWrapper = section.querySelector('[data-education-edit-wrapper]');
+    if (!editWrapper) {
+      return parseEducationRecordsAttr(section);
+    }
+    const rows = Array.from(editWrapper.querySelectorAll('[data-education-entry]'));
+    const entries = rows.map(function(row) {
+      const entry = {};
+      EDUCATION_FIELD_ORDER.forEach(function(field) {
+        const input = row.querySelector('.education-input[data-education-field="' + field + '"]');
+        entry[field] = input ? (input.value || '').trim() : '';
+      });
+      return entry;
+    });
+    return normalizeEducationEntries(entries);
+  }
+
+  function collectEducationData(modal) {
+    const result = {};
+    if (!modal) return result;
+    const sections = modal.querySelectorAll('[data-education-section]');
+    sections.forEach(function(section) {
+      const levelKey = section.getAttribute('data-education-section');
+      if (!levelKey) return;
+      result[levelKey] = getEducationEntriesFromSection(section);
+    });
+    return result;
+  }
+
+  function exitEducationSections(ebCardBody, updatedMap) {
+    if (!ebCardBody) return;
+    const sections = ebCardBody.querySelectorAll('[data-education-section]');
+    sections.forEach(function(section) {
+      const levelKey = section.getAttribute('data-education-section');
+      const prefix = EDUCATION_PREFIX_MAP[levelKey];
+      const jsonField = prefix ? (prefix + '_records_json') : null;
+      let records = [];
+      if (updatedMap && jsonField && Object.prototype.hasOwnProperty.call(updatedMap, jsonField)) {
+        const raw = updatedMap[jsonField];
+        let rawStr = '';
+        if (Array.isArray(raw)) rawStr = JSON.stringify(raw);
+        else if (typeof raw === 'string') rawStr = raw;
+        else rawStr = JSON.stringify(raw || []);
+        try {
+          records = JSON.parse(rawStr);
+        } catch (e) {
+          records = [];
+        }
+      } else if (section.hasAttribute('data-original-json')) {
+        try {
+          records = JSON.parse(section.getAttribute('data-original-json') || '[]');
+        } catch (e) {
+          records = [];
+        }
+      } else {
+        records = parseEducationRecordsAttr(section);
+      }
+      records = normalizeEducationEntries(records);
+      const editWrapper = section.querySelector('[data-education-edit-wrapper]');
+      if (editWrapper) editWrapper.remove();
+      const controls = section.querySelector('[data-education-controls]');
+      if (controls) controls.remove();
+      section.removeAttribute('data-original-json');
+      section.removeAttribute('data-editing');
+      const display = section.querySelector('[data-education-display]');
+      if (display) display.style.display = '';
+      renderEducationDisplay(section, records);
+    });
+  }
+
   function enterEdit(modal) {
     if (!modal) return;
     const employeeId = modal.getAttribute('id').replace('viewEmployeeModal-', '');
     const piTab = modal.querySelector('#tab-pi-' + employeeId);
-    if (!piTab) return;
-    const cardBody = piTab.querySelector('.card-body');
-    if (!cardBody) return;
+    const fbTab = modal.querySelector('#tab-fb-' + employeeId);
+    const ebTab = modal.querySelector('#tab-eb-' + employeeId);
+    const piCardBody = piTab ? piTab.querySelector('.card-body') : null;
+    const fbCardBody = fbTab ? fbTab.querySelector('.card-body') : null;
+    const ebCardBody = ebTab ? ebTab.querySelector('.card-body') : null;
+    if (!piCardBody && !fbCardBody && !ebCardBody) return;
 
     // Helper to attach editor to label/value pair
     function attachEditor(valueEl, desc, currentText) {
@@ -1033,89 +2101,111 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       return input;
     }
 
-    // Personal Information grid (top section) - labels as div.text-muted.small
-    const personalCols = cardBody.querySelectorAll('.row.g-3 > [class^="col-"]');
-    personalCols.forEach(function(col) {
-      const labelEl = col.querySelector('.text-muted.small');
-      const valueEl = col.querySelector('.fw-semibold');
-      if (!labelEl || !valueEl) return;
-      const label = (labelEl.textContent || '').trim();
-      const desc = personalFieldMap[label];
-      if (!desc) return;
-      const currentText = (valueEl.textContent || '').trim();
-      attachEditor(valueEl, desc, currentText);
-    });
-
-    // Residential and Permanent Address sections
-    const sectionHeaders = cardBody.querySelectorAll('.text-muted.small.mb-1');
-    sectionHeaders.forEach(function(hdr) {
-      const sectionTitle = (hdr.textContent || '').trim();
-      const isRes = sectionTitle === 'Residential Address';
-      const isPerm = sectionTitle === 'Permanent Address';
-      if (!isRes && !isPerm) return;
-      const row = hdr.parentElement && hdr.parentElement.querySelector('.row.g-2');
-      if (!row) return;
-      const cols = row.querySelectorAll('[class^="col-"]');
-      cols.forEach(function(col) {
-        const labelEl = col.querySelector('small.text-muted');
+    if (piCardBody) {
+      // Personal Information grid (top section) - labels as div.text-muted.small
+      const personalCols = piCardBody.querySelectorAll('.row.g-3 > [class^="col-"]');
+      personalCols.forEach(function(col) {
+        const labelEl = col.querySelector('.text-muted.small');
         const valueEl = col.querySelector('.fw-semibold');
         if (!labelEl || !valueEl) return;
         const label = (labelEl.textContent || '').trim();
-        const suffix = addressLabelToSuffix[label];
-        if (!suffix) return;
-        const key = (isRes ? 'res_' : 'perm_') + suffix;
-        const desc = { key, type: 'text' };
+        const desc = personalFieldMap[label];
+        if (!desc) return;
         const currentText = (valueEl.textContent || '').trim();
         attachEditor(valueEl, desc, currentText);
       });
-    });
 
-    // Employment Details (Auto-filled) - a row.g-3 after its header
-    const empHeader = Array.from(cardBody.querySelectorAll('h6.text-uppercase.text-muted.small'))
-      .find(h => (h.textContent || '').includes('Employment Details'));
-    if (empHeader) {
-      const empRow = empHeader.parentElement && empHeader.parentElement.querySelector('.row.g-3');
-      if (empRow) {
-        const cols = empRow.querySelectorAll('[class^="col-"]');
+      // Residential and Permanent Address sections
+      const sectionHeaders = piCardBody.querySelectorAll('.text-muted.small.mb-1');
+      sectionHeaders.forEach(function(hdr) {
+        const sectionTitle = (hdr.textContent || '').trim();
+        const isRes = sectionTitle === 'Residential Address';
+        const isPerm = sectionTitle === 'Permanent Address';
+        if (!isRes && !isPerm) return;
+        const row = hdr.parentElement && hdr.parentElement.querySelector('.row.g-2');
+        if (!row) return;
+        const cols = row.querySelectorAll('[class^="col-"]');
         cols.forEach(function(col) {
-          const labelEl = col.querySelector('.text-muted.small');
-          const valueEl = col.querySelector('.fw-semibold, span.badge, div.fw-semibold');
+          const labelEl = col.querySelector('small.text-muted');
+          const valueEl = col.querySelector('.fw-semibold');
           if (!labelEl || !valueEl) return;
-          const lbl = (labelEl.textContent || '').trim();
-          const map = employmentFieldMap[lbl];
-          if (!map) return;
+          const label = (labelEl.textContent || '').trim();
+          const suffix = addressLabelToSuffix[label];
+          if (!suffix) return;
+          const key = (isRes ? 'res_' : 'perm_') + suffix;
+          const desc = { key, type: 'text' };
           const currentText = (valueEl.textContent || '').trim();
-          const input = attachEditor(col.querySelector('.fw-semibold') || valueEl, map, currentText);
+          attachEditor(valueEl, desc, currentText);
+        });
+      });
 
-          // Biometric duplicate verification inline
-          if (map.key === 'bio_number' && input) {
-            const excludeId = parseInt(employeeId, 10) || null;
-            const runCheck = debounce(async function() {
-              const val = (input.value || '').trim();
-              if (!val) { input.classList.remove('is-invalid'); return; }
-              try {
-                const data = await checkBio(val, excludeId);
-                if (data && data.valid) {
+      // Employment Details (Auto-filled) - a row.g-3 after its header
+      const empHeader = Array.from(piCardBody.querySelectorAll('h6.text-uppercase.text-muted.small'))
+        .find(h => (h.textContent || '').includes('Employment Details'));
+      if (empHeader) {
+        const empRow = empHeader.parentElement && empHeader.parentElement.querySelector('.row.g-3');
+        if (empRow) {
+          const cols = empRow.querySelectorAll('[class^="col-"]');
+          cols.forEach(function(col) {
+            const labelEl = col.querySelector('.text-muted.small');
+            const valueEl = col.querySelector('.fw-semibold, span.badge, div.fw-semibold');
+            if (!labelEl || !valueEl) return;
+            const lbl = (labelEl.textContent || '').trim();
+            const map = employmentFieldMap[lbl];
+            if (!map) return;
+            const currentText = (valueEl.textContent || '').trim();
+            const input = attachEditor(col.querySelector('.fw-semibold') || valueEl, map, currentText);
+
+            // Biometric duplicate verification inline
+            if (map.key === 'bio_number' && input) {
+              const excludeId = parseInt(employeeId, 10) || null;
+              const runCheck = debounce(async function() {
+                const val = (input.value || '').trim();
+                if (!val) { input.classList.remove('is-invalid'); return; }
+                try {
+                  const data = await checkBio(val, excludeId);
+                  if (data && data.valid) {
+                    input.classList.remove('is-invalid');
+                    input.removeAttribute('title');
+                  } else {
+                    input.classList.add('is-invalid');
+                    input.setAttribute('title', (data && data.message) ? data.message : 'Biometric number is already taken');
+                  }
+                } catch {
                   input.classList.remove('is-invalid');
                   input.removeAttribute('title');
-                } else {
-                  input.classList.add('is-invalid');
-                  input.setAttribute('title', (data && data.message) ? data.message : 'Biometric number is already taken');
                 }
-              } catch {
-                input.classList.remove('is-invalid');
-                input.removeAttribute('title');
-              }
-            }, 400);
-            input.addEventListener('input', () => { input.classList.remove('is-invalid'); runCheck(); });
-          }
+              }, 400);
+              input.addEventListener('input', () => { input.classList.remove('is-invalid'); runCheck(); });
+            }
 
-          // Replace badges (Position/Status) with selects in DOM location showing text
-          if ((map.key === 'position' || map.key === 'status') && input && input.tagName === 'SELECT') {
-            // Nothing extra needed; attachEditor already set select
-          }
-        });
+            // Replace badges (Position/Status) with selects in DOM location showing text
+            if ((map.key === 'position' || map.key === 'status') && input && input.tagName === 'SELECT') {
+              // Nothing extra needed; attachEditor already set select
+            }
+          });
+        }
       }
+    }
+
+    if (fbCardBody) {
+      const familyFields = fbCardBody.querySelectorAll('.fw-semibold[data-family-key]');
+      familyFields.forEach(function(valueEl) {
+        const mapKey = valueEl.getAttribute('data-family-key');
+        if (!mapKey) return;
+        const desc = familyFieldMap[mapKey];
+        if (!desc) return;
+        if (desc.type === 'children') {
+          setupChildrenEditor(valueEl);
+          return;
+        }
+        const currentText = (valueEl.textContent || '').trim();
+        attachEditor(valueEl, desc, currentText);
+      });
+    }
+
+    if (ebCardBody) {
+      enterEducationSections(ebCardBody);
     }
 
     modal.setAttribute('data-editing', '1');
@@ -1131,11 +2221,25 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
     if (!modal) return;
     const employeeId = modal.getAttribute('id').replace('viewEmployeeModal-', '');
     const piTab = modal.querySelector('#tab-pi-' + employeeId);
-    if (!piTab) return;
-    const cardBody = piTab.querySelector('.card-body');
-    if (!cardBody) return;
+    const fbTab = modal.querySelector('#tab-fb-' + employeeId);
+    const ebTab = modal.querySelector('#tab-eb-' + employeeId);
+    const piCardBody = piTab ? piTab.querySelector('.card-body') : null;
+    const fbCardBody = fbTab ? fbTab.querySelector('.card-body') : null;
+    const ebCardBody = ebTab ? ebTab.querySelector('.card-body') : null;
+    if (!piCardBody && !fbCardBody && !ebCardBody) return;
 
     function restoreValue(valueEl, mapKey) {
+      if (!valueEl) return;
+      if (mapKey === 'children_info') {
+        let newValue = '';
+        if (updatedMap && (mapKey in updatedMap)) {
+          newValue = updatedMap[mapKey] || '';
+        } else {
+          newValue = valueEl.getAttribute('data-original-text') || '';
+        }
+        renderChildrenDisplay(valueEl, newValue);
+        return;
+      }
       const input = valueEl.querySelector('.pi-input');
       let newValue = (input && 'value' in input) ? input.value : (valueEl.getAttribute('data-original-text') || '');
       if (updatedMap && mapKey && (mapKey in updatedMap)) {
@@ -1146,57 +2250,74 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       valueEl.removeAttribute('data-original-text');
     }
 
-    // Personal top grid
-    const personalCols = cardBody.querySelectorAll('.row.g-3 > [class^="col-"]');
-    personalCols.forEach(function(col) {
-      const labelEl = col.querySelector('.text-muted.small');
-      const valueEl = col.querySelector('.fw-semibold');
-      if (!labelEl || !valueEl) return;
-      const label = (labelEl.textContent || '').trim();
-      const desc = personalFieldMap[label];
-      if (!desc) return;
-      restoreValue(valueEl, desc.key);
-    });
-
-    // Residential / Permanent
-    const sectionHeaders = cardBody.querySelectorAll('.text-muted.small.mb-1');
-    sectionHeaders.forEach(function(hdr) {
-      const sectionTitle = (hdr.textContent || '').trim();
-      const isRes = sectionTitle === 'Residential Address';
-      const isPerm = sectionTitle === 'Permanent Address';
-      if (!isRes && !isPerm) return;
-      const row = hdr.parentElement && hdr.parentElement.querySelector('.row.g-2');
-      if (!row) return;
-      const cols = row.querySelectorAll('[class^="col-"]');
-      cols.forEach(function(col) {
-        const labelEl = col.querySelector('small.text-muted');
+    if (piCardBody) {
+      // Personal top grid
+      const personalCols = piCardBody.querySelectorAll('.row.g-3 > [class^="col-"]');
+      personalCols.forEach(function(col) {
+        const labelEl = col.querySelector('.text-muted.small');
         const valueEl = col.querySelector('.fw-semibold');
         if (!labelEl || !valueEl) return;
         const label = (labelEl.textContent || '').trim();
-        const suffix = addressLabelToSuffix[label];
-        if (!suffix) return;
-        const key = (isRes ? 'res_' : 'perm_') + suffix;
-        restoreValue(valueEl, key);
+        const desc = personalFieldMap[label];
+        if (!desc) return;
+        restoreValue(valueEl, desc.key);
       });
-    });
 
-    // Employment
-    const empHeader = Array.from(cardBody.querySelectorAll('h6.text-uppercase.text-muted.small'))
-      .find(h => (h.textContent || '').includes('Employment Details'));
-    if (empHeader) {
-      const empRow = empHeader.parentElement && empHeader.parentElement.querySelector('.row.g-3');
-      if (empRow) {
-        const cols = empRow.querySelectorAll('[class^="col-"]');
+      // Residential / Permanent
+      const sectionHeaders = piCardBody.querySelectorAll('.text-muted.small.mb-1');
+      sectionHeaders.forEach(function(hdr) {
+        const sectionTitle = (hdr.textContent || '').trim();
+        const isRes = sectionTitle === 'Residential Address';
+        const isPerm = sectionTitle === 'Permanent Address';
+        if (!isRes && !isPerm) return;
+        const row = hdr.parentElement && hdr.parentElement.querySelector('.row.g-2');
+        if (!row) return;
+        const cols = row.querySelectorAll('[class^="col-"]');
         cols.forEach(function(col) {
-          const labelEl = col.querySelector('.text-muted.small');
-          const valueEl = col.querySelector('.fw-semibold') || col.querySelector('div.fw-semibold');
+          const labelEl = col.querySelector('small.text-muted');
+          const valueEl = col.querySelector('.fw-semibold');
           if (!labelEl || !valueEl) return;
-          const lbl = (labelEl.textContent || '').trim();
-          const map = employmentFieldMap[lbl];
-          if (!map) return;
-          restoreValue(valueEl, map.key);
+          const label = (labelEl.textContent || '').trim();
+          const suffix = addressLabelToSuffix[label];
+          if (!suffix) return;
+          const key = (isRes ? 'res_' : 'perm_') + suffix;
+          restoreValue(valueEl, key);
         });
+      });
+
+      // Employment
+      const empHeader = Array.from(piCardBody.querySelectorAll('h6.text-uppercase.text-muted.small'))
+        .find(h => (h.textContent || '').includes('Employment Details'));
+      if (empHeader) {
+        const empRow = empHeader.parentElement && empHeader.parentElement.querySelector('.row.g-3');
+        if (empRow) {
+          const cols = empRow.querySelectorAll('[class^="col-"]');
+          cols.forEach(function(col) {
+            const labelEl = col.querySelector('.text-muted.small');
+            const valueEl = col.querySelector('.fw-semibold') || col.querySelector('div.fw-semibold');
+            if (!labelEl || !valueEl) return;
+            const lbl = (labelEl.textContent || '').trim();
+            const map = employmentFieldMap[lbl];
+            if (!map) return;
+            restoreValue(valueEl, map.key);
+          });
+        }
       }
+    }
+
+    if (fbCardBody) {
+      const familyFields = fbCardBody.querySelectorAll('.fw-semibold[data-family-key]');
+      familyFields.forEach(function(valueEl) {
+        const mapKey = valueEl.getAttribute('data-family-key');
+        if (!mapKey) return;
+        const desc = familyFieldMap[mapKey];
+        if (!desc) return;
+        restoreValue(valueEl, desc.key);
+      });
+    }
+
+    if (ebCardBody) {
+      exitEducationSections(ebCardBody, updatedMap);
     }
 
     modal.removeAttribute('data-editing');
@@ -1210,17 +2331,35 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
 
   function requestSave(modal) {
     const employeeId = modal.getAttribute('id').replace('viewEmployeeModal-', '');
-    const piTab = modal.querySelector('#tab-pi-' + employeeId);
-    if (!piTab) return;
+    const inputs = modal.querySelectorAll('.pi-input');
+    if (!inputs.length) {
+      exitEdit(modal, null);
+      return;
+    }
 
     // Detect changes
-    const inputs = piTab.querySelectorAll('.pi-input');
     let hasChanges = false;
     inputs.forEach(function(input){
-      const container = input.closest('.fw-semibold');
+      if (input.getAttribute('data-child-input') === '1') {
+        return;
+      }
+      const container = input.closest('[data-original-text]');
       const original = container ? String(container.getAttribute('data-original-text') || '').trim() : '';
       const current = String(input.value || '').trim();
       if (current !== original) { hasChanges = true; }
+    });
+    const childContainers = modal.querySelectorAll('[data-children-editor="1"]');
+    childContainers.forEach(function(container) {
+      const original = String(container.getAttribute('data-original-text') || '').trim();
+      const current = String(collectChildrenValue(container) || '').trim();
+      if (current !== original) { hasChanges = true; }
+    });
+    const educationSections = modal.querySelectorAll('[data-education-section]');
+    educationSections.forEach(function(section) {
+      const originalJson = section.getAttribute('data-original-json');
+      if (!originalJson) return;
+      const currentJson = JSON.stringify(getEducationEntriesFromSection(section));
+      if (currentJson !== originalJson) { hasChanges = true; }
     });
     if (!hasChanges) {
       // Nothing changed; simply exit edit mode
@@ -1255,25 +2394,47 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
   async function saveEdit(modal) {
     const updateUrl = modal.getAttribute('data-update-url');
     const employeeId = modal.getAttribute('id').replace('viewEmployeeModal-', '');
-    const piTab = modal.querySelector('#tab-pi-' + employeeId);
-    if (!updateUrl || !piTab) return;
+    if (!updateUrl) return;
 
     // Block save if any invalid input (e.g., duplicate bio_number)
-    const invalid = piTab.querySelector('.pi-input.is-invalid');
+    const invalid = modal.querySelector('.pi-input.is-invalid');
     if (invalid) {
       invalid.focus();
       return;
     }
 
     // Collect values
-    const inputs = piTab.querySelectorAll('.pi-input');
+    const inputs = modal.querySelectorAll('.pi-input');
+    if (!inputs.length) {
+      exitEdit(modal, null);
+      return;
+    }
     var fd = new FormData();
     fd.append('csrf_token', profileCsrf);
     inputs.forEach(function(input) {
+      if (input.getAttribute('data-child-input') === '1') {
+        return;
+      }
       const key = input.getAttribute('data-key');
       if (!key) return;
       let val = (input.value || '').trim();
       fd.append(key, val);
+    });
+    let childrenValue = null;
+    const childContainers = modal.querySelectorAll('[data-children-editor="1"]');
+    childContainers.forEach(function(container) {
+      childrenValue = collectChildrenValue(container);
+    });
+    if (childrenValue !== null) {
+      fd.append('children_info', childrenValue);
+    }
+    const educationData = collectEducationData(modal);
+    Object.keys(educationData).forEach(function(levelKey) {
+      const prefix = EDUCATION_PREFIX_MAP[levelKey];
+      if (!prefix) return;
+      const jsonField = prefix + '_records_json';
+      const entries = educationData[levelKey] || [];
+      fd.append(jsonField, JSON.stringify(entries));
     });
 
     // Submit

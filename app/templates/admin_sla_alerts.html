@@ -63,6 +63,32 @@
         </div>
     </div>
 
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6 col-xl-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('main.admin_sla_alerts', page=pagination.page if pagination else None, search=search_query) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if search_query %}
+                        <input type="hidden" name="search" value="{{ search_query }}">
+                        {% endif %}
+                        <h6 class="text-uppercase text-muted small mb-2">Notification Preferences</h6>
+                        <p class="small text-muted mb-3">Choose which SLA categories generate notifications for users.</p>
+                        {% for key, label in sla_preference_labels.items() %}
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="slaPref-{{ key }}" name="{{ key }}" value="on" {% if sla_preferences.get(key) %}checked{% endif %}>
+                            <label class="form-check-label" for="slaPref-{{ key }}">{{ label }}</label>
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary btn-sm mt-2">
+                            <i class="fas fa-save me-1"></i> Save Preferences
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db
 from app.forms import RegistrationForm, LoginForm, DocumentForm, DeclineDocumentForm, ForwardDocumentForm, ResubmitDocumentForm, LeaveRequestForm, EWPForm, EmployeeForm, LEAVE_TYPE_CHOICES, BatchDeclineDocumentForm, BatchForwardDocumentForm
-from app.models import User, Document, ActivityLog, Notification, LeaveRequest, LeaveDateRange, EWPRecord, Employee, to_local_time, format_timedelta
+from app.models import User, Document, ActivityLog, Notification, LeaveRequest, LeaveDateRange, EWPRecord, Employee, to_local_time, format_timedelta, EDUCATION_FIELD_NAMES, SLAAlertPreference
 
 from werkzeug.utils import secure_filename
 from datetime import timedelta, datetime
@@ -365,6 +365,23 @@ def update_employee_profile(employee_id):
             'perm_city_municipality', 'perm_province', 'perm_zip_code',
             # Contact
             'telephone_no', 'mobile_no', 'email_address',
+            # Family Background
+            'spouse_surname', 'spouse_first_name', 'spouse_middle_name', 'spouse_occupation',
+            'spouse_employer_name', 'spouse_business_address', 'spouse_telephone_no',
+            'father_surname', 'father_first_name', 'father_middle_name', 'father_extension',
+            'mother_maiden_surname', 'mother_maiden_first_name', 'mother_maiden_middle_name',
+            'children_info',
+            # Educational Background
+            'elem_school_name', 'elem_basic_education', 'elem_period_from', 'elem_period_to',
+            'elem_highest_level', 'elem_year_graduated', 'elem_scholarships',
+            'sec_school_name', 'sec_basic_education', 'sec_period_from', 'sec_period_to',
+            'sec_highest_level', 'sec_year_graduated', 'sec_scholarships',
+            'voc_school_name', 'voc_basic_education', 'voc_period_from', 'voc_period_to',
+            'voc_highest_level', 'voc_year_graduated', 'voc_scholarships',
+            'college_school_name', 'college_basic_education', 'college_period_from', 'college_period_to',
+            'college_highest_level', 'college_year_graduated', 'college_scholarships',
+            'grad_school_name', 'grad_basic_education', 'grad_period_from', 'grad_period_to',
+            'grad_highest_level', 'grad_year_graduated', 'grad_scholarships',
             # Employment core (auto-filled section) - allow inline changes
             'bio_number', 'office', 'position', 'status'
         ]
@@ -404,12 +421,60 @@ def update_employee_profile(employee_id):
             if st and st not in {'Active', 'Inactive'}:
                 return jsonify({'success': False, 'message': 'Invalid status value'}), 400
 
+        education_json_fields = [
+            ('elem_records_json', 'elem'),
+            ('sec_records_json', 'sec'),
+            ('voc_records_json', 'voc'),
+            ('college_records_json', 'college'),
+            ('grad_records_json', 'grad')
+        ]
+
+        def _normalize_education_entries(raw_entries):
+            normalized = []
+            if isinstance(raw_entries, list):
+                for entry in raw_entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    norm = {field: (entry.get(field) or '').strip() for field in EDUCATION_FIELD_NAMES}
+                    if any(norm.values()):
+                        normalized.append(norm)
+            return normalized
+
+        normalized_education = {}
         updated = {}
+
+        for json_field, prefix in education_json_fields:
+            if json_field in data:
+                raw_json = data.get(json_field) or ''
+                try:
+                    parsed = json.loads(raw_json)
+                except Exception:
+                    parsed = []
+                normalized = _normalize_education_entries(parsed)
+                json_str = json.dumps(normalized)
+                setattr(employee, json_field, json_str if normalized else None)
+                normalized_education[prefix] = normalized
+                updated[json_field] = json_str
+
         for key in allowed_fields:
             if key in data:
                 val = (data.get(key) or '').strip()
+                if key == 'children_info':
+                    # normalize to single newline-separated entries
+                    lines = [ln.strip() for ln in val.splitlines()]
+                    lines = [ln for ln in lines if ln]
+                    val = '\n'.join(lines)
                 setattr(employee, key, val if val != '' else None)
                 updated[key] = getattr(employee, key)
+
+        # Sync educational base columns with normalized lists (ensures consistency even if no base inputs were submitted)
+        for prefix, entries in normalized_education.items():
+            first_entry = entries[0] if entries else {}
+            for field in EDUCATION_FIELD_NAMES:
+                column_name = f"{prefix}_{field}"
+                value = (first_entry.get(field, '').strip() if first_entry else '')
+                setattr(employee, column_name, value if value != '' else None)
+                updated[column_name] = getattr(employee, column_name)
 
         # Re-compose display name from surname and first_name if any of them provided
         if ('surname' in data) or ('first_name' in data):
@@ -2587,16 +2652,39 @@ def admin_dashboard():
     )
 
 
-@main.route('/admin/sla-alerts')
+@main.route('/admin/sla-alerts', methods=['GET', 'POST'])
 @login_required
 def admin_sla_alerts():
     if not current_user.is_admin:
         flash('You are not authorized to view SLA alerts.', 'danger')
         return redirect(url_for('main.dashboard'))
 
+    search_query = request.args.get('search', '').strip()
+
+    if request.method == 'POST':
+        search_query = request.form.get('search', '').strip() or search_query
+        preferences_payload = {
+            key: request.form.get(key) == 'on'
+            for key in SLAAlertPreference.DEFAULTS.keys()
+        }
+        try:
+            SLAAlertPreference.ensure_defaults()
+            for category, enabled in preferences_payload.items():
+                SLAAlertPreference.set_enabled(category, enabled)
+            db.session.commit()
+            flash('SLA notification preferences updated.', 'success')
+        except Exception as exc:
+            db.session.rollback()
+            current_app.logger.exception('Failed to update SLA notification preferences: %s', exc)
+            flash('Failed to update SLA notification preferences. Please try again.', 'danger')
+
+        redirect_params = {}
+        if search_query:
+            redirect_params['search'] = search_query
+        return redirect(url_for('main.admin_sla_alerts', **redirect_params))
+
     page = request.args.get('page', 1, type=int)
     per_page = 25
-    search_query = request.args.get('search', '').strip()
 
     base_query = Notification.query.options(joinedload(Notification.user)).filter(
         Notification.message.ilike('SLA%')
@@ -2662,11 +2750,25 @@ def admin_sla_alerts():
         Notification.message.ilike('%SLA Warn%')
     ).count()
 
+    try:
+        sla_preferences = SLAAlertPreference.get_preferences_map()
+    except Exception as exc:
+        current_app.logger.warning('Unable to load SLA notification preferences: %s', exc)
+        sla_preferences = SLAAlertPreference.DEFAULTS.copy()
+
+    preference_labels = {
+        'documents': 'Document Alerts',
+        'leave_requests': 'Leave Alerts',
+        'ewp_records': 'EWP Alerts',
+    }
+
     return render_template(
         'admin_sla_alerts.html',
         alerts=alerts,
         pagination=pagination,
         search_query=search_query,
+        sla_preferences=sla_preferences,
+        sla_preference_labels=preference_labels,
         summary={
             'total': summary_total,
             'escalations': summary_escalations,

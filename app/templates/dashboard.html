@@ -1750,6 +1750,17 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="mb-3 custom-classification-container" style="display: none;">
+                            <label class="form-label" for="custom-classification-{{ document.id }}">Enter Classification</label>
+                            <input type="text"
+                                   class="form-control custom-classification-input"
+                                   id="custom-classification-{{ document.id }}"
+                                   name="custom_classification"
+                                   maxlength="20">
+                            <div class="text-danger mt-1 char-limit-indicator" style="display: none;">
+                                Character limit reached (20 characters maximum)
+                            </div>
+                        </div>
                         <div class="mb-3">
                             {{ form.status.label(class="form-label") }}
                             <select class="form-control" id="{{ form.status.id }}" name="{{ form.status.name }}">
@@ -2674,7 +2685,55 @@ function setArchiveDocumentId(documentId) {
         const editModal = document.getElementById('editModal-{{ document.id }}');
         if (editModal) {
             const form = editModal.querySelector('form');
+            if (!form) {
+                return;
+            }
             const mainClassField = form.querySelector('[name="{{ form.classification.name }}"]');
+            if (!mainClassField) {
+                return;
+            }
+            const customContainer = form.querySelector('.custom-classification-container');
+            const customInput = customContainer ? customContainer.querySelector('.custom-classification-input') : null;
+            const charIndicator = customContainer ? customContainer.querySelector('.char-limit-indicator') : null;
+
+            function showCustomClassification() {
+                if (!customContainer || !customInput) {
+                    return;
+                }
+                customContainer.style.display = 'block';
+                customInput.required = true;
+            }
+
+            function hideCustomClassification(clearValue) {
+                if (!customContainer || !customInput) {
+                    return;
+                }
+                customContainer.style.display = 'none';
+                customInput.required = false;
+                if (clearValue) {
+                    customInput.value = '';
+                }
+                customInput.classList.remove('is-invalid');
+                if (charIndicator) {
+                    charIndicator.style.display = 'none';
+                }
+            }
+
+            if (customInput) {
+                customInput.addEventListener('input', function() {
+                    if (this.value.length >= 20) {
+                        this.classList.add('is-invalid');
+                        if (charIndicator) {
+                            charIndicator.style.display = 'block';
+                        }
+                    } else {
+                        this.classList.remove('is-invalid');
+                        if (charIndicator) {
+                            charIndicator.style.display = 'none';
+                        }
+                    }
+                });
+            }
             
             // Create and append the sub-classification container if it doesn't exist
             let subContainer = form.querySelector('.sub-classification-container');
@@ -2704,8 +2763,26 @@ function setArchiveDocumentId(documentId) {
                 hiddenField.name = 'full_classification';
                 form.appendChild(hiddenField);
                 
-                // Check if current document has a Communications, Request, or Payroll classification
-                const currentClass = "{{ document.classification }}";
+                const currentClass = "{{ document.classification|escapejs }}";
+                const othersPrefix = 'Others - ';
+                
+                if (customInput && currentClass.startsWith(othersPrefix)) {
+                    mainClassField.value = 'Others';
+                    showCustomClassification();
+                    customInput.value = currentClass.slice(othersPrefix.length);
+                    if (customInput.value.length >= 20) {
+                        customInput.classList.add('is-invalid');
+                        if (charIndicator) {
+                            charIndicator.style.display = 'block';
+                        }
+                    }
+                } else if (customInput && currentClass === 'Others') {
+                    mainClassField.value = 'Others';
+                    showCustomClassification();
+                } else {
+                    hideCustomClassification(false);
+                }
+                
                 if (currentClass.startsWith('Communications - ') || 
                     currentClass.startsWith('Request - ') || 
                     currentClass.startsWith('Payroll - ')) {
@@ -2794,12 +2871,32 @@ function setArchiveDocumentId(documentId) {
                         subContainer.style.display = 'none';
                         subSelectEl.selectedIndex = 0;
                     }
+                    
+                    if (customInput) {
+                        if (this.value === 'Others') {
+                            showCustomClassification();
+                        } else {
+                            hideCustomClassification(true);
+                        }
+                    }
                 });
                 
                 // Add submit handler
                 form.addEventListener('submit', function(e) {
                     const subSelectEl = subContainer.querySelector('select');
                     const hiddenField = form.querySelector('.full-classification');
+                    
+                    if (customInput && mainClassField.value === 'Others') {
+                        const trimmed = customInput.value.trim();
+                        if (!trimmed) {
+                            e.preventDefault();
+                            alert('Please enter a custom classification');
+                            customInput.focus();
+                            return;
+                        }
+                        hiddenField.value = 'Others - ' + trimmed;
+                        return;
+                    }
                     
                     if ((mainClassField.value === 'Communications' || 
                          mainClassField.value === 'Request' || 

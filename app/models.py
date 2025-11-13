@@ -20,6 +20,44 @@ EDUCATION_FIELD_NAMES = (
     'scholarships'
 )
 
+CIVIL_SERVICE_FIELD_NAMES = (
+    'career_service',
+    'rating',
+    'exam_date',
+    'exam_place',
+    'license_number',
+    'license_validity'
+)
+
+WORK_EXPERIENCE_FIELD_NAMES = (
+    'inclusive_from',
+    'inclusive_to',
+    'position_title',
+    'department_agency',
+    'monthly_salary',
+    'salary_grade',
+    'appointment_status',
+    'is_gov_service'
+)
+
+VOLUNTARY_WORK_FIELD_NAMES = (
+    'organization_name',
+    'organization_address',
+    'inclusive_from',
+    'inclusive_to',
+    'hours',
+    'position_nature'
+)
+
+LEARNING_DEV_FIELD_NAMES = (
+    'program_title',
+    'inclusive_from',
+    'inclusive_to',
+    'hours',
+    'ld_type',
+    'conducted_by'
+)
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
@@ -29,6 +67,8 @@ class User(db.Model, UserMixin):
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     # Per-user permission to access Leave module
     can_access_leave = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
+    # Per-user permission to access Employee Records module
+    can_access_employee_records = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
     status = db.Column(db.String(20), default='Pending', server_default='Pending', nullable=False)  # Add server_default
     documents_created = db.relationship('Document', backref='creator', lazy=True, foreign_keys='Document.creator_id')
     documents_received = db.relationship('Document', backref='recipient', lazy=True, foreign_keys='Document.recipient_id')
@@ -550,6 +590,10 @@ class Employee(db.Model):
     voc_records_json = db.Column(db.Text, nullable=True)
     college_records_json = db.Column(db.Text, nullable=True)
     grad_records_json = db.Column(db.Text, nullable=True)
+    civil_service_records_json = db.Column(db.Text, nullable=True)
+    work_experience_json = db.Column(db.Text, nullable=True)
+    voluntary_work_json = db.Column(db.Text, nullable=True)
+    learning_dev_json = db.Column(db.Text, nullable=True)
 
     def _primary_education_entry(self, prefix):
         entry = {field: (getattr(self, f"{prefix}_{field}", '') or '').strip() for field in EDUCATION_FIELD_NAMES}
@@ -597,6 +641,102 @@ class Employee(db.Model):
     @property
     def grad_records(self):
         return self._education_records('grad')
+
+    def _civil_service_records_internal(self):
+        records = []
+        raw_json = self.civil_service_records_json
+        if raw_json:
+            try:
+                parsed = json.loads(raw_json)
+            except Exception:
+                parsed = []
+            if isinstance(parsed, list):
+                for entry in parsed:
+                    if not isinstance(entry, dict):
+                        continue
+                    normalized = {
+                        field: (entry.get(field) or '').strip()
+                        for field in CIVIL_SERVICE_FIELD_NAMES
+                    }
+                    if any(normalized.values()):
+                        records.append(normalized)
+        return records
+
+    @property
+    def civil_service_records(self):
+        return self._civil_service_records_internal()
+
+    def _work_experience_records_internal(self):
+        records = []
+        raw_json = self.work_experience_json
+        if raw_json:
+            try:
+                parsed = json.loads(raw_json)
+            except Exception:
+                parsed = []
+            if isinstance(parsed, list):
+                for entry in parsed:
+                    if not isinstance(entry, dict):
+                        continue
+                    normalized = {
+                        field: (entry.get(field) or '').strip()
+                        for field in WORK_EXPERIENCE_FIELD_NAMES
+                    }
+                    if any(normalized.values()):
+                        records.append(normalized)
+        return records
+
+    @property
+    def work_experience_records(self):
+        return self._work_experience_records_internal()
+
+    def _voluntary_work_records_internal(self):
+        records = []
+        raw_json = self.voluntary_work_json
+        if raw_json:
+            try:
+                parsed = json.loads(raw_json)
+            except Exception:
+                parsed = []
+            if isinstance(parsed, list):
+                for entry in parsed:
+                    if not isinstance(entry, dict):
+                        continue
+                    normalized = {
+                        field: (entry.get(field) or '').strip()
+                        for field in VOLUNTARY_WORK_FIELD_NAMES
+                    }
+                    if any(normalized.values()):
+                        records.append(normalized)
+        return records
+
+    @property
+    def voluntary_work_records(self):
+        return self._voluntary_work_records_internal()
+
+    def _learning_dev_records_internal(self):
+        records = []
+        raw_json = self.learning_dev_json
+        if raw_json:
+            try:
+                parsed = json.loads(raw_json)
+            except Exception:
+                parsed = []
+            if isinstance(parsed, list):
+                for entry in parsed:
+                    if not isinstance(entry, dict):
+                        continue
+                    normalized = {
+                        field: (entry.get(field) or '').strip()
+                        for field in LEARNING_DEV_FIELD_NAMES
+                    }
+                    if any(normalized.values()):
+                        records.append(normalized)
+        return records
+
+    @property
+    def learning_dev_records(self):
+        return self._learning_dev_records_internal()
 
     def to_dict(self):
         return {
@@ -697,9 +837,17 @@ class Employee(db.Model):
             'voc_records_json': self.voc_records_json,
             'college_records_json': self.college_records_json,
             'grad_records_json': self.grad_records_json,
+            'civil_service_records_json': self.civil_service_records_json,
+            'work_experience_json': self.work_experience_json,
+            'voluntary_work_json': self.voluntary_work_json,
+            'learning_dev_json': self.learning_dev_json,
             'elem_records': self.elem_records,
             'sec_records': self.sec_records,
             'voc_records': self.voc_records,
             'college_records': self.college_records,
-            'grad_records': self.grad_records
+            'grad_records': self.grad_records,
+            'civil_service_records': self.civil_service_records,
+            'work_experience_records': self.work_experience_records,
+            'voluntary_work_records': self.voluntary_work_records,
+            'learning_dev_records': self.learning_dev_records
         }

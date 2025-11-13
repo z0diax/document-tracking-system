@@ -13,7 +13,7 @@ The Document Tracking System is a modular, role-aware web application built with
 - Activity logging and notifications
 - Admin analytics and reporting
 - Specialized modules for Leave Requests and EWP records
-- Employee directory management (admin only)
+- Employee directory management (admin or delegated users)
 - Secure file serving and barcode management
 - Batch operations and print-ready reports
 
@@ -26,7 +26,7 @@ Timezone and metrics are localized to Asia/Manila, and analytics focus on busine
 - Authentication & Admin Approval
   - Registration with admin approval workflow; only “Active” accounts can log in
   - Flask-Login session management; User status: Pending, Active, Disabled, Declined
-  - Per-user permission flag for Leave module access (can_access_leave)
+- Per-user permission flags for Leave (can_access_leave) and Employee Records (can_access_employee_records) modules
 
 - Document Lifecycle
   - Create documents with barcode, classification, attachments, and routing (recipient)
@@ -53,7 +53,7 @@ Timezone and metrics are localized to Asia/Manila, and analytics focus on busine
   - Status transitions similar to Leave/Docs
   - Tied to user who created it; included in Leave view tab
 
-- Employee Records (Admin Only)
+- Employee Records (Admin or delegated users)
   - CRUD with search, pagination, choice lists for offices and statuses
   - Validations (unique biometric number), and protections
 
@@ -93,16 +93,20 @@ Timezone and metrics are localized to Asia/Manila, and analytics focus on busine
 - Standard User
   - Create, accept, forward, release, decline, archive their documents within authorization
   - Optional Leave/EWP access if can_access_leave is enabled
+  - Optional Employee Records access if can_access_employee_records is enabled
 
 - Leave Module Access
   - Governed by per-user flag can_access_leave
+
+- Employee Records Access
+  - Governed by per-user flag can_access_employee_records (admins always retain access)
 
 ---
 
 ### 4) Data Model Overview (SQLAlchemy)
 
 - User
-  - username, email, password_hash, is_admin, can_access_leave, status
+  - username, email, password_hash, is_admin, can_access_leave, can_access_employee_records, status
   - Relationships: documents_created, documents_received, notifications, processing_logs
   - Active-only login logic via property override of is_active
 
@@ -232,7 +236,7 @@ Timezone and metrics are localized to Asia/Manila, and analytics focus on busine
 - Pages
   - Home (Login/Register), Overview, Dashboard (Created/Received/Leave tabs)
   - Archive, Admin Dashboard, Print Report
-  - Employee Records and Forms (admin only)
+- Employee Records and Forms (admin or delegated users)
 
 - Templates and Assets
   - Jinja2 templates under app/templates/

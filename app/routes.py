@@ -2,7 +2,24 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db
 from app.forms import RegistrationForm, LoginForm, DocumentForm, DeclineDocumentForm, ForwardDocumentForm, ResubmitDocumentForm, LeaveRequestForm, EWPForm, EmployeeForm, LEAVE_TYPE_CHOICES, BatchDeclineDocumentForm, BatchForwardDocumentForm
-from app.models import User, Document, ActivityLog, Notification, LeaveRequest, LeaveDateRange, EWPRecord, Employee, to_local_time, format_timedelta, EDUCATION_FIELD_NAMES, SLAAlertPreference
+from app.models import (
+    User,
+    Document,
+    ActivityLog,
+    Notification,
+    LeaveRequest,
+    LeaveDateRange,
+    EWPRecord,
+    Employee,
+    to_local_time,
+    format_timedelta,
+    EDUCATION_FIELD_NAMES,
+    CIVIL_SERVICE_FIELD_NAMES,
+    WORK_EXPERIENCE_FIELD_NAMES,
+    VOLUNTARY_WORK_FIELD_NAMES,
+    LEARNING_DEV_FIELD_NAMES,
+    SLAAlertPreference
+)
 from app.theme_state import read_theme_state, write_theme_state, ALLOWED_THEMES, DEFAULT_THEME, THEME_SEQUENCE
 
 from werkzeug.utils import secure_filename
@@ -116,7 +133,7 @@ def employee_list():
     form = EmployeeForm()
     form.office.choices = OFFICE_CHOICES
     try:
-        if not current_user.is_admin:
+        if not (current_user.is_admin or current_user.can_access_employee_records):
             flash('You are not authorized to access Employee Records.', 'danger')
             return redirect(url_for('main.dashboard'))
 
@@ -172,7 +189,7 @@ def employee_list():
 @main.route('/employees/add', methods=['GET', 'POST'])
 @login_required
 def add_employee():
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.can_access_employee_records):
         flash('You are not authorized to add employees.', 'danger')
         return redirect(url_for('main.employee_list'))
 
@@ -260,7 +277,7 @@ def add_employee():
 @main.route('/employees/edit/<int:employee_id>', methods=['GET', 'POST'])
 @login_required
 def edit_employee(employee_id):
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.can_access_employee_records):
         flash('You are not authorized to edit employees.', 'danger')
         return redirect(url_for('main.employee_list'))
 
@@ -352,7 +369,7 @@ def edit_employee(employee_id):
 @main.route('/employees/delete/<int:employee_id>', methods=['POST'])
 @login_required
 def delete_employee(employee_id):
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.can_access_employee_records):
         flash('You are not authorized to delete employees.', 'danger')
         return redirect(url_for('main.employee_list'))
 
@@ -371,7 +388,7 @@ def delete_employee(employee_id):
 @main.route('/employees/toggle_status/<int:employee_id>', methods=['POST'])
 @login_required
 def toggle_employee_status(employee_id):
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.can_access_employee_records):
         flash('You are not authorized to modify employees.', 'danger')
         return redirect(url_for('main.employee_list'))
     try:
@@ -393,7 +410,7 @@ def update_employee_profile(employee_id):
     Accepts form-encoded fields; updates only provided keys.
     Returns JSON with updated values and composed display name.
     """
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.can_access_employee_records):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     try:
         employee = Employee.query.get_or_404(employee_id)
@@ -489,6 +506,50 @@ def update_employee_profile(employee_id):
                         normalized.append(norm)
             return normalized
 
+        def _normalize_civil_service_entries(raw_entries):
+            normalized = []
+            if isinstance(raw_entries, list):
+                for entry in raw_entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    norm = {field: (entry.get(field) or '').strip() for field in CIVIL_SERVICE_FIELD_NAMES}
+                    if any(norm.values()):
+                        normalized.append(norm)
+            return normalized
+
+        def _normalize_work_experience_entries(raw_entries):
+            normalized = []
+            if isinstance(raw_entries, list):
+                for entry in raw_entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    norm = {field: (entry.get(field) or '').strip() for field in WORK_EXPERIENCE_FIELD_NAMES}
+                    if any(norm.values()):
+                        normalized.append(norm)
+            return normalized
+
+        def _normalize_voluntary_work_entries(raw_entries):
+            normalized = []
+            if isinstance(raw_entries, list):
+                for entry in raw_entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    norm = {field: (entry.get(field) or '').strip() for field in VOLUNTARY_WORK_FIELD_NAMES}
+                    if any(norm.values()):
+                        normalized.append(norm)
+            return normalized
+
+        def _normalize_learning_dev_entries(raw_entries):
+            normalized = []
+            if isinstance(raw_entries, list):
+                for entry in raw_entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    norm = {field: (entry.get(field) or '').strip() for field in LEARNING_DEV_FIELD_NAMES}
+                    if any(norm.values()):
+                        normalized.append(norm)
+            return normalized
+
         normalized_education = {}
         updated = {}
 
@@ -504,6 +565,50 @@ def update_employee_profile(employee_id):
                 setattr(employee, json_field, json_str if normalized else None)
                 normalized_education[prefix] = normalized
                 updated[json_field] = json_str
+
+        if 'civil_service_records_json' in data:
+            raw_json = data.get('civil_service_records_json') or ''
+            try:
+                parsed = json.loads(raw_json)
+            except Exception:
+                parsed = []
+            normalized_cse = _normalize_civil_service_entries(parsed)
+            json_str = json.dumps(normalized_cse)
+            employee.civil_service_records_json = json_str if normalized_cse else None
+            updated['civil_service_records_json'] = json_str
+
+        if 'work_experience_json' in data:
+            raw_json = data.get('work_experience_json') or ''
+            try:
+                parsed = json.loads(raw_json)
+            except Exception:
+                parsed = []
+            normalized_we = _normalize_work_experience_entries(parsed)
+            json_str = json.dumps(normalized_we)
+            employee.work_experience_json = json_str if normalized_we else None
+            updated['work_experience_json'] = json_str
+
+        if 'voluntary_work_json' in data:
+            raw_json = data.get('voluntary_work_json') or ''
+            try:
+                parsed = json.loads(raw_json)
+            except Exception:
+                parsed = []
+            normalized_vw = _normalize_voluntary_work_entries(parsed)
+            json_str = json.dumps(normalized_vw)
+            employee.voluntary_work_json = json_str if normalized_vw else None
+            updated['voluntary_work_json'] = json_str
+
+        if 'learning_dev_json' in data:
+            raw_json = data.get('learning_dev_json') or ''
+            try:
+                parsed = json.loads(raw_json)
+            except Exception:
+                parsed = []
+            normalized_ld = _normalize_learning_dev_entries(parsed)
+            json_str = json.dumps(normalized_ld)
+            employee.learning_dev_json = json_str if normalized_ld else None
+            updated['learning_dev_json'] = json_str
 
         for key in allowed_fields:
             if key in data:
@@ -553,7 +658,7 @@ def update_employee_profile(employee_id):
 @login_required
 def check_bio_number():
     """Validate Employee biometric (bio_number) availability. Optional exclude_id for edit forms."""
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.can_access_employee_records):
         return jsonify({'valid': False, 'message': 'Unauthorized'}), 403
     try:
         bio = (request.form.get('bio_number') or '').strip()

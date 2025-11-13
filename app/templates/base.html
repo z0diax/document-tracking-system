@@ -826,9 +826,11 @@
                                     </a>
                                 </div>
                             </div>
+                            {% if current_user.is_admin or current_user.can_access_employee_records %}
                             <a href="{{ url_for('main.employee_list') }}" class="list-group-item list-group-item-action sub-item {% if request.endpoint in ['main.employee_list','main.add_employee','main.edit_employee'] or request.args.get('view') == 'employee' %}active{% endif %}">
                                 <i class="fas fa-id-card"></i>Employee Records
                             </a>
+                            {% endif %}
                             {% if current_user.can_access_leave %}
                             <a href="{{ url_for('main.dashboard', view='leave') }}" class="list-group-item list-group-item-action sub-item {% if request.args.get('view') == 'leave' %}active{% endif %}">
                                 <i class="fas fa-plane-departure"></i>Leave

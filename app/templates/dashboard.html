@@ -495,7 +495,7 @@
             {% endif %}
         </ul>
     </nav>
-{% elif request.args.get('view') == 'employee' %}
+{% elif request.args.get('view') == 'employee' and (current_user.is_admin or current_user.can_access_employee_records) %}
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">Employee Records</h2>
         <div>

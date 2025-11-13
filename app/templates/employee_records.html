@@ -898,10 +898,44 @@
                 <div class="card shadow-sm border-0">
                   <div class="card-body">
                     <h6 class="text-uppercase text-muted small mb-3">IV. Civil Service Eligibility</h6>
-                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
-                      <i class="fas fa-file-alt fa-2x mb-2"></i>
-                      <div>Scribd</div>
-                      <small class="d-block mt-1">Embed the Civil Service Eligibility document here.</small>
+                    {% set _cse_records = e.civil_service_records %}
+                    <div class="civil-service-section" data-cse-section data-cse-records='{{ _cse_records|tojson|safe }}'>
+                      <div class="civil-service-display" data-cse-display>
+                        {% if _cse_records %}
+                          {% for rec in _cse_records %}
+                            <div class="civil-service-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                              <div class="row g-3">
+                                <div class="col-md-6">
+                                  <div class="text-muted small">Career Service / RA 1080</div>
+                                  <div class="fw-semibold">{{ rec.career_service|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Rating (if applicable)</div>
+                                  <div class="fw-semibold">{{ rec.rating|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Date of Examination / Conferment</div>
+                                  <div class="fw-semibold">{{ rec.exam_date|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="text-muted small">Place of Examination / Conferment</div>
+                                  <div class="fw-semibold">{{ rec.exam_place|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">License Number (if applicable)</div>
+                                  <div class="fw-semibold">{{ rec.license_number|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Date of Validity</div>
+                                  <div class="fw-semibold">{{ rec.license_validity|default('', true) }}</div>
+                                </div>
+                              </div>
+                            </div>
+                          {% endfor %}
+                        {% else %}
+                          <span class="text-muted">No Civil Service Eligibility records listed</span>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -912,10 +946,52 @@
                 <div class="card shadow-sm border-0">
                   <div class="card-body">
                     <h6 class="text-uppercase text-muted small mb-3">V. Work Experience</h6>
-                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
-                      <i class="fas fa-file-alt fa-2x mb-2"></i>
-                      <div>Scribd</div>
-                      <small class="d-block mt-1">Embed the Work Experience document here.</small>
+                    {% set _we_records = e.work_experience_records %}
+                    <div class="work-experience-section" data-we-section data-we-records='{{ _we_records|tojson|safe }}'>
+                      <div class="work-experience-display" data-we-display>
+                        {% if _we_records %}
+                          {% for rec in _we_records %}
+                            <div class="work-experience-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                              <div class="row g-3">
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Inclusive Dates (From)</div>
+                                  <div class="fw-semibold">{{ rec.inclusive_from|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Inclusive Dates (To)</div>
+                                  <div class="fw-semibold">{{ rec.inclusive_to|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="text-muted small">Position Title</div>
+                                  <div class="fw-semibold">{{ rec.position_title|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="text-muted small">Department/Agency/Office/Company</div>
+                                  <div class="fw-semibold">{{ rec.department_agency|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Monthly Salary</div>
+                                  <div class="fw-semibold">{{ rec.monthly_salary|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Salary Grade & Step Increment</div>
+                                  <div class="fw-semibold">{{ rec.salary_grade|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Status of Appointment</div>
+                                  <div class="fw-semibold">{{ rec.appointment_status|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Government Service (Y/N)</div>
+                                  <div class="fw-semibold">{{ rec.is_gov_service|default('', true) }}</div>
+                                </div>
+                              </div>
+                            </div>
+                          {% endfor %}
+                        {% else %}
+                          <span class="text-muted">No work experience records listed</span>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -926,10 +1002,44 @@
                 <div class="card shadow-sm border-0">
                   <div class="card-body">
                     <h6 class="text-uppercase text-muted small mb-3">VI. Voluntary Work</h6>
-                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
-                      <i class="fas fa-file-alt fa-2x mb-2"></i>
-                      <div>Scribd</div>
-                      <small class="d-block mt-1">Embed the Voluntary Work document here.</small>
+                    {% set _vw_records = e.voluntary_work_records %}
+                    <div class="voluntary-work-section" data-vw-section data-vw-records='{{ _vw_records|tojson|safe }}'>
+                      <div class="voluntary-work-display" data-vw-display>
+                        {% if _vw_records %}
+                          {% for rec in _vw_records %}
+                            <div class="voluntary-work-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                              <div class="row g-3">
+                                <div class="col-md-6">
+                                  <div class="text-muted small">Name of Organization</div>
+                                  <div class="fw-semibold">{{ rec.organization_name|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="text-muted small">Address</div>
+                                  <div class="fw-semibold">{{ rec.organization_address|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Inclusive Dates (From)</div>
+                                  <div class="fw-semibold">{{ rec.inclusive_from|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Inclusive Dates (To)</div>
+                                  <div class="fw-semibold">{{ rec.inclusive_to|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Number of Hours</div>
+                                  <div class="fw-semibold">{{ rec.hours|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Position / Nature of Work</div>
+                                  <div class="fw-semibold">{{ rec.position_nature|default('', true) }}</div>
+                                </div>
+                              </div>
+                            </div>
+                          {% endfor %}
+                        {% else %}
+                          <span class="text-muted">No voluntary work records listed</span>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -940,10 +1050,44 @@
                 <div class="card shadow-sm border-0">
                   <div class="card-body">
                     <h6 class="text-uppercase text-muted small mb-3">VII. Learning &amp; Development (L&amp;D)</h6>
-                    <div class="scribd-embed-placeholder border rounded p-4 text-center text-muted">
-                      <i class="fas fa-file-alt fa-2x mb-2"></i>
-                      <div>Scribd</div>
-                      <small class="d-block mt-1">Embed the L&amp;D/Training Programs document here.</small>
+                    {% set _ld_records = e.learning_dev_records %}
+                    <div class="learning-dev-section" data-ld-section data-ld-records='{{ _ld_records|tojson|safe }}'>
+                      <div class="learning-dev-display" data-ld-display>
+                        {% if _ld_records %}
+                          {% for rec in _ld_records %}
+                            <div class="learning-dev-entry border rounded p-3 {% if not loop.last %}mb-3{% endif %}">
+                              <div class="row g-3">
+                                <div class="col-md-6">
+                                  <div class="text-muted small">Title of Learning and Development Programs</div>
+                                  <div class="fw-semibold">{{ rec.program_title|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Type (Managerial/Technical/etc)</div>
+                                  <div class="fw-semibold">{{ rec.ld_type|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Number of Hours</div>
+                                  <div class="fw-semibold">{{ rec.hours|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Inclusive Dates (From)</div>
+                                  <div class="fw-semibold">{{ rec.inclusive_from|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="text-muted small">Inclusive Dates (To)</div>
+                                  <div class="fw-semibold">{{ rec.inclusive_to|default('', true) }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="text-muted small">Conducted / Sponsored By</div>
+                                  <div class="fw-semibold">{{ rec.conducted_by|default('', true) }}</div>
+                                </div>
+                              </div>
+                            </div>
+                          {% endfor %}
+                        {% else %}
+                          <span class="text-muted">No learning &amp; development records listed</span>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1483,6 +1627,186 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
     acc[level.key] = level.prefix;
     return acc;
   }, {});
+
+  const CIVIL_SERVICE_FIELD_ORDER = [
+    'career_service',
+    'rating',
+    'exam_date',
+    'exam_place',
+    'license_number',
+    'license_validity'
+  ];
+
+  const CIVIL_SERVICE_FIELD_CONFIG = {
+    career_service: {
+      label: 'Career Service / RA 1080',
+      col: 'col-md-6',
+      placeholder: 'e.g., Career Service Professional'
+    },
+    rating: {
+      label: 'Rating (if applicable)',
+      col: 'col-md-3',
+      placeholder: 'e.g., 82.50'
+    },
+    exam_date: {
+      label: 'Date of Examination / Conferment',
+      col: 'col-md-3',
+      placeholder: 'mm/dd/yyyy'
+    },
+    exam_place: {
+      label: 'Place of Examination / Conferment',
+      col: 'col-md-6',
+      placeholder: 'City / Province'
+    },
+    license_number: {
+      label: 'License Number (if applicable)',
+      col: 'col-md-3',
+      placeholder: 'e.g., 123456'
+    },
+    license_validity: {
+      label: 'Date of Validity',
+      col: 'col-md-3',
+      placeholder: 'mm/dd/yyyy'
+    }
+  };
+
+  const WORK_EXPERIENCE_FIELD_ORDER = [
+    'inclusive_from',
+    'inclusive_to',
+    'position_title',
+    'department_agency',
+    'monthly_salary',
+    'salary_grade',
+    'appointment_status',
+    'is_gov_service'
+  ];
+
+  const WORK_EXPERIENCE_FIELD_CONFIG = {
+    inclusive_from: {
+      label: 'Inclusive Dates (From)',
+      col: 'col-md-3',
+      placeholder: 'mm/dd/yyyy'
+    },
+    inclusive_to: {
+      label: 'Inclusive Dates (To)',
+      col: 'col-md-3',
+      placeholder: 'mm/dd/yyyy'
+    },
+    position_title: {
+      label: 'Position Title',
+      col: 'col-md-6',
+      placeholder: 'Write in full'
+    },
+    department_agency: {
+      label: 'Department/Agency/Office/Company',
+      col: 'col-md-6',
+      placeholder: 'Write in full'
+    },
+    monthly_salary: {
+      label: 'Monthly Salary',
+      col: 'col-md-3',
+      placeholder: 'e.g., 25,000'
+    },
+    salary_grade: {
+      label: 'Salary Grade & Step Increment',
+      col: 'col-md-3',
+      placeholder: 'e.g., 11-1'
+    },
+    appointment_status: {
+      label: 'Status of Appointment',
+      col: 'col-md-3',
+      placeholder: 'e.g., Permanent'
+    },
+    is_gov_service: {
+      label: 'Government Service (Y/N)',
+      col: 'col-md-3',
+      placeholder: 'Y or N'
+    }
+  };
+
+  const VOLUNTARY_WORK_FIELD_ORDER = [
+    'organization_name',
+    'organization_address',
+    'inclusive_from',
+    'inclusive_to',
+    'hours',
+    'position_nature'
+  ];
+
+  const VOLUNTARY_WORK_FIELD_CONFIG = {
+    organization_name: {
+      label: 'Name of Organization',
+      col: 'col-md-6',
+      placeholder: 'Write in full'
+    },
+    organization_address: {
+      label: 'Address',
+      col: 'col-md-6',
+      placeholder: 'Street / City / Province'
+    },
+    inclusive_from: {
+      label: 'Inclusive Dates (From)',
+      col: 'col-md-3',
+      placeholder: 'mm/dd/yyyy'
+    },
+    inclusive_to: {
+      label: 'Inclusive Dates (To)',
+      col: 'col-md-3',
+      placeholder: 'mm/dd/yyyy'
+    },
+    hours: {
+      label: 'Number of Hours',
+      col: 'col-md-3',
+      placeholder: 'e.g., 40'
+    },
+    position_nature: {
+      label: 'Position / Nature of Work',
+      col: 'col-md-3',
+      placeholder: 'e.g., Volunteer Nurse'
+    }
+  };
+
+  const LEARNING_DEV_FIELD_ORDER = [
+    'program_title',
+    'ld_type',
+    'hours',
+    'inclusive_from',
+    'inclusive_to',
+    'conducted_by'
+  ];
+
+  const LEARNING_DEV_FIELD_CONFIG = {
+    program_title: {
+      label: 'Title of Learning and Development Programs',
+      col: 'col-md-6',
+      placeholder: 'Write in full'
+    },
+    ld_type: {
+      label: 'Type (Managerial/Technical/etc)',
+      col: 'col-md-3',
+      placeholder: 'e.g., Technical'
+    },
+    hours: {
+      label: 'Number of Hours',
+      col: 'col-md-3',
+      placeholder: 'e.g., 24'
+    },
+    inclusive_from: {
+      label: 'Inclusive Dates (From)',
+      col: 'col-md-3',
+      placeholder: 'mm/dd/yyyy'
+    },
+    inclusive_to: {
+      label: 'Inclusive Dates (To)',
+      col: 'col-md-3',
+      placeholder: 'mm/dd/yyyy'
+    },
+    conducted_by: {
+      label: 'Conducted / Sponsored By',
+      col: 'col-md-6',
+      placeholder: 'Agency / Organization'
+    }
+  };
 
   function parseChildrenEntries(source) {
     if (!source) return [];
@@ -2038,6 +2362,1026 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
     return result;
   }
 
+  function normalizeCivilServiceEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+    const normalized = [];
+    entries.forEach(function(entry) {
+      if (!entry || typeof entry !== 'object') return;
+      const normalizedEntry = {};
+      let hasValue = false;
+      CIVIL_SERVICE_FIELD_ORDER.forEach(function(field) {
+        let value = entry[field];
+        if (typeof value === 'number') value = String(value);
+        if (typeof value !== 'string') value = value ? String(value) : '';
+        value = value.trim();
+        if (value) hasValue = true;
+        normalizedEntry[field] = value;
+      });
+      if (hasValue) normalized.push(normalizedEntry);
+    });
+    return normalized;
+  }
+
+  function parseCivilServiceRecordsAttr(section) {
+    if (!section) return [];
+    const raw = section.getAttribute('data-cse-records');
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return normalizeCivilServiceEntries(parsed);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function renderCivilServiceDisplay(section, entries) {
+    if (!section) return;
+    const normalized = normalizeCivilServiceEntries(entries);
+    const display = section.querySelector('[data-cse-display]');
+    if (display) {
+      display.innerHTML = '';
+      if (!normalized.length) {
+        const empty = document.createElement('span');
+        empty.className = 'text-muted';
+        empty.textContent = 'No Civil Service Eligibility records listed';
+        display.appendChild(empty);
+      } else {
+        normalized.forEach(function(entry, idx) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'civil-service-entry border rounded p-3';
+          if (idx !== normalized.length - 1) wrapper.classList.add('mb-3');
+          const row = document.createElement('div');
+          row.className = 'row g-3';
+          CIVIL_SERVICE_FIELD_ORDER.forEach(function(field) {
+            const config = CIVIL_SERVICE_FIELD_CONFIG[field];
+            if (!config) return;
+            const col = document.createElement('div');
+            col.className = config.col;
+            const label = document.createElement('div');
+            label.className = 'text-muted small';
+            label.textContent = config.label;
+            const valueEl = document.createElement('div');
+            valueEl.className = 'fw-semibold';
+            valueEl.textContent = entry[field] || '';
+            col.appendChild(label);
+            col.appendChild(valueEl);
+            row.appendChild(col);
+          });
+          wrapper.appendChild(row);
+          display.appendChild(wrapper);
+        });
+      }
+    }
+    section.setAttribute('data-cse-records', JSON.stringify(normalized));
+  }
+
+  function addCivilServiceRow(wrapper, record, index, focus) {
+    const entryContainer = document.createElement('div');
+    entryContainer.className = 'civil-service-entry border rounded p-3';
+    if (wrapper.querySelector('[data-cse-entry]')) {
+      entryContainer.classList.add('mt-2');
+    }
+    entryContainer.setAttribute('data-cse-entry', '1');
+
+    const row = document.createElement('div');
+    row.className = 'row g-3';
+    entryContainer.appendChild(row);
+
+    CIVIL_SERVICE_FIELD_ORDER.forEach(function(field) {
+      const config = CIVIL_SERVICE_FIELD_CONFIG[field];
+      if (!config) return;
+      const col = document.createElement('div');
+      col.className = config.col;
+      const label = document.createElement('div');
+      label.className = 'text-muted small';
+      label.textContent = config.label;
+      const valueWrap = document.createElement('div');
+      const value = (record && record[field]) ? String(record[field]).trim() : '';
+      valueWrap.setAttribute('data-original-text', value);
+      const inputDesc = { type: 'text' };
+      if (config.placeholder) inputDesc.placeholder = config.placeholder;
+      const input = createInputControl(inputDesc, value);
+      input.classList.add('civil-service-input');
+      input.setAttribute('data-cse-field', field);
+      input.setAttribute('data-cse-index', typeof index === 'number' ? String(index) : '');
+      valueWrap.appendChild(input);
+      col.appendChild(label);
+      col.appendChild(valueWrap);
+      row.appendChild(col);
+    });
+
+    const actionsCol = document.createElement('div');
+    actionsCol.className = 'col-12 d-flex justify-content-end';
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-outline-danger btn-sm cse-remove-btn';
+    removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    removeBtn.addEventListener('click', function() {
+      const parent = entryContainer.parentElement;
+      if (parent) {
+        parent.removeChild(entryContainer);
+        if (!parent.querySelector('[data-cse-entry]')) {
+          addCivilServiceRow(parent, {}, 0, true);
+        }
+        renumberCivilServiceRows(parent);
+      }
+    });
+    actionsCol.appendChild(removeBtn);
+    row.appendChild(actionsCol);
+
+    wrapper.appendChild(entryContainer);
+
+    if (focus) {
+      const firstInput = entryContainer.querySelector('.civil-service-input');
+      if (firstInput) {
+        try { firstInput.focus(); } catch (e) {}
+      }
+    }
+  }
+
+  function renumberCivilServiceRows(wrapper) {
+    const rows = Array.from(wrapper.querySelectorAll('[data-cse-entry]'));
+    rows.forEach(function(row, idx) {
+      row.setAttribute('data-cse-index', String(idx));
+      const removeBtn = row.querySelector('.cse-remove-btn');
+      if (removeBtn) {
+        if (rows.length <= 1) {
+          removeBtn.classList.add('d-none');
+        } else {
+          removeBtn.classList.remove('d-none');
+        }
+      }
+      const inputs = row.querySelectorAll('.civil-service-input');
+      inputs.forEach(function(input) {
+        input.setAttribute('data-cse-index', String(idx));
+      });
+    });
+  }
+
+  function setupCivilServiceEditor(section) {
+    if (!section || section.getAttribute('data-cse-editing') === '1') return;
+    const records = parseCivilServiceRecordsAttr(section);
+    const workingRecords = records.length ? records : [{}];
+    section.setAttribute('data-cse-editing', '1');
+    section.setAttribute('data-cse-original-json', JSON.stringify(records));
+
+    const display = section.querySelector('[data-cse-display]');
+    if (display) display.style.display = 'none';
+
+    const existingWrapper = section.querySelector('[data-cse-edit-wrapper]');
+    if (existingWrapper) existingWrapper.remove();
+    const existingControls = section.querySelector('[data-cse-controls]');
+    if (existingControls) existingControls.remove();
+
+    const editWrapper = document.createElement('div');
+    editWrapper.className = 'civil-service-edit-wrapper d-flex flex-column';
+    editWrapper.setAttribute('data-cse-edit-wrapper', '1');
+    section.appendChild(editWrapper);
+
+    workingRecords.forEach(function(record, index) {
+      addCivilServiceRow(editWrapper, record, index, false);
+    });
+    renumberCivilServiceRows(editWrapper);
+
+    const controls = document.createElement('div');
+    controls.className = 'mt-2';
+    controls.setAttribute('data-cse-controls', '1');
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-outline-secondary btn-sm';
+    addBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Eligibility';
+    addBtn.addEventListener('click', function() {
+      const currentRows = editWrapper.querySelectorAll('[data-cse-entry]').length;
+      addCivilServiceRow(editWrapper, {}, currentRows, true);
+      renumberCivilServiceRows(editWrapper);
+    });
+    controls.appendChild(addBtn);
+    section.appendChild(controls);
+  }
+
+  function getCivilServiceEntries(section) {
+    if (!section) return [];
+    const editWrapper = section.querySelector('[data-cse-edit-wrapper]');
+    if (!editWrapper) {
+      return parseCivilServiceRecordsAttr(section);
+    }
+    const rows = Array.from(editWrapper.querySelectorAll('[data-cse-entry]'));
+    const entries = rows.map(function(row) {
+      const entry = {};
+      CIVIL_SERVICE_FIELD_ORDER.forEach(function(field) {
+        const input = row.querySelector('.civil-service-input[data-cse-field="' + field + '"]');
+        entry[field] = input ? (input.value || '').trim() : '';
+      });
+      return entry;
+    });
+    return normalizeCivilServiceEntries(entries);
+  }
+
+  function collectCivilServiceData(modal) {
+    if (!modal) return null;
+    const section = modal.querySelector('[data-cse-section]');
+    if (!section) return null;
+    if (!section.querySelector('[data-cse-edit-wrapper]')) return null;
+    return getCivilServiceEntries(section);
+  }
+
+  function exitCivilServiceSection(section, updatedMap) {
+    if (!section) return;
+    let records = [];
+    if (updatedMap && Object.prototype.hasOwnProperty.call(updatedMap, 'civil_service_records_json')) {
+      const raw = updatedMap['civil_service_records_json'];
+      let parsed = [];
+      if (typeof raw === 'string') {
+        try {
+          parsed = JSON.parse(raw);
+        } catch (e) {
+          parsed = [];
+        }
+      } else if (Array.isArray(raw)) {
+        parsed = raw;
+      } else if (raw && typeof raw === 'object') {
+        parsed = [raw];
+      }
+      records = normalizeCivilServiceEntries(parsed);
+    } else {
+      records = parseCivilServiceRecordsAttr(section);
+    }
+    const editWrapper = section.querySelector('[data-cse-edit-wrapper]');
+    if (editWrapper) editWrapper.remove();
+    const controls = section.querySelector('[data-cse-controls]');
+    if (controls) controls.remove();
+    section.removeAttribute('data-cse-editing');
+    section.removeAttribute('data-cse-original-json');
+    const display = section.querySelector('[data-cse-display]');
+    if (display) display.style.display = '';
+    renderCivilServiceDisplay(section, records);
+  }
+
+  function normalizeWorkExperienceEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+    const normalized = [];
+    entries.forEach(function(entry) {
+      if (!entry || typeof entry !== 'object') return;
+      const normalizedEntry = {};
+      let hasValue = false;
+      WORK_EXPERIENCE_FIELD_ORDER.forEach(function(field) {
+        let value = entry[field];
+        if (typeof value === 'number') value = String(value);
+        if (typeof value !== 'string') value = value ? String(value) : '';
+        value = value.trim();
+        if (value) hasValue = true;
+        normalizedEntry[field] = value;
+      });
+      if (hasValue) normalized.push(normalizedEntry);
+    });
+    return normalized;
+  }
+
+  function parseWorkExperienceRecordsAttr(section) {
+    if (!section) return [];
+    const raw = section.getAttribute('data-we-records');
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return normalizeWorkExperienceEntries(parsed);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function renderWorkExperienceDisplay(section, entries) {
+    if (!section) return;
+    const normalized = normalizeWorkExperienceEntries(entries);
+    const display = section.querySelector('[data-we-display]');
+    if (display) {
+      display.innerHTML = '';
+      if (!normalized.length) {
+        const empty = document.createElement('span');
+        empty.className = 'text-muted';
+        empty.textContent = 'No work experience records listed';
+        display.appendChild(empty);
+      } else {
+        normalized.forEach(function(entry, idx) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'work-experience-entry border rounded p-3';
+          if (idx !== normalized.length - 1) wrapper.classList.add('mb-3');
+          const row = document.createElement('div');
+          row.className = 'row g-3';
+          WORK_EXPERIENCE_FIELD_ORDER.forEach(function(field) {
+            const config = WORK_EXPERIENCE_FIELD_CONFIG[field];
+            if (!config) return;
+            const col = document.createElement('div');
+            col.className = config.col;
+            const label = document.createElement('div');
+            label.className = 'text-muted small';
+            label.textContent = config.label;
+            const valueEl = document.createElement('div');
+            valueEl.className = 'fw-semibold';
+            valueEl.textContent = entry[field] || '';
+            col.appendChild(label);
+            col.appendChild(valueEl);
+            row.appendChild(col);
+          });
+          wrapper.appendChild(row);
+          display.appendChild(wrapper);
+        });
+      }
+    }
+    section.setAttribute('data-we-records', JSON.stringify(normalized));
+  }
+
+  function addWorkExperienceRow(wrapper, record, index, focus) {
+    const entryContainer = document.createElement('div');
+    entryContainer.className = 'work-experience-entry border rounded p-3';
+    if (wrapper.querySelector('[data-we-entry]')) {
+      entryContainer.classList.add('mt-2');
+    }
+    entryContainer.setAttribute('data-we-entry', '1');
+
+    const row = document.createElement('div');
+    row.className = 'row g-3';
+    entryContainer.appendChild(row);
+
+    WORK_EXPERIENCE_FIELD_ORDER.forEach(function(field) {
+      const config = WORK_EXPERIENCE_FIELD_CONFIG[field];
+      if (!config) return;
+      const col = document.createElement('div');
+      col.className = config.col;
+      const label = document.createElement('div');
+      label.className = 'text-muted small';
+      label.textContent = config.label;
+      const valueWrap = document.createElement('div');
+      const value = (record && record[field]) ? String(record[field]).trim() : '';
+      valueWrap.setAttribute('data-original-text', value);
+      const inputDesc = { type: 'text' };
+      if (config.placeholder) inputDesc.placeholder = config.placeholder;
+      const input = createInputControl(inputDesc, value);
+      input.classList.add('work-experience-input');
+      input.setAttribute('data-we-field', field);
+      input.setAttribute('data-we-index', typeof index === 'number' ? String(index) : '');
+      valueWrap.appendChild(input);
+      col.appendChild(label);
+      col.appendChild(valueWrap);
+      row.appendChild(col);
+    });
+
+    const actionsCol = document.createElement('div');
+    actionsCol.className = 'col-12 d-flex justify-content-end';
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-outline-danger btn-sm we-remove-btn';
+    removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    removeBtn.addEventListener('click', function() {
+      const parent = entryContainer.parentElement;
+      if (parent) {
+        parent.removeChild(entryContainer);
+        if (!parent.querySelector('[data-we-entry]')) {
+          addWorkExperienceRow(parent, {}, 0, true);
+        }
+        renumberWorkExperienceRows(parent);
+      }
+    });
+    actionsCol.appendChild(removeBtn);
+    row.appendChild(actionsCol);
+
+    wrapper.appendChild(entryContainer);
+
+    if (focus) {
+      const firstInput = entryContainer.querySelector('.work-experience-input');
+      if (firstInput) {
+        try { firstInput.focus(); } catch (e) {}
+      }
+    }
+  }
+
+  function renumberWorkExperienceRows(wrapper) {
+    const rows = Array.from(wrapper.querySelectorAll('[data-we-entry]'));
+    rows.forEach(function(row, idx) {
+      row.setAttribute('data-we-index', String(idx));
+      const removeBtn = row.querySelector('.we-remove-btn');
+      if (removeBtn) {
+        if (rows.length <= 1) {
+          removeBtn.classList.add('d-none');
+        } else {
+          removeBtn.classList.remove('d-none');
+        }
+      }
+      const inputs = row.querySelectorAll('.work-experience-input');
+      inputs.forEach(function(input) {
+        input.setAttribute('data-we-index', String(idx));
+      });
+    });
+  }
+
+  function setupWorkExperienceEditor(section) {
+    if (!section || section.getAttribute('data-we-editing') === '1') return;
+    const records = parseWorkExperienceRecordsAttr(section);
+    const workingRecords = records.length ? records : [{}];
+    section.setAttribute('data-we-editing', '1');
+    section.setAttribute('data-we-original-json', JSON.stringify(records));
+
+    const display = section.querySelector('[data-we-display]');
+    if (display) display.style.display = 'none';
+
+    const existingWrapper = section.querySelector('[data-we-edit-wrapper]');
+    if (existingWrapper) existingWrapper.remove();
+    const existingControls = section.querySelector('[data-we-controls]');
+    if (existingControls) existingControls.remove();
+
+    const editWrapper = document.createElement('div');
+    editWrapper.className = 'work-experience-edit-wrapper d-flex flex-column';
+    editWrapper.setAttribute('data-we-edit-wrapper', '1');
+    section.appendChild(editWrapper);
+
+    workingRecords.forEach(function(record, index) {
+      addWorkExperienceRow(editWrapper, record, index, false);
+    });
+    renumberWorkExperienceRows(editWrapper);
+
+    const controls = document.createElement('div');
+    controls.className = 'mt-2';
+    controls.setAttribute('data-we-controls', '1');
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-outline-secondary btn-sm';
+    addBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Work Experience';
+    addBtn.addEventListener('click', function() {
+      const currentRows = editWrapper.querySelectorAll('[data-we-entry]').length;
+      addWorkExperienceRow(editWrapper, {}, currentRows, true);
+      renumberWorkExperienceRows(editWrapper);
+    });
+    controls.appendChild(addBtn);
+    section.appendChild(controls);
+  }
+
+  function getWorkExperienceEntries(section) {
+    if (!section) return [];
+    const editWrapper = section.querySelector('[data-we-edit-wrapper]');
+    if (!editWrapper) {
+      return parseWorkExperienceRecordsAttr(section);
+    }
+    const rows = Array.from(editWrapper.querySelectorAll('[data-we-entry]'));
+    const entries = rows.map(function(row) {
+      const entry = {};
+      WORK_EXPERIENCE_FIELD_ORDER.forEach(function(field) {
+        const input = row.querySelector('.work-experience-input[data-we-field="' + field + '"]');
+        entry[field] = input ? (input.value || '').trim() : '';
+      });
+      return entry;
+    });
+    return normalizeWorkExperienceEntries(entries);
+  }
+
+  function collectWorkExperienceData(modal) {
+    if (!modal) return null;
+    const section = modal.querySelector('[data-we-section]');
+    if (!section) return null;
+    if (!section.querySelector('[data-we-edit-wrapper]')) return null;
+    return getWorkExperienceEntries(section);
+  }
+
+  function exitWorkExperienceSection(section, updatedMap) {
+    if (!section) return;
+    let records = [];
+    if (updatedMap && Object.prototype.hasOwnProperty.call(updatedMap, 'work_experience_json')) {
+      const raw = updatedMap['work_experience_json'];
+      let parsed = [];
+      if (typeof raw === 'string') {
+        try {
+          parsed = JSON.parse(raw);
+        } catch (e) {
+          parsed = [];
+        }
+      } else if (Array.isArray(raw)) {
+        parsed = raw;
+      } else if (raw && typeof raw === 'object') {
+        parsed = [raw];
+      }
+      records = normalizeWorkExperienceEntries(parsed);
+    } else {
+      records = parseWorkExperienceRecordsAttr(section);
+    }
+    const editWrapper = section.querySelector('[data-we-edit-wrapper]');
+    if (editWrapper) editWrapper.remove();
+    const controls = section.querySelector('[data-we-controls]');
+    if (controls) controls.remove();
+    section.removeAttribute('data-we-editing');
+    section.removeAttribute('data-we-original-json');
+    const display = section.querySelector('[data-we-display]');
+    if (display) display.style.display = '';
+    renderWorkExperienceDisplay(section, records);
+  }
+
+  function normalizeVoluntaryWorkEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+    const normalized = [];
+    entries.forEach(function(entry) {
+      if (!entry || typeof entry !== 'object') return;
+      const normalizedEntry = {};
+      let hasValue = false;
+      VOLUNTARY_WORK_FIELD_ORDER.forEach(function(field) {
+        let value = entry[field];
+        if (typeof value === 'number') value = String(value);
+        if (typeof value !== 'string') value = value ? String(value) : '';
+        value = value.trim();
+        if (value) hasValue = true;
+        normalizedEntry[field] = value;
+      });
+      if (hasValue) normalized.push(normalizedEntry);
+    });
+    return normalized;
+  }
+
+  function parseVoluntaryWorkRecordsAttr(section) {
+    if (!section) return [];
+    const raw = section.getAttribute('data-vw-records');
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return normalizeVoluntaryWorkEntries(parsed);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function renderVoluntaryWorkDisplay(section, entries) {
+    if (!section) return;
+    const normalized = normalizeVoluntaryWorkEntries(entries);
+    const display = section.querySelector('[data-vw-display]');
+    if (display) {
+      display.innerHTML = '';
+      if (!normalized.length) {
+        const empty = document.createElement('span');
+        empty.className = 'text-muted';
+        empty.textContent = 'No voluntary work records listed';
+        display.appendChild(empty);
+      } else {
+        normalized.forEach(function(entry, idx) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'voluntary-work-entry border rounded p-3';
+          if (idx !== normalized.length - 1) wrapper.classList.add('mb-3');
+          const row = document.createElement('div');
+          row.className = 'row g-3';
+          VOLUNTARY_WORK_FIELD_ORDER.forEach(function(field) {
+            const config = VOLUNTARY_WORK_FIELD_CONFIG[field];
+            if (!config) return;
+            const col = document.createElement('div');
+            col.className = config.col;
+            const label = document.createElement('div');
+            label.className = 'text-muted small';
+            label.textContent = config.label;
+            const valueEl = document.createElement('div');
+            valueEl.className = 'fw-semibold';
+            valueEl.textContent = entry[field] || '';
+            col.appendChild(label);
+            col.appendChild(valueEl);
+            row.appendChild(col);
+          });
+          wrapper.appendChild(row);
+          display.appendChild(wrapper);
+        });
+      }
+    }
+    section.setAttribute('data-vw-records', JSON.stringify(normalized));
+  }
+
+  function addVoluntaryWorkRow(wrapper, record, index, focus) {
+    const entryContainer = document.createElement('div');
+    entryContainer.className = 'voluntary-work-entry border rounded p-3';
+    if (wrapper.querySelector('[data-vw-entry]')) {
+      entryContainer.classList.add('mt-2');
+    }
+    entryContainer.setAttribute('data-vw-entry', '1');
+
+    const row = document.createElement('div');
+    row.className = 'row g-3';
+    entryContainer.appendChild(row);
+
+    VOLUNTARY_WORK_FIELD_ORDER.forEach(function(field) {
+      const config = VOLUNTARY_WORK_FIELD_CONFIG[field];
+      if (!config) return;
+      const col = document.createElement('div');
+      col.className = config.col;
+      const label = document.createElement('div');
+      label.className = 'text-muted small';
+      label.textContent = config.label;
+      const valueWrap = document.createElement('div');
+      const value = (record && record[field]) ? String(record[field]).trim() : '';
+      valueWrap.setAttribute('data-original-text', value);
+      const inputDesc = { type: 'text' };
+      if (config.placeholder) inputDesc.placeholder = config.placeholder;
+      const input = createInputControl(inputDesc, value);
+      input.classList.add('voluntary-work-input');
+      input.setAttribute('data-vw-field', field);
+      input.setAttribute('data-vw-index', typeof index === 'number' ? String(index) : '');
+      valueWrap.appendChild(input);
+      col.appendChild(label);
+      col.appendChild(valueWrap);
+      row.appendChild(col);
+    });
+
+    const actionsCol = document.createElement('div');
+    actionsCol.className = 'col-12 d-flex justify-content-end';
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-outline-danger btn-sm vw-remove-btn';
+    removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    removeBtn.addEventListener('click', function() {
+      const parent = entryContainer.parentElement;
+      if (parent) {
+        parent.removeChild(entryContainer);
+        if (!parent.querySelector('[data-vw-entry]')) {
+          addVoluntaryWorkRow(parent, {}, 0, true);
+        }
+        renumberVoluntaryWorkRows(parent);
+      }
+    });
+    actionsCol.appendChild(removeBtn);
+    row.appendChild(actionsCol);
+
+    wrapper.appendChild(entryContainer);
+
+    if (focus) {
+      const firstInput = entryContainer.querySelector('.voluntary-work-input');
+      if (firstInput) {
+        try { firstInput.focus(); } catch (e) {}
+      }
+    }
+  }
+
+  function renumberVoluntaryWorkRows(wrapper) {
+    const rows = Array.from(wrapper.querySelectorAll('[data-vw-entry]'));
+    rows.forEach(function(row, idx) {
+      row.setAttribute('data-vw-index', String(idx));
+      const removeBtn = row.querySelector('.vw-remove-btn');
+      if (removeBtn) {
+        if (rows.length <= 1) {
+          removeBtn.classList.add('d-none');
+        } else {
+          removeBtn.classList.remove('d-none');
+        }
+      }
+      const inputs = row.querySelectorAll('.voluntary-work-input');
+      inputs.forEach(function(input) {
+        input.setAttribute('data-vw-index', String(idx));
+      });
+    });
+  }
+
+  function setupVoluntaryWorkEditor(section) {
+    if (!section || section.getAttribute('data-vw-editing') === '1') return;
+    const records = parseVoluntaryWorkRecordsAttr(section);
+    const workingRecords = records.length ? records : [{}];
+    section.setAttribute('data-vw-editing', '1');
+    section.setAttribute('data-vw-original-json', JSON.stringify(records));
+
+    const display = section.querySelector('[data-vw-display]');
+    if (display) display.style.display = 'none';
+
+    const existingWrapper = section.querySelector('[data-vw-edit-wrapper]');
+    if (existingWrapper) existingWrapper.remove();
+    const existingControls = section.querySelector('[data-vw-controls]');
+    if (existingControls) existingControls.remove();
+
+    const editWrapper = document.createElement('div');
+    editWrapper.className = 'voluntary-work-edit-wrapper d-flex flex-column';
+    editWrapper.setAttribute('data-vw-edit-wrapper', '1');
+    section.appendChild(editWrapper);
+
+    workingRecords.forEach(function(record, index) {
+      addVoluntaryWorkRow(editWrapper, record, index, false);
+    });
+    renumberVoluntaryWorkRows(editWrapper);
+
+    const controls = document.createElement('div');
+    controls.className = 'mt-2';
+    controls.setAttribute('data-vw-controls', '1');
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-outline-secondary btn-sm';
+    addBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add Voluntary Work';
+    addBtn.addEventListener('click', function() {
+      const currentRows = editWrapper.querySelectorAll('[data-vw-entry]').length;
+      addVoluntaryWorkRow(editWrapper, {}, currentRows, true);
+      renumberVoluntaryWorkRows(editWrapper);
+    });
+    controls.appendChild(addBtn);
+    section.appendChild(controls);
+  }
+
+  function getVoluntaryWorkEntries(section) {
+    if (!section) return [];
+    const editWrapper = section.querySelector('[data-vw-edit-wrapper]');
+    if (!editWrapper) {
+      return parseVoluntaryWorkRecordsAttr(section);
+    }
+    const rows = Array.from(editWrapper.querySelectorAll('[data-vw-entry]'));
+    const entries = rows.map(function(row) {
+      const entry = {};
+      VOLUNTARY_WORK_FIELD_ORDER.forEach(function(field) {
+        const input = row.querySelector('.voluntary-work-input[data-vw-field="' + field + '"]');
+        entry[field] = input ? (input.value || '').trim() : '';
+      });
+      return entry;
+    });
+    return normalizeVoluntaryWorkEntries(entries);
+  }
+
+  function collectVoluntaryWorkData(modal) {
+    if (!modal) return null;
+    const section = modal.querySelector('[data-vw-section]');
+    if (!section) return null;
+    if (!section.querySelector('[data-vw-edit-wrapper]')) return null;
+    return getVoluntaryWorkEntries(section);
+  }
+
+  function exitVoluntaryWorkSection(section, updatedMap) {
+    if (!section) return;
+    let records = [];
+    if (updatedMap && Object.prototype.hasOwnProperty.call(updatedMap, 'voluntary_work_json')) {
+      const raw = updatedMap['voluntary_work_json'];
+      let parsed = [];
+      if (typeof raw === 'string') {
+        try {
+          parsed = JSON.parse(raw);
+        } catch (e) {
+          parsed = [];
+        }
+      } else if (Array.isArray(raw)) {
+        parsed = raw;
+      } else if (raw && typeof raw === 'object') {
+        parsed = [raw];
+      }
+      records = normalizeVoluntaryWorkEntries(parsed);
+    } else {
+      records = parseVoluntaryWorkRecordsAttr(section);
+    }
+    const editWrapper = section.querySelector('[data-vw-edit-wrapper]');
+    if (editWrapper) editWrapper.remove();
+    const controls = section.querySelector('[data-vw-controls]');
+    if (controls) controls.remove();
+    section.removeAttribute('data-vw-editing');
+    section.removeAttribute('data-vw-original-json');
+    const display = section.querySelector('[data-vw-display]');
+    if (display) display.style.display = '';
+    renderVoluntaryWorkDisplay(section, records);
+  }
+
+  function normalizeLearningDevEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+    const normalized = [];
+    entries.forEach(function(entry) {
+      if (!entry || typeof entry !== 'object') return;
+      const normalizedEntry = {};
+      let hasValue = false;
+      LEARNING_DEV_FIELD_ORDER.forEach(function(field) {
+        let value = entry[field];
+        if (typeof value === 'number') value = String(value);
+        if (typeof value !== 'string') value = value ? String(value) : '';
+        value = value.trim();
+        if (value) hasValue = true;
+        normalizedEntry[field] = value;
+      });
+      if (hasValue) normalized.push(normalizedEntry);
+    });
+    return normalized;
+  }
+
+  function parseLearningDevRecordsAttr(section) {
+    if (!section) return [];
+    const raw = section.getAttribute('data-ld-records');
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return normalizeLearningDevEntries(parsed);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function renderLearningDevDisplay(section, entries) {
+    if (!section) return;
+    const normalized = normalizeLearningDevEntries(entries);
+    const display = section.querySelector('[data-ld-display]');
+    if (display) {
+      display.innerHTML = '';
+      if (!normalized.length) {
+        const empty = document.createElement('span');
+        empty.className = 'text-muted';
+        empty.textContent = 'No learning & development records listed';
+        display.appendChild(empty);
+      } else {
+        normalized.forEach(function(entry, idx) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'learning-dev-entry border rounded p-3';
+          if (idx !== normalized.length - 1) wrapper.classList.add('mb-3');
+          const row = document.createElement('div');
+          row.className = 'row g-3';
+          LEARNING_DEV_FIELD_ORDER.forEach(function(field) {
+            const config = LEARNING_DEV_FIELD_CONFIG[field];
+            if (!config) return;
+            const col = document.createElement('div');
+            col.className = config.col;
+            const label = document.createElement('div');
+            label.className = 'text-muted small';
+            label.textContent = config.label;
+            const valueEl = document.createElement('div');
+            valueEl.className = 'fw-semibold';
+            valueEl.textContent = entry[field] || '';
+            col.appendChild(label);
+            col.appendChild(valueEl);
+            row.appendChild(col);
+          });
+          wrapper.appendChild(row);
+          display.appendChild(wrapper);
+        });
+      }
+    }
+    section.setAttribute('data-ld-records', JSON.stringify(normalized));
+  }
+
+  function addLearningDevRow(wrapper, record, index, focus) {
+    const entryContainer = document.createElement('div');
+    entryContainer.className = 'learning-dev-entry border rounded p-3';
+    if (wrapper.querySelector('[data-ld-entry]')) {
+      entryContainer.classList.add('mt-2');
+    }
+    entryContainer.setAttribute('data-ld-entry', '1');
+
+    const row = document.createElement('div');
+    row.className = 'row g-3';
+    entryContainer.appendChild(row);
+
+    LEARNING_DEV_FIELD_ORDER.forEach(function(field) {
+      const config = LEARNING_DEV_FIELD_CONFIG[field];
+      if (!config) return;
+      const col = document.createElement('div');
+      col.className = config.col;
+      const label = document.createElement('div');
+      label.className = 'text-muted small';
+      label.textContent = config.label;
+      const valueWrap = document.createElement('div');
+      const value = (record && record[field]) ? String(record[field]).trim() : '';
+      valueWrap.setAttribute('data-original-text', value);
+      const inputDesc = { type: 'text' };
+      if (config.placeholder) inputDesc.placeholder = config.placeholder;
+      const input = createInputControl(inputDesc, value);
+      input.classList.add('learning-dev-input');
+      input.setAttribute('data-ld-field', field);
+      input.setAttribute('data-ld-index', typeof index === 'number' ? String(index) : '');
+      valueWrap.appendChild(input);
+      col.appendChild(label);
+      col.appendChild(valueWrap);
+      row.appendChild(col);
+    });
+
+    const actionsCol = document.createElement('div');
+    actionsCol.className = 'col-12 d-flex justify-content-end';
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-outline-danger btn-sm ld-remove-btn';
+    removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    removeBtn.addEventListener('click', function() {
+      const parent = entryContainer.parentElement;
+      if (parent) {
+        parent.removeChild(entryContainer);
+        if (!parent.querySelector('[data-ld-entry]')) {
+          addLearningDevRow(parent, {}, 0, true);
+        }
+        renumberLearningDevRows(parent);
+      }
+    });
+    actionsCol.appendChild(removeBtn);
+    row.appendChild(actionsCol);
+
+    wrapper.appendChild(entryContainer);
+
+    if (focus) {
+      const firstInput = entryContainer.querySelector('.learning-dev-input');
+      if (firstInput) {
+        try { firstInput.focus(); } catch (e) {}
+      }
+    }
+  }
+
+  function renumberLearningDevRows(wrapper) {
+    const rows = Array.from(wrapper.querySelectorAll('[data-ld-entry]'));
+    rows.forEach(function(row, idx) {
+      row.setAttribute('data-ld-index', String(idx));
+      const removeBtn = row.querySelector('.ld-remove-btn');
+      if (removeBtn) {
+        if (rows.length <= 1) {
+          removeBtn.classList.add('d-none');
+        } else {
+          removeBtn.classList.remove('d-none');
+        }
+      }
+      const inputs = row.querySelectorAll('.learning-dev-input');
+      inputs.forEach(function(input) {
+        input.setAttribute('data-ld-index', String(idx));
+      });
+    });
+  }
+
+  function setupLearningDevEditor(section) {
+    if (!section || section.getAttribute('data-ld-editing') === '1') return;
+    const records = parseLearningDevRecordsAttr(section);
+    const workingRecords = records.length ? records : [{}];
+    section.setAttribute('data-ld-editing', '1');
+    section.setAttribute('data-ld-original-json', JSON.stringify(records));
+
+    const display = section.querySelector('[data-ld-display]');
+    if (display) display.style.display = 'none';
+
+    const existingWrapper = section.querySelector('[data-ld-edit-wrapper]');
+    if (existingWrapper) existingWrapper.remove();
+    const existingControls = section.querySelector('[data-ld-controls]');
+    if (existingControls) existingControls.remove();
+
+    const editWrapper = document.createElement('div');
+    editWrapper.className = 'learning-dev-edit-wrapper d-flex flex-column';
+    editWrapper.setAttribute('data-ld-edit-wrapper', '1');
+    section.appendChild(editWrapper);
+
+    workingRecords.forEach(function(record, index) {
+      addLearningDevRow(editWrapper, record, index, false);
+    });
+    renumberLearningDevRows(editWrapper);
+
+    const controls = document.createElement('div');
+    controls.className = 'mt-2';
+    controls.setAttribute('data-ld-controls', '1');
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-outline-secondary btn-sm';
+    addBtn.innerHTML = '<i class="fas fa-plus me-1"></i> Add L&D Entry';
+    addBtn.addEventListener('click', function() {
+      const currentRows = editWrapper.querySelectorAll('[data-ld-entry]').length;
+      addLearningDevRow(editWrapper, {}, currentRows, true);
+      renumberLearningDevRows(editWrapper);
+    });
+    controls.appendChild(addBtn);
+    section.appendChild(controls);
+  }
+
+  function getLearningDevEntries(section) {
+    if (!section) return [];
+    const editWrapper = section.querySelector('[data-ld-edit-wrapper]');
+    if (!editWrapper) {
+      return parseLearningDevRecordsAttr(section);
+    }
+    const rows = Array.from(editWrapper.querySelectorAll('[data-ld-entry]'));
+    const entries = rows.map(function(row) {
+      const entry = {};
+      LEARNING_DEV_FIELD_ORDER.forEach(function(field) {
+        const input = row.querySelector('.learning-dev-input[data-ld-field="' + field + '"]');
+        entry[field] = input ? (input.value || '').trim() : '';
+      });
+      return entry;
+    });
+    return normalizeLearningDevEntries(entries);
+  }
+
+  function collectLearningDevData(modal) {
+    if (!modal) return null;
+    const section = modal.querySelector('[data-ld-section]');
+    if (!section) return null;
+    if (!section.querySelector('[data-ld-edit-wrapper]')) return null;
+    return getLearningDevEntries(section);
+  }
+
+  function exitLearningDevSection(section, updatedMap) {
+    if (!section) return;
+    let records = [];
+    if (updatedMap && Object.prototype.hasOwnProperty.call(updatedMap, 'learning_dev_json')) {
+      const raw = updatedMap['learning_dev_json'];
+      let parsed = [];
+      if (typeof raw === 'string') {
+        try {
+          parsed = JSON.parse(raw);
+        } catch (e) {
+          parsed = [];
+        }
+      } else if (Array.isArray(raw)) {
+        parsed = raw;
+      } else if (raw && typeof raw === 'object') {
+        parsed = [raw];
+      }
+      records = normalizeLearningDevEntries(parsed);
+    } else {
+      records = parseLearningDevRecordsAttr(section);
+    }
+    const editWrapper = section.querySelector('[data-ld-edit-wrapper]');
+    if (editWrapper) editWrapper.remove();
+    const controls = section.querySelector('[data-ld-controls]');
+    if (controls) controls.remove();
+    section.removeAttribute('data-ld-editing');
+    section.removeAttribute('data-ld-original-json');
+    const display = section.querySelector('[data-ld-display]');
+    if (display) display.style.display = '';
+    renderLearningDevDisplay(section, records);
+  }
+
   function exitEducationSections(ebCardBody, updatedMap) {
     if (!ebCardBody) return;
     const sections = ebCardBody.querySelectorAll('[data-education-section]');
@@ -2085,10 +3429,18 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
     const piTab = modal.querySelector('#tab-pi-' + employeeId);
     const fbTab = modal.querySelector('#tab-fb-' + employeeId);
     const ebTab = modal.querySelector('#tab-eb-' + employeeId);
+    const weTab = modal.querySelector('#tab-we-' + employeeId);
+    const vwTab = modal.querySelector('#tab-vw-' + employeeId);
+    const ldTab = modal.querySelector('#tab-ld-' + employeeId);
+    const cseTab = modal.querySelector('#tab-cse-' + employeeId);
     const piCardBody = piTab ? piTab.querySelector('.card-body') : null;
     const fbCardBody = fbTab ? fbTab.querySelector('.card-body') : null;
     const ebCardBody = ebTab ? ebTab.querySelector('.card-body') : null;
-    if (!piCardBody && !fbCardBody && !ebCardBody) return;
+    const weCardBody = weTab ? weTab.querySelector('.card-body') : null;
+    const vwCardBody = vwTab ? vwTab.querySelector('.card-body') : null;
+    const ldCardBody = ldTab ? ldTab.querySelector('.card-body') : null;
+    const cseCardBody = cseTab ? cseTab.querySelector('.card-body') : null;
+    if (!piCardBody && !fbCardBody && !ebCardBody && !weCardBody && !vwCardBody && !ldCardBody && !cseCardBody) return;
 
     // Helper to attach editor to label/value pair
     function attachEditor(valueEl, desc, currentText) {
@@ -2208,6 +3560,34 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       enterEducationSections(ebCardBody);
     }
 
+    if (weCardBody) {
+      const weSection = weCardBody.querySelector('[data-we-section]');
+      if (weSection) {
+        setupWorkExperienceEditor(weSection);
+      }
+    }
+
+    if (vwCardBody) {
+      const vwSection = vwCardBody.querySelector('[data-vw-section]');
+      if (vwSection) {
+        setupVoluntaryWorkEditor(vwSection);
+      }
+    }
+
+    if (ldCardBody) {
+      const ldSection = ldCardBody.querySelector('[data-ld-section]');
+      if (ldSection) {
+        setupLearningDevEditor(ldSection);
+      }
+    }
+
+    if (cseCardBody) {
+      const cseSection = cseCardBody.querySelector('[data-cse-section]');
+      if (cseSection) {
+        setupCivilServiceEditor(cseSection);
+      }
+    }
+
     modal.setAttribute('data-editing', '1');
     const btn = modal.querySelector('[data-action="toggle-edit"]');
     if (btn) {
@@ -2223,10 +3603,18 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
     const piTab = modal.querySelector('#tab-pi-' + employeeId);
     const fbTab = modal.querySelector('#tab-fb-' + employeeId);
     const ebTab = modal.querySelector('#tab-eb-' + employeeId);
+    const weTab = modal.querySelector('#tab-we-' + employeeId);
+    const vwTab = modal.querySelector('#tab-vw-' + employeeId);
+    const ldTab = modal.querySelector('#tab-ld-' + employeeId);
+    const cseTab = modal.querySelector('#tab-cse-' + employeeId);
     const piCardBody = piTab ? piTab.querySelector('.card-body') : null;
     const fbCardBody = fbTab ? fbTab.querySelector('.card-body') : null;
     const ebCardBody = ebTab ? ebTab.querySelector('.card-body') : null;
-    if (!piCardBody && !fbCardBody && !ebCardBody) return;
+    const weCardBody = weTab ? weTab.querySelector('.card-body') : null;
+    const vwCardBody = vwTab ? vwTab.querySelector('.card-body') : null;
+    const ldCardBody = ldTab ? ldTab.querySelector('.card-body') : null;
+    const cseCardBody = cseTab ? cseTab.querySelector('.card-body') : null;
+    if (!piCardBody && !fbCardBody && !ebCardBody && !weCardBody && !vwCardBody && !ldCardBody && !cseCardBody) return;
 
     function restoreValue(valueEl, mapKey) {
       if (!valueEl) return;
@@ -2320,6 +3708,26 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       exitEducationSections(ebCardBody, updatedMap);
     }
 
+    if (weCardBody) {
+      const weSection = weCardBody.querySelector('[data-we-section]');
+      exitWorkExperienceSection(weSection, updatedMap);
+    }
+
+    if (vwCardBody) {
+      const vwSection = vwCardBody.querySelector('[data-vw-section]');
+      exitVoluntaryWorkSection(vwSection, updatedMap);
+    }
+
+    if (ldCardBody) {
+      const ldSection = ldCardBody.querySelector('[data-ld-section]');
+      exitLearningDevSection(ldSection, updatedMap);
+    }
+
+    if (cseCardBody) {
+      const cseSection = cseCardBody.querySelector('[data-cse-section]');
+      exitCivilServiceSection(cseSection, updatedMap);
+    }
+
     modal.removeAttribute('data-editing');
     const btn = modal.querySelector('[data-action="toggle-edit"]');
     if (btn) {
@@ -2361,6 +3769,38 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       const currentJson = JSON.stringify(getEducationEntriesFromSection(section));
       if (currentJson !== originalJson) { hasChanges = true; }
     });
+    const workSection = modal.querySelector('[data-we-section]');
+    if (workSection) {
+      const originalWe = workSection.getAttribute('data-we-original-json');
+      if (originalWe) {
+        const currentWe = JSON.stringify(getWorkExperienceEntries(workSection));
+        if (currentWe !== originalWe) { hasChanges = true; }
+      }
+    }
+    const voluntarySection = modal.querySelector('[data-vw-section]');
+    if (voluntarySection) {
+      const originalVw = voluntarySection.getAttribute('data-vw-original-json');
+      if (originalVw) {
+        const currentVw = JSON.stringify(getVoluntaryWorkEntries(voluntarySection));
+        if (currentVw !== originalVw) { hasChanges = true; }
+      }
+    }
+    const learningDevSection = modal.querySelector('[data-ld-section]');
+    if (learningDevSection) {
+      const originalLd = learningDevSection.getAttribute('data-ld-original-json');
+      if (originalLd) {
+        const currentLd = JSON.stringify(getLearningDevEntries(learningDevSection));
+        if (currentLd !== originalLd) { hasChanges = true; }
+      }
+    }
+    const civilServiceSection = modal.querySelector('[data-cse-section]');
+    if (civilServiceSection) {
+      const originalCse = civilServiceSection.getAttribute('data-cse-original-json');
+      if (originalCse) {
+        const currentCse = JSON.stringify(getCivilServiceEntries(civilServiceSection));
+        if (currentCse !== originalCse) { hasChanges = true; }
+      }
+    }
     if (!hasChanges) {
       // Nothing changed; simply exit edit mode
       exitEdit(modal, null);
@@ -2380,6 +3820,9 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       var inst = bootstrap.Modal.getInstance(cmEl) || new bootstrap.Modal(cmEl);
       var handler = function() {
         try { confirmBtn.removeEventListener('click', handler); } catch(e) {}
+        if (document.activeElement === confirmBtn && typeof confirmBtn.blur === 'function') {
+          confirmBtn.blur();
+        }
         inst.hide();
         saveEdit(modal);
       };
@@ -2436,6 +3879,22 @@ body.dark-mode .panel-close-btn:hover { background: rgba(255,255,255,0.08); }
       const entries = educationData[levelKey] || [];
       fd.append(jsonField, JSON.stringify(entries));
     });
+    const workExperienceEntries = collectWorkExperienceData(modal);
+    if (workExperienceEntries !== null) {
+      fd.append('work_experience_json', JSON.stringify(workExperienceEntries));
+    }
+    const voluntaryWorkEntries = collectVoluntaryWorkData(modal);
+    if (voluntaryWorkEntries !== null) {
+      fd.append('voluntary_work_json', JSON.stringify(voluntaryWorkEntries));
+    }
+    const learningDevEntries = collectLearningDevData(modal);
+    if (learningDevEntries !== null) {
+      fd.append('learning_dev_json', JSON.stringify(learningDevEntries));
+    }
+    const civilServiceEntries = collectCivilServiceData(modal);
+    if (civilServiceEntries !== null) {
+      fd.append('civil_service_records_json', JSON.stringify(civilServiceEntries));
+    }
 
     // Submit
     let res;

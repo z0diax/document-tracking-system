@@ -7,15 +7,91 @@
 }
 
 /* Subtle winter background */
-body {
+body[data-season-theme="winter"],
+body[data-season-theme="hallochristmas"] {
   background: linear-gradient(180deg, var(--winter-sky-1) 0%, var(--winter-sky-2) 50%, var(--winter-snow) 100%) !important;
   background-attachment: fixed;
 }
 
-/* Mixed holiday garland (Halloween + Christmas) */
-#holiday-garland {
+body[data-season-theme="hallochristmas"] nav.navbar,
+body[data-season-theme="winter"] nav.navbar {
+  overflow: visible;
+}
+
+body[data-season-theme="hallochristmas"] nav.navbar::before {
+  content: "";
   position: absolute;
-  top: -26px;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.25), transparent 65%),
+              radial-gradient(circle at 10% 0%, rgba(249,115,22,0.18), transparent 70%),
+              radial-gradient(circle at 90% 0%, rgba(96,165,250,0.2), transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0.68;
+  pointer-events: none;
+  animation: navbar-aurora 14s ease-in-out infinite;
+}
+
+body[data-season-theme="hallochristmas"] nav.navbar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  width: 86%;
+  height: 56px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(249,115,22,0.35) 0%, rgba(239,68,68,0.32) 40%, rgba(59,130,246,0.26) 70%, transparent 100%);
+  filter: blur(18px);
+  opacity: 0.78;
+  pointer-events: none;
+  animation: navbar-glow-pulse 9s ease-in-out infinite;
+  z-index: -1;
+}
+
+body[data-season-theme="winter"] nav.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.28), transparent 65%),
+              radial-gradient(circle at 15% 0%, rgba(96,165,250,0.22), transparent 70%),
+              radial-gradient(circle at 85% 0%, rgba(59,130,246,0.22), transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0.62;
+  pointer-events: none;
+  animation: navbar-aurora 16s ease-in-out infinite;
+}
+
+body[data-season-theme="winter"] nav.navbar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -24px;
+  width: 84%;
+  height: 54px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(165,243,252,0.32) 0%, rgba(191,219,254,0.28) 45%, transparent 100%);
+  filter: blur(20px);
+  opacity: 0.7;
+  pointer-events: none;
+  animation: navbar-glow-pulse 10s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes navbar-aurora {
+  0%   { opacity: 0.55; transform: translateY(0); }
+  40%  { opacity: 0.85; transform: translateY(-2px); }
+  60%  { opacity: 0.7; transform: translateY(1px); }
+  100% { opacity: 0.55; transform: translateY(0); }
+}
+
+@keyframes navbar-glow-pulse {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, 0) scaleX(0.95); }
+  50%      { opacity: 0.85; transform: translate(-50%, 4px) scaleX(1.05); }
+}
+
+/* Mixed holiday garland (Halloween + Christmas) */
+body[data-season-theme="hallochristmas"] #holiday-garland {
+  position: absolute;
+  top: -10px;
   left: 0;
   right: 0;
   height: 64px;
@@ -26,73 +102,133 @@ body {
   z-index: 1;
 }
 
-#holiday-garland::before {
-  content: "";
-  position: absolute;
-  top: 12px;
-  left: 16px;
-  right: 16px;
-  height: 3px;
-  background: linear-gradient(90deg, rgba(249,115,22,0.8), rgba(59,130,246,0.35), rgba(239,68,68,0.8));
-  border-radius: 999px;
-  opacity: 0.8;
-}
-
-#holiday-garland .holiday-garland-track {
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-garland-track {
   display: flex;
   gap: 12px;
   padding: 22px 22px 10px;
   transform-origin: top center;
-  animation: holiday-garland-track-sway 6.5s ease-in-out infinite;
 }
 
-#holiday-garland .holiday-icon {
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon {
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   transform-origin: top center;
-  animation: holiday-garland-sway 2.8s ease-in-out infinite;
+  animation: holiday-icon-pendulum 6.4s ease-in-out infinite;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
 }
 
-#holiday-garland .holiday-icon:nth-child(even) {
-  animation-delay: -1.4s;
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon:nth-child(odd) {
+  animation-delay: -3.2s;
 }
 
-#holiday-garland .holiday-icon:nth-child(3n) {
-  animation-delay: -0.8s;
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon:nth-child(3n) {
+  animation-delay: -1.6s;
 }
 
-#holiday-garland .holiday-icon svg {
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon:nth-child(5n) {
+  animation-delay: -4.8s;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon svg {
   width: 100%;
   height: 100%;
   display: block;
 }
 
-#holiday-garland .holiday-icon-pumpkin svg {
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon-pumpkin svg {
   filter: drop-shadow(0 0 6px rgba(249,115,22,0.45));
+  transform-origin: 50% 58%;
+  animation: pumpkin-flicker 2.4s steps(2, end) infinite;
 }
 
-#holiday-garland .holiday-icon-ornament svg {
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon-ornament svg {
   filter: drop-shadow(0 0 4px rgba(239,68,68,0.35));
+  transform-origin: 50% 52%;
+  animation: ornament-shimmer 3.6s ease-in-out infinite;
 }
 
-#holiday-garland .holiday-icon-bat svg {
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon-bat svg {
   filter: drop-shadow(0 0 4px rgba(30,41,59,0.35));
+  transform-origin: 50% 55%;
+  animation: bat-hover 5.4s ease-in-out infinite;
 }
 
-@keyframes holiday-garland-sway {
-  0% { transform: rotate(-9deg) translateY(-2px); }
-  50% { transform: rotate(9deg) translateY(2px); }
-  100% { transform: rotate(-9deg) translateY(-2px); }
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon-bat svg path:first-of-type {
+  transform-origin: 50% 55%;
+  animation: bat-flap 1.9s ease-in-out infinite;
 }
 
-@keyframes holiday-garland-track-sway {
-  0% { transform: rotate(-2deg); }
-  50% { transform: rotate(2deg); }
-  100% { transform: rotate(-2deg); }
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon-bat svg circle {
+  animation: bat-eye-glow 3s ease-in-out infinite;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon-snowflake svg {
+  animation: snowflake-twinkle 4s ease-in-out infinite;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon-pumpkin svg path:nth-of-type(2) {
+  animation: pumpkin-highlight 3.1s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon-ornament svg circle:last-of-type {
+  animation: ornament-sparkle 1.8s ease-in-out infinite;
+}
+@keyframes holiday-icon-pendulum {
+  0%   { transform: rotate(-6deg) translateX(-1px); }
+  25%  { transform: rotate(0deg) translateX(0); }
+  50%  { transform: rotate(6deg) translateX(1px); }
+  75%  { transform: rotate(0deg) translateX(0); }
+  100% { transform: rotate(-6deg) translateX(-1px); }
+}
+
+@keyframes pumpkin-flicker {
+  0%, 28%, 100% { filter: drop-shadow(0 0 6px rgba(249,115,22,0.45)) brightness(1); }
+  14%          { filter: drop-shadow(0 0 10px rgba(249,115,22,0.7)) brightness(1.15); }
+  42%          { filter: drop-shadow(0 0 8px rgba(249,115,22,0.6)) brightness(0.95); }
+  70%          { filter: drop-shadow(0 0 12px rgba(249,115,22,0.85)) brightness(1.2); }
+}
+
+@keyframes pumpkin-highlight {
+  0%, 100% { opacity: 0.55; }
+  35%      { opacity: 0.75; }
+  60%      { opacity: 0.4; }
+}
+
+@keyframes ornament-shimmer {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(239,68,68,0.35)) saturate(1); }
+  45%      { filter: drop-shadow(0 0 10px rgba(239,68,68,0.6)) saturate(1.2); }
+  70%      { filter: drop-shadow(0 0 6px rgba(239,68,68,0.45)) saturate(1.05); }
+}
+
+@keyframes ornament-sparkle {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes bat-hover {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+
+@keyframes bat-flap {
+  0%, 100% { transform: scaleX(1) rotate(0deg); }
+  45%      { transform: scaleX(0.94) rotate(3deg); }
+  55%      { transform: scaleX(0.94) rotate(-3deg); }
+}
+
+@keyframes bat-eye-glow {
+  0%, 100% { fill: #fef08a; }
+  50%      { fill: #facc15; }
+}
+
+@keyframes snowflake-twinkle {
+  0%, 100% { opacity: 0.85; transform: rotate(0deg) scale(1); }
+  40%      { opacity: 1; transform: rotate(3deg) scale(1.06); }
+  70%      { opacity: 0.7; transform: rotate(-3deg) scale(0.96); }
 }
 
 /* Fullscreen snow canvas overlay */
@@ -212,12 +348,12 @@ body {
     height: 72px;
   }
 
-  #holiday-garland {
-    top: -14px;
+  body[data-season-theme="hallochristmas"] #holiday-garland {
+    top: -8px;
     height: 48px;
   }
 
-  #holiday-garland .holiday-icon {
+  body[data-season-theme="hallochristmas"] #holiday-garland .holiday-icon {
     width: 30px;
     height: 30px;
   }
@@ -256,6 +392,96 @@ html[data-theme="dark"] #snowman-greeting {
   border-color: rgba(255,255,255,0.08);
 }
 
+body[data-season-theme="hallochristmas"] #holiday-sprites {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 150;
+  overflow: visible;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-sprites .sprite {
+  position: absolute;
+  display: block;
+  width: var(--sprite-size, 80px);
+  height: auto;
+  left: var(--sprite-left, 10%);
+  top: var(--sprite-top, 40%);
+  opacity: min(var(--sprite-opacity, 0.65), 0.35);
+  transform: translate3d(0, 0, 0);
+  animation: sprite-drift var(--sprite-duration, 22s) linear infinite;
+  animation-delay: var(--sprite-delay, 0s);
+  filter: drop-shadow(0 12px 24px rgba(0,0,0,0.15));
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-sprites .sprite svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-sprites .sprite-ghost {
+  --sprite-size: 86px;
+  --sprite-opacity: 0.6;
+  animation-duration: var(--sprite-duration, 26s);
+}
+body[data-season-theme="hallochristmas"] #holiday-sprites .sprite-ghost svg path:first-of-type {
+  animation: ghost-glow 4.6s ease-in-out infinite;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-sprites .sprite-cane {
+  --sprite-size: 72px;
+  --sprite-opacity: 0.55;
+}
+body[data-season-theme="hallochristmas"] #holiday-sprites .sprite-cane svg {
+  animation: cane-glint 5.2s ease-in-out infinite;
+}
+
+body[data-season-theme="hallochristmas"] #holiday-sprites .sprite-hat {
+  --sprite-size: 78px;
+  --sprite-opacity: 0.58;
+}
+body[data-season-theme="hallochristmas"] #holiday-sprites .sprite-hat svg path:first-of-type {
+  animation: hat-spark 3.6s ease-in-out infinite;
+}
+
+/* Keep overview content readable above floating sprites */
+body[data-season-theme="hallochristmas"] .overview-page {
+  position: relative;
+  z-index: 400;
+}
+
+/* Hide sprites on smaller screens where they crowd the layout */
+@media (max-width: 768px) {
+  body[data-season-theme="hallochristmas"] #holiday-sprites {
+    display: none;
+  }
+}
+
+@keyframes sprite-drift {
+  0%   { transform: translate3d(-4%, 4%, 0); }
+  33%  { transform: translate3d(2%, -4%, 0); }
+  66%  { transform: translate3d(6%, 2%, 0); }
+  100% { transform: translate3d(-4%, 4%, 0); }
+}
+
+@keyframes ghost-glow {
+  0%, 100% { fill: rgba(255,255,255,0.85); }
+  50%      { fill: rgba(255,255,255,0.65); }
+}
+
+@keyframes cane-glint {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(255,255,255,0.25)); }
+  40%      { filter: drop-shadow(0 0 10px rgba(255,255,255,0.55)); }
+  70%      { filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+}
+
+@keyframes hat-spark {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(236,72,153,0.45)); }
+  50%      { filter: drop-shadow(0 0 10px rgba(236,72,153,0.7)); }
+}
+
 /* Snow hills overlay inside navbar */
 nav.navbar #snow-hills-nav {
   position: absolute;
@@ -271,4 +497,3 @@ nav.navbar #snow-hills-nav svg {
   width: 100%;
   height: 100%;
 }
-

@@ -1986,7 +1986,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{{ url_for('main.batch_decline_documents') }}" id="batchDeclineForm">
+                <form method="POST" action="{{ url_for('main.batch_decline_documents', page=request.args.get('page', 1), view=request.args.get('view', 'created'), search=request.args.get('search', '')) }}" id="batchDeclineForm">
                     {{ batch_decline_form.csrf_token }}
                     <div class="mb-3">
                         {{ batch_decline_form.reason.label(class="form-label") }}
@@ -2011,7 +2011,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{{ url_for('main.batch_forward_documents') }}" id="batchForwardForm">
+                <form method="POST" action="{{ url_for('main.batch_forward_documents', page=request.args.get('page', 1), view=request.args.get('view', 'created'), search=request.args.get('search', '')) }}" id="batchForwardForm">
                     {{ batch_forward_form.csrf_token }}
                     <div class="mb-3">
                         {{ batch_forward_form.recipient.label(class="form-label") }}
@@ -2084,6 +2084,11 @@
 /* @ts-nocheck */
 // Define CSRF token for AJAX requests
 const csrfToken = "{{ csrf_token() }}";
+const dashboardState = {
+    page: {{ request.args.get('page', 1)|int }},
+    view: {{ request.args.get('view', 'created')|tojson }},
+    search: {{ request.args.get('search', '')|tojson }}
+};
 
 // Copy helper for Leave barcode
 function copyToClipboard(text, feedbackId) {
@@ -3327,7 +3332,12 @@ function batchAccept() {
     if (confirm(`Are you sure you want to accept ${selectedIds.length} document(s)?`)) {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '{{ url_for("main.batch_accept_documents") }}';
+        const params = new URLSearchParams();
+        if (dashboardState.view) params.set('view', dashboardState.view);
+        if (dashboardState.page) params.set('page', dashboardState.page);
+        if (dashboardState.search) params.set('search', dashboardState.search);
+        const queryString = params.toString();
+        form.action = '{{ url_for("main.batch_accept_documents") }}' + (queryString ? ('?' + queryString) : '');
         
         // Add CSRF token
         const csrfInput = document.createElement('input');
@@ -3360,7 +3370,12 @@ function batchRelease() {
     if (confirm(`Are you sure you want to release ${selectedIds.length} document(s)?`)) {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '{{ url_for("main.batch_release_documents") }}';
+        const params = new URLSearchParams();
+        if (dashboardState.view) params.set('view', dashboardState.view);
+        if (dashboardState.page) params.set('page', dashboardState.page);
+        if (dashboardState.search) params.set('search', dashboardState.search);
+        const queryString = params.toString();
+        form.action = '{{ url_for("main.batch_release_documents") }}' + (queryString ? ('?' + queryString) : '');
         
         // Add CSRF token
         const csrfInput = document.createElement('input');

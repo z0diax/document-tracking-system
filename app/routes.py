@@ -3,6 +3,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from app import db
 from app.forms import RegistrationForm, LoginForm, DocumentForm, DeclineDocumentForm, ForwardDocumentForm, ResubmitDocumentForm, LeaveRequestForm, EWPForm, EmployeeForm, LEAVE_TYPE_CHOICES, BatchDeclineDocumentForm, BatchForwardDocumentForm
 from app.models import User, Document, ActivityLog, Notification, LeaveRequest, LeaveDateRange, EWPRecord, Employee, to_local_time, format_timedelta, EDUCATION_FIELD_NAMES, SLAAlertPreference
+from app.theme_state import read_theme_state, write_theme_state, ALLOWED_THEMES, DEFAULT_THEME, THEME_SEQUENCE
 
 from werkzeug.utils import secure_filename
 from datetime import timedelta, datetime
@@ -57,6 +58,54 @@ def get_recipient_choices():
     if not current_user.is_authenticated:
         return []
     return [(user.id, user.username) for user in User.query.filter(User.id != current_user.id).all()]
+
+
+@main.route('/system-theme', methods=['GET'])
+@login_required
+def get_system_theme_state():
+    state = read_theme_state(current_app)
+    return jsonify({
+        'theme': state.get('theme', DEFAULT_THEME),
+        'updated_at': state.get('updated_at'),
+        'updated_by': state.get('updated_by'),
+        'updated_by_id': state.get('updated_by_id')
+    })
+
+
+@main.route('/system-theme', methods=['POST'])
+@login_required
+def set_system_theme():
+    if not current_user.is_admin:
+        abort(403)
+
+    payload = request.get_json(silent=True) or {}
+    requested_theme = (payload.get('theme') or '').strip().lower()
+
+    current_state = read_theme_state(current_app)
+    current_theme = current_state.get('theme', DEFAULT_THEME)
+
+    if requested_theme in ('', 'toggle', 'next'):
+        try:
+            idx = THEME_SEQUENCE.index(current_theme)
+        except ValueError:
+            idx = 0
+        requested_theme = THEME_SEQUENCE[(idx + 1) % len(THEME_SEQUENCE)]
+
+    if requested_theme not in ALLOWED_THEMES:
+        return jsonify({'error': 'Invalid theme selection'}), 400
+
+    try:
+        state = write_theme_state(current_app, requested_theme, current_user)
+    except Exception as exc:
+        current_app.logger.error('Failed to persist system theme: %s', exc)
+        return jsonify({'error': 'Unable to save theme'}), 500
+
+    return jsonify({
+        'theme': state.get('theme', DEFAULT_THEME),
+        'updated_at': state.get('updated_at'),
+        'updated_by': state.get('updated_by'),
+        'updated_by_id': state.get('updated_by_id')
+    })
 
 # Employee Records routes
 
@@ -727,7 +776,16 @@ def dashboard():
             )
 
     if view == 'received':
-        received_pagination = received_query.order_by(Document.timestamp.desc()).paginate(
+        status_order = case(
+            (Document.status == 'Pending', 0),
+            (Document.status == 'Accepted', 1),
+            (Document.status == 'Forwarded', 2),
+            (Document.status == 'Declined', 3),
+            (Document.status == 'Released', 4),
+            else_=5
+        )
+        # Ensure actionable items stay on top and Released items sink to the end
+        received_pagination = received_query.order_by(status_order, Document.timestamp.desc()).paginate(
             page=page, per_page=per_page, error_out=False)
         received_documents = received_pagination.items
         created_pagination = None
@@ -3311,6 +3369,30 @@ def overview():
                          user_name=current_user.username if current_user.is_authenticated else 'Guest',
                          current_time=current_time)
 
+
+@main.route('/docgen')
+@login_required
+def docgen_mock():
+    """Render mock DocGen dashboard data."""
+    mock_stats = {
+        'generated_today': 12,
+        'awaiting_approval': 5,
+        'templates_updated': 8,
+        'activity': [
+            {'title': 'Procurement Summary - April 04', 'status': 'Completed', 'status_class': 'success'},
+            {'title': 'HR Onboarding Packet', 'status': 'Approval Needed', 'status_class': 'warning'},
+            {'title': 'Executive Brief - Infrastructure', 'status': 'Drafting', 'status_class': 'secondary'},
+        ],
+        'team_members': [
+            {'name': 'Alex Rivera', 'role': 'Content Strategist'},
+            {'name': 'Jamie Cruz', 'role': 'Policy Reviewer'},
+            {'name': 'Taylor Gomez', 'role': 'Legal Liaison'},
+        ],
+    }
+    return render_template('docgen_mock.html',
+                           title='DocGen (Mock)',
+                           mock_stats=mock_stats)
+
 @main.route('/get_document_activities/<int:document_id>')
 @login_required
 def get_document_activities(document_id):
@@ -4083,17 +4165,18 @@ def batch_accept_documents():
     """Accept multiple documents at once"""
     page = request.args.get('page', 1, type=int)
     view = request.args.get('view', 'received')
+    search = request.args.get('search', '')
     
     document_ids = request.form.getlist('document_ids')
     if not document_ids:
         flash('No documents selected for batch accept.', 'warning')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     try:
         document_ids = [int(doc_id) for doc_id in document_ids]
     except ValueError:
         flash('Invalid document selection.', 'danger')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     success_count = 0
     error_count = 0
@@ -4159,7 +4242,7 @@ def batch_accept_documents():
         db.session.rollback()
         flash(f'Error processing batch accept: {str(e)}', 'danger')
     
-    return redirect(url_for('main.dashboard', view='received', page=page))
+    return redirect(url_for('main.dashboard', view=view, page=page, search=search))
 
 @main.route('/batch_decline_documents', methods=['POST'])
 @login_required
@@ -4167,23 +4250,24 @@ def batch_decline_documents():
     """Decline multiple documents at once"""
     page = request.args.get('page', 1, type=int)
     view = request.args.get('view', 'received')
+    search = request.args.get('search', '')
     
     form = BatchDeclineDocumentForm()
     
     if not form.validate_on_submit():
         flash('Please provide a reason for declining the documents.', 'danger')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     document_ids = request.form.getlist('document_ids')
     if not document_ids:
         flash('No documents selected for batch decline.', 'warning')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     try:
         document_ids = [int(doc_id) for doc_id in document_ids]
     except ValueError:
         flash('Invalid document selection.', 'danger')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     success_count = 0
     error_count = 0
@@ -4237,7 +4321,7 @@ def batch_decline_documents():
         db.session.rollback()
         flash(f'Error processing batch decline: {str(e)}', 'danger')
     
-    return redirect(url_for('main.dashboard', view='received', page=page))
+    return redirect(url_for('main.dashboard', view=view, page=page, search=search))
 
 @main.route('/batch_forward_documents', methods=['POST'])
 @login_required
@@ -4245,24 +4329,25 @@ def batch_forward_documents():
     """Forward multiple documents at once"""
     page = request.args.get('page', 1, type=int)
     view = request.args.get('view', 'received')
+    search = request.args.get('search', '')
     
     form = BatchForwardDocumentForm()
     form.recipient.choices = get_recipient_choices()
     
     if not form.validate_on_submit():
         flash('Please provide valid recipient and action for forwarding the documents.', 'danger')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     document_ids = request.form.getlist('document_ids')
     if not document_ids:
         flash('No documents selected for batch forward.', 'warning')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     try:
         document_ids = [int(doc_id) for doc_id in document_ids]
     except ValueError:
         flash('Invalid document selection.', 'danger')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     success_count = 0
     error_count = 0
@@ -4274,7 +4359,7 @@ def batch_forward_documents():
     new_recipient_user = User.query.get(new_recipient_id)
     if not new_recipient_user:
         flash('Invalid recipient selected.', 'danger')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     for doc_id in document_ids:
         try:
@@ -4348,7 +4433,7 @@ def batch_forward_documents():
         db.session.rollback()
         flash(f'Error processing batch forward: {str(e)}', 'danger')
     
-    return redirect(url_for('main.dashboard', view='received', page=page))
+    return redirect(url_for('main.dashboard', view=view, page=page, search=search))
 
 @main.route('/batch_release_documents', methods=['POST'])
 @login_required
@@ -4356,17 +4441,18 @@ def batch_release_documents():
     """Release multiple documents at once"""
     page = request.args.get('page', 1, type=int)
     view = request.args.get('view', 'received')
+    search = request.args.get('search', '')
     
     document_ids = request.form.getlist('document_ids')
     if not document_ids:
         flash('No documents selected for batch release.', 'warning')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     try:
         document_ids = [int(doc_id) for doc_id in document_ids]
     except ValueError:
         flash('Invalid document selection.', 'danger')
-        return redirect(url_for('main.dashboard', view=view, page=page))
+        return redirect(url_for('main.dashboard', view=view, page=page, search=search))
     
     success_count = 0
     error_count = 0
@@ -4419,7 +4505,7 @@ def batch_release_documents():
         db.session.rollback()
         flash(f'Error processing batch release: {str(e)}', 'danger')
     
-    return redirect(url_for('main.dashboard', view='received', page=page))
+    return redirect(url_for('main.dashboard', view=view, page=page, search=search))
 
 # Serve favicon.ico
 @main.route('/favicon.ico')

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-1">DocGen (Mock)</h1>
+            <p class="text-muted mb-0">Preview of the upcoming document generation workspace.</p>
+        </div>
+        <span class="badge bg-primary fs-6">Mock Data</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-semibold">Generated Today</h2>
+                    <p class="display-6 fw-bold text-primary">{{ mock_stats.generated_today }}</p>
+                    <p class="text-muted small mb-0">Auto-drafted reports ready for review.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-semibold">Awaiting Approval</h2>
+                    <p class="display-6 fw-bold text-warning">{{ mock_stats.awaiting_approval }}</p>
+                    <p class="text-muted small mb-0">Pending with reviewers and signatories.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-semibold">Templates Updated</h2>
+                    <p class="display-6 fw-bold text-success">{{ mock_stats.templates_updated }}</p>
+                    <p class="text-muted small mb-0">Refinements shipped in the last 7 days.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 fw-semibold mb-0">Recent Activity</h2>
+                        <span class="badge bg-light text-dark">Demo feed</span>
+                    </div>
+                    <ul class="list-unstyled mb-0">
+                        {% for item in mock_stats.activity %}
+                        <li class="d-flex align-items-center justify-content-between border-bottom py-2">
+                            <span class="fw-medium">{{ item.title }}</span>
+                            <span class="badge bg-{{ item.status_class }}">{{ item.status }}</span>
+                        </li>
+                        {% else %}
+                        <li class="text-muted">No activity yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-semibold mb-3">Pilot Team</h2>
+                    <ul class="list-group list-group-flush">
+                        {% for member in mock_stats.team_members %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-medium">{{ member.name }}</span>
+                            <span class="text-muted">{{ member.role }}</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted">No team members listed.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

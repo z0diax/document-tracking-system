@@ -8,6 +8,7 @@ import pytz
 from datetime import datetime
 import os
 from decimal import Decimal
+from app.theme_state import read_theme_state, DEFAULT_THEME
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -87,6 +88,15 @@ def create_app(config_class=Config):
 
     from app.routes import main
     app.register_blueprint(main, url_prefix="/hrdoctrack")
+
+    @app.context_processor
+    def inject_system_theme():
+        state = read_theme_state(app)
+        theme = state.get('theme', DEFAULT_THEME)
+        return {
+            'system_theme': theme,
+            'system_theme_state': state
+        }
 
     @app.before_request
     def check_user_status():

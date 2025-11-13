@@ -12,6 +12,89 @@ body {
   background-attachment: fixed;
 }
 
+/* Mixed holiday garland (Halloween + Christmas) */
+#holiday-garland {
+  position: absolute;
+  top: -26px;
+  left: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#holiday-garland::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(249,115,22,0.8), rgba(59,130,246,0.35), rgba(239,68,68,0.8));
+  border-radius: 999px;
+  opacity: 0.8;
+}
+
+#holiday-garland .holiday-garland-track {
+  display: flex;
+  gap: 12px;
+  padding: 22px 22px 10px;
+  transform-origin: top center;
+  animation: holiday-garland-track-sway 6.5s ease-in-out infinite;
+}
+
+#holiday-garland .holiday-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: top center;
+  animation: holiday-garland-sway 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+}
+
+#holiday-garland .holiday-icon:nth-child(even) {
+  animation-delay: -1.4s;
+}
+
+#holiday-garland .holiday-icon:nth-child(3n) {
+  animation-delay: -0.8s;
+}
+
+#holiday-garland .holiday-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#holiday-garland .holiday-icon-pumpkin svg {
+  filter: drop-shadow(0 0 6px rgba(249,115,22,0.45));
+}
+
+#holiday-garland .holiday-icon-ornament svg {
+  filter: drop-shadow(0 0 4px rgba(239,68,68,0.35));
+}
+
+#holiday-garland .holiday-icon-bat svg {
+  filter: drop-shadow(0 0 4px rgba(30,41,59,0.35));
+}
+
+@keyframes holiday-garland-sway {
+  0% { transform: rotate(-9deg) translateY(-2px); }
+  50% { transform: rotate(9deg) translateY(2px); }
+  100% { transform: rotate(-9deg) translateY(-2px); }
+}
+
+@keyframes holiday-garland-track-sway {
+  0% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+  100% { transform: rotate(-2deg); }
+}
+
 /* Fullscreen snow canvas overlay */
 #snow-canvas {
   position: absolute;
@@ -127,6 +210,16 @@ body {
 
   #snow-ground {
     height: 72px;
+  }
+
+  #holiday-garland {
+    top: -14px;
+    height: 48px;
+  }
+
+  #holiday-garland .holiday-icon {
+    width: 30px;
+    height: 30px;
   }
 }
 

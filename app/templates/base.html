@@ -661,7 +661,7 @@
         }
     </script>
 </head>
-<body {% if current_user.is_authenticated %} data-username="{{ current_user.username }}"{% endif %}>
+<body data-season-theme="{{ system_theme }}" {% if current_user.is_authenticated %} data-username="{{ current_user.username }}"{% endif %}>
     <!-- Toast container for all authenticated pages -->
     {% if current_user.is_authenticated %}
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1500;"></div>
@@ -712,8 +712,51 @@
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="fas fa-id-badge me-2"></i>Profile</a></li>
 {% if current_user.is_admin %}
                         <li><hr class="dropdown-divider"></li>
-
-                        {% endif %}
+                        <li class="px-3 py-2 text-center">
+                            <div class="small text-muted mb-2">Seasonal Theme</div>
+                            <div class="btn-group w-100" role="group" aria-label="Seasonal theme selector">
+                                <button type="button"
+                                        class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 btn-outline-secondary theme-option-btn"
+                                        data-base-class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 theme-option-btn"
+                                        data-active-class="btn-secondary text-white"
+                                        data-inactive-class="btn-outline-secondary"
+                                        data-season-option="classic">
+                                    <i class="fas fa-circle"></i>
+                                    Classic
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 btn-outline-primary theme-option-btn"
+                                        data-base-class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 theme-option-btn"
+                                        data-active-class="btn-primary text-white"
+                                        data-inactive-class="btn-outline-primary"
+                                        data-season-option="winter">
+                                    <i class="fas fa-snowflake"></i>
+                                    Winter
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 btn-outline-danger theme-option-btn"
+                                        data-base-class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 theme-option-btn"
+                                        data-active-class="btn-danger text-white"
+                                        data-inactive-class="btn-outline-danger"
+                                        data-season-option="hallochristmas">
+                                    <i class="fas fa-hat-wizard"></i>
+                                    Hallo-Christmas
+                                </button>
+                            </div>
+                            {% set _theme_label = 'Classic' %}
+                            {% if system_theme == 'hallochristmas' %}
+                                {% set _theme_label = 'Hallo-Christmas' %}
+                            {% elif system_theme == 'winter' %}
+                                {% set _theme_label = 'Winter' %}
+                            {% endif %}
+                            <small class="d-block mt-2 text-muted" id="seasonThemeStatus">
+                                Current: {{ _theme_label }}
+                                {% if system_theme_state.get('updated_by') %}
+                                    &middot; by {{ system_theme_state.get('updated_by') }}
+                                {% endif %}
+                            </small>
+                        </li>
+{% endif %}
                         <li><hr class="dropdown-divider"></li>
                         <li class="px-3 py-1">
                             <div class="form-check form-switch d-flex align-items-center">
@@ -1800,6 +1843,137 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    var buttons = document.querySelectorAll('[data-season-option]');
+    if (!buttons.length) return;
+
+    var statusEl = document.getElementById('seasonThemeStatus');
+    var state = {{ system_theme_state|tojson|safe }} || {};
+    var THEMES = ['classic', 'winter', 'hallochristmas'];
+    var isLoading = false;
+    var currentTheme = null;
+
+    function normalize(theme) {
+        if (theme === undefined || theme === null) return THEMES[0];
+        var lower = String(theme).toLowerCase();
+        return THEMES.indexOf(lower) >= 0 ? lower : THEMES[0];
+    }
+
+    function friendly(theme) {
+        var current = normalize(theme);
+        if (current === 'hallochristmas') return 'Hallo-Christmas';
+        if (current === 'winter') return 'Winter';
+        return 'Classic';
+    }
+
+    function updateStatus(meta) {
+        if (!statusEl) return;
+        var info = meta || state || {};
+        var parts = ['Current: ' + friendly(currentTheme)];
+        if (info.updated_by) {
+            var updatedAt = info.updated_at || '';
+            var segment = 'Updated by ' + info.updated_by;
+            if (updatedAt) {
+                segment += ' on ' + new Date(updatedAt).toLocaleString();
+            }
+            parts.push(segment);
+        }
+        statusEl.textContent = parts.join(' · ');
+    }
+
+    function syncUI(theme, meta) {
+        currentTheme = normalize(theme);
+        buttons.forEach(function(btn) {
+            var base = btn.dataset.baseClass || 'btn btn-sm flex-fill theme-option-btn';
+            var activeClass = btn.dataset.activeClass || 'btn-primary text-white';
+            var inactiveClass = btn.dataset.inactiveClass || 'btn-outline-secondary';
+            var option = normalize(btn.dataset.seasonOption);
+            var classes = base + ' ' + (option === currentTheme ? activeClass : inactiveClass);
+            btn.className = classes;
+            if (isLoading) {
+                btn.disabled = true;
+                btn.setAttribute('aria-disabled', 'true');
+            } else {
+                var disabled = option === currentTheme;
+                btn.disabled = disabled;
+                if (disabled) {
+                    btn.setAttribute('aria-disabled', 'true');
+                } else {
+                    btn.removeAttribute('aria-disabled');
+                }
+            }
+            btn.setAttribute('aria-pressed', option === currentTheme ? 'true' : 'false');
+        });
+        updateStatus(meta);
+    }
+
+    function setLoading(flag) {
+        isLoading = !!flag;
+        syncUI(currentTheme || normalize(state && state.theme), state);
+    }
+
+    function submitTheme(option) {
+        var target = normalize(option);
+        if (target === currentTheme) return;
+
+        setLoading(true);
+        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+        fetch('{{ url_for("main.set_system_theme") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ theme: target })
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                return response.json().catch(function() { return {}; }).then(function(data) {
+                    throw new Error(data.error || 'Failed to update theme.');
+                });
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            state = data || state || {};
+            var applied = normalize((data && data.theme) ? data.theme : target);
+            state.theme = applied;
+            document.body.dataset.seasonTheme = applied;
+            syncUI(applied, data);
+            if (typeof showToast === 'function') {
+                showToast('Seasonal theme set to ' + friendly(applied) + '.', 'success');
+            }
+            setTimeout(function() { window.location.reload(); }, 450);
+        })
+        .catch(function(error) {
+            if (typeof showToast === 'function') {
+                showToast(error.message || 'Unable to update theme.', 'danger');
+            } else {
+                console.error(error);
+            }
+        })
+        .finally(function() {
+            setLoading(false);
+        });
+    }
+
+    buttons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            if (isLoading) return;
+            var option = btn.dataset.seasonOption;
+            if (!option) return;
+            submitTheme(option);
+        });
+    });
+
+    var initial = normalize(document.body.dataset.seasonTheme || (state && state.theme));
+    syncUI(initial, state);
+});
+</script>
+
+<script>
 (function() {
     document.addEventListener('DOMContentLoaded', function() {
         var nav = document.querySelector('nav.navbar');
@@ -1937,3 +2111,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="{{ url_for('static', filename='winter.js') }}" defer></script>
 </body>
 </html>
+
+
+
+

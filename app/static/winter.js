@@ -10,6 +10,32 @@
   const THEME_DISABLED = (function() {
     try { return localStorage.getItem('winterTheme') === 'off'; } catch (_) { return false; }
   })();
+  const FALLBACK_THEME = 'classic';
+
+  const GLOBAL_THEME = (function() {
+    try {
+      const theme = document.body && document.body.dataset ? document.body.dataset.seasonTheme : null;
+      return theme || FALLBACK_THEME;
+    } catch (_) {
+      return FALLBACK_THEME;
+    }
+  })();
+
+  const THEMES = {
+    CLASSIC: 'classic',
+    WINTER: 'winter',
+    HALLO: 'hallochristmas'
+  };
+
+  const ACTIVE_THEME = (typeof GLOBAL_THEME === 'string' && GLOBAL_THEME.trim().length > 0)
+    ? GLOBAL_THEME.toLowerCase()
+    : FALLBACK_THEME;
+
+  const IS_HALLOCHRISTMAS = ACTIVE_THEME === THEMES.HALLO;
+  const IS_WINTER_ONLY = ACTIVE_THEME === THEMES.WINTER;
+  const IS_SEASONAL = IS_HALLOCHRISTMAS || IS_WINTER_ONLY;
+  const ALLOW_EMBERS = IS_HALLOCHRISTMAS;
+
   try {
     window.WinterTheme = {
       disable() { try { localStorage.setItem('winterTheme', 'off'); } catch (_) {} location.reload(); },
@@ -25,9 +51,41 @@
   }
 
   function init() {
-    if (THEME_DISABLED) return;
+    if (THEME_DISABLED || !IS_SEASONAL) {
+      teardownSeasonalDecor();
+      return;
+    }
     addSnowCanvas();
+    if (IS_HALLOCHRISTMAS) {
+      addHolidayGarland();
+      addFloatingSprites();
+      removeElementById('snow-ground');
+      removeElementById('snowman-container');
+      removeElementById('snowman-greeting');
+    } else {
+      removeElementById('holiday-garland');
+      removeElementById('holiday-sprites');
+    }
+    if (IS_WINTER_ONLY) {
+      addSnowGround();
+      addSnowman();
+    }
     // addSnowman(); // Disabled: remove animated snowman (keep falling snowflakes)
+  }
+
+  function teardownSeasonalDecor() {
+    ['snow-canvas', 'holiday-garland', 'holiday-sprites', 'snow-ground', 'snowman-container', 'snowman-greeting'].forEach(removeElementById);
+    try { localStorage.removeItem('snowflakes'); } catch (_) {}
+  }
+
+  function removeElementById(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (typeof el.remove === 'function') {
+      el.remove();
+    } else if (el.parentNode) {
+      el.parentNode.removeChild(el);
+    }
   }
 
   function addSnowCanvas() {
@@ -183,16 +241,66 @@
       }
     }
 
+    class EmberParticle {
+      constructor() { this.reset(true); }
+      reset(initial) {
+        this.x = rand(0, W());
+        this.y = initial ? rand(-H(), H()) : rand(-18, -8);
+        this.r = rand(0.9, 1.6);
+        this.speedY = rand(18, 34) / 60;
+        this.speedX = rand(-12, 12) / 60;
+        if (PREFERS_REDUCED_MOTION) {
+          this.speedY *= 0.6;
+          this.speedX *= 0.6;
+        }
+        this.alpha = rand(0.45, 0.92);
+        this.windPhase = rand(0, TWO_PI);
+        this.windAmplitude = rand(4, 10);
+        this.flickerSpeed = rand(0.04, 0.08);
+      }
+      update() {
+        this.windPhase += this.flickerSpeed;
+        this.x += this.speedX * 0.4 + Math.sin(this.windPhase) * (this.windAmplitude / 140);
+        this.y += this.speedY * 0.9;
+        if (this.y - this.r > H() || this.x + this.r < -24 || this.x - this.r > W() + 24) {
+          this.reset(false);
+        }
+      }
+      draw(ctx) {
+        ctx.save();
+        const flicker = 0.75 + Math.sin(this.windPhase * 2.4) * 0.25;
+        const innerAlpha = Math.min(1, this.alpha * 1.35);
+        const outerAlpha = this.alpha * 0.4;
+        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 4.2);
+        gradient.addColorStop(0, `rgba(255, ${Math.floor(90 + flicker * 120)}, ${Math.floor(40 + flicker * 60)}, ${innerAlpha})`);
+        gradient.addColorStop(1, `rgba(255, ${Math.floor(120 + flicker * 90)}, 0, ${outerAlpha})`);
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r * 3.6, 0, TWO_PI);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
     // Function to save the state of snowflakes (navbar snowfall)
     function saveState() {
         try {
-          const snowflakesState = flakes.map(flake => ({
+          const snowflakesState = flakes.map((flake) => {
+            const entry = {
               x: flake.x,
               y: flake.y,
               speedY: flake.speedY,
               speedX: flake.speedX,
-              type: (flake instanceof SnowDot) ? 'dot' : 'flake'
-          }));
+              type: (flake instanceof SnowDot)
+                ? 'dot'
+                : (flake instanceof EmberParticle ? 'ember' : 'flake')
+            };
+            if (typeof flake.windPhase === 'number') entry.windPhase = flake.windPhase;
+            if (typeof flake.rot === 'number') entry.rot = flake.rot;
+            if (typeof flake.glyph === 'string') entry.glyph = flake.glyph;
+            if (typeof flake.flickerSpeed === 'number') entry.flickerSpeed = flake.flickerSpeed;
+            return entry;
+          });
           // Wrap with timestamp for potential TTL/validation
           localStorage.setItem('snowflakes', JSON.stringify({ ts: Date.now(), data: snowflakesState }));
         } catch (_) {}
@@ -210,21 +318,45 @@
                 const state = arr[idx];
                 if (!state) continue;
                 // Recreate correct type
-                flakes[idx] = (state.type === 'dot') ? new SnowDot() : new Winterflake();
-                flakes[idx].x = (typeof state.x === 'number') ? state.x : flakes[idx].x;
-                flakes[idx].y = (typeof state.y === 'number') ? state.y : flakes[idx].y;
-                if (typeof state.speedX === 'number') flakes[idx].speedX = state.speedX;
-                if (typeof state.speedY === 'number') flakes[idx].speedY = state.speedY;
+                let particle;
+                if (state.type === 'ember' && !ALLOW_EMBERS) {
+                  particle = new SnowDot();
+                } else if (state.type === 'dot') {
+                  particle = new SnowDot();
+                } else if (state.type === 'ember') {
+                  particle = new EmberParticle();
+                } else {
+                  particle = new Winterflake();
+                }
+                particle.x = (typeof state.x === 'number') ? state.x : particle.x;
+                particle.y = (typeof state.y === 'number') ? state.y : particle.y;
+                if (typeof state.speedX === 'number') particle.speedX = state.speedX;
+                if (typeof state.speedY === 'number') particle.speedY = state.speedY;
+                if (typeof state.windPhase === 'number') particle.windPhase = state.windPhase;
+                if (typeof state.rot === 'number' && particle instanceof Winterflake) {
+                  particle.rot = state.rot;
+                }
+                if (typeof state.glyph === 'string' && particle instanceof Winterflake) {
+                  particle.glyph = state.glyph;
+                }
+                if (typeof state.flickerSpeed === 'number' && particle instanceof EmberParticle) {
+                  particle.flickerSpeed = state.flickerSpeed;
+                }
+                flakes[idx] = particle;
             }
         } catch (_) {}
     }
-    const RATIO_DOTS = 0.7;
+    const RATIO_DOTS = IS_HALLOCHRISTMAS ? 0.55 : 0.7;
+    const RATIO_EMBERS = ALLOW_EMBERS ? 0.18 : 0;
     const TOTAL_COUNT = FLAKE_COUNT;
 
     flakes.length = 0;
     for (let i = 0; i < TOTAL_COUNT; i++) {
-      if (Math.random() < RATIO_DOTS) {
+      const mix = Math.random();
+      if (mix < RATIO_DOTS) {
         flakes.push(new SnowDot());
+      } else if (mix < RATIO_DOTS + RATIO_EMBERS) {
+        flakes.push(new EmberParticle());
       } else {
         flakes.push(new Winterflake());
       }
@@ -260,6 +392,163 @@
     window.addEventListener('beforeunload', saveState);
 
     requestAnimationFrame(animate);
+  }
+
+  function addHolidayGarland() {
+    if (!IS_HALLOCHRISTMAS) {
+      removeElementById('holiday-garland');
+      return;
+    }
+    const nav = document.querySelector('nav.navbar');
+    if (!nav) return;
+
+    let garland = document.getElementById('holiday-garland');
+    if (garland && garland.parentElement !== nav) {
+      try { garland.remove(); } catch (_) {}
+      garland = null;
+    }
+
+    if (!garland) {
+      garland = document.createElement('div');
+      garland.id = 'holiday-garland';
+      garland.setAttribute('aria-hidden', 'true');
+    }
+
+    const iconOrder = ['pumpkin', 'snowflake', 'ornament', 'bat'];
+    const icons = iconOrder.concat(iconOrder).concat(iconOrder.slice(0, 2));
+    garland.innerHTML = `
+      <div class="holiday-garland-track">
+        ${icons.map((type) => {
+          const markup = holidayIconMarkup(type);
+          return `<span class="holiday-icon holiday-icon-${type}">${markup}</span>`;
+        }).join('')}
+      </div>
+    `.trim();
+
+    const canvas = document.getElementById('snow-canvas');
+    if (!garland.parentElement) {
+      if (canvas && canvas.parentElement === nav) {
+        nav.insertBefore(garland, canvas.nextSibling);
+      } else {
+        nav.appendChild(garland);
+      }
+    }
+  }
+
+  function addFloatingSprites() {
+    if (!IS_HALLOCHRISTMAS) {
+      removeElementById('holiday-sprites');
+      return;
+    }
+    const body = document.body;
+    if (!body) return;
+
+    let layer = document.getElementById('holiday-sprites');
+    if (layer && layer.parentElement !== body) {
+      try { layer.remove(); } catch (_) {}
+      layer = null;
+    }
+
+    if (!layer) {
+      layer = document.createElement('div');
+      layer.id = 'holiday-sprites';
+      layer.setAttribute('aria-hidden', 'true');
+      body.appendChild(layer);
+    }
+
+    const sprites = [
+      { type: 'ghost', left: '8%', top: '52%', duration: '28s', delay: '-6s', size: '92px', opacity: '0.55' },
+      { type: 'cane', left: '74%', top: '46%', duration: '24s', delay: '-4s', size: '76px', opacity: '0.52' },
+      { type: 'hat', left: '42%', top: '60%', duration: '26s', delay: '-2s', size: '88px', opacity: '0.6' },
+      { type: 'ghost', left: '86%', top: '58%', duration: '32s', delay: '-10s', size: '80px', opacity: '0.45' }
+    ];
+
+    const spriteMarkup = sprites.map((sprite) => {
+      const style = Object.entries({
+        '--sprite-left': sprite.left,
+        '--sprite-top': sprite.top,
+        '--sprite-duration': sprite.duration,
+        '--sprite-delay': sprite.delay,
+        '--sprite-size': sprite.size,
+        '--sprite-opacity': sprite.opacity
+      }).filter(([, value]) => value != null)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(';');
+      return `<span class="sprite sprite-${sprite.type}" style="${style}">${floatingSpriteMarkup(sprite.type)}</span>`;
+    }).join('');
+
+    layer.innerHTML = spriteMarkup;
+  }
+
+  function holidayIconMarkup(type) {
+    switch (type) {
+      case 'pumpkin':
+        return `
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+  <path fill="#f97316" d="M16 6c-5 0-9.5 4-9.5 9.3S11 24.5 16 24.5s9.5-4 9.5-9.3S21 6 16 6z"></path>
+  <path fill="#fb923c" opacity="0.55" d="M16 6c-3.3 0-5.8 4-5.8 9.3s2.5 9.2 5.8 9.2 5.8-4 5.8-9.2S19.3 6 16 6z"></path>
+  <path fill="#78350f" d="M15 3.6h2v4h-2z"></path>
+  <path fill="#111827" d="M12.4 15.2l2-2.1 2.1 2.1h-4.1zm7.2 0l-2.1-2.1-2 2.1h4zm-7.2 4.5c1.3 0.9 3 1.5 4.6 1.5s3.3-.6 4.6-1.5c-1.1.2-2.9.5-4.6.5s-3.5-.3-4.6-.5z"></path>
+</svg>`.trim();
+      case 'snowflake':
+        return `
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+  <path fill="#bfdbfe" d="M15 4h2v24h-2z"></path>
+  <path fill="#bfdbfe" d="M4 15h24v2H4z"></path>
+  <path fill="#bfdbfe" d="M8 8l1.4-1.4L24 21.2 22.6 22.6z"></path>
+  <path fill="#bfdbfe" d="M24 8l1.4 1.4L10 22.6 8.6 21.2z"></path>
+  <circle cx="16" cy="16" r="4" fill="#e0f2fe"></circle>
+</svg>`.trim();
+      case 'ornament':
+        return `
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+  <circle cx="16" cy="17" r="9" fill="#ef4444"></circle>
+  <path fill="#b91c1c" d="M14 6h4v5h-4z"></path>
+  <path fill="#fca5a5" opacity="0.5" d="M16 10a7 7 0 00-7 7h6l3.5-6.1A6.9 6.9 0 0016 10z"></path>
+  <circle cx="16" cy="17" r="3" fill="#fee2e2" opacity="0.8"></circle>
+</svg>`.trim();
+      case 'bat':
+        return `
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+  <path fill="#1f2937" d="M4 19c1.2-3 3.2-5.4 6.2-5.1 1-2.7 3.6-4.6 5.8-4.6s4.8 1.9 5.8 4.6c3-.3 5 2.1 6.2 5.1-1.7-1-2.9-1-4.2 0-.9-1.8-2-2.7-3.2-2.7-1.3 0-2.5.9-3.7 2.7-1-.8-1.7-1.2-2.1-1.2s-1.1.4-2.1 1.2c-1.2-1.8-2.4-2.7-3.7-2.7-1.2 0-2.3.9-3.2 2.7-1.3-1-2.5-1-4.2 0z"></path>
+  <circle cx="13.5" cy="15.5" r="0.7" fill="#fef08a"></circle>
+  <circle cx="18.5" cy="15.5" r="0.7" fill="#fef08a"></circle>
+</svg>`.trim();
+      default:
+        return '';
+    }
+  }
+
+  function floatingSpriteMarkup(type) {
+    switch (type) {
+      case 'ghost':
+        return `
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+  <path d="M32 6c-11.6 0-20 8.6-20 20.5v15.4c0 2.3 1.8 4.1 4.1 4.1 3.3 0 4.7-3.4 7.4-3.4s4.1 3.4 7.5 3.4 4.8-3.4 7.5-3.4 4.1 3.4 7.4 3.4c2.3 0 4.1-1.8 4.1-4.1V26.5C52 14.6 43.6 6 32 6z" fill="rgba(255,255,255,0.82)"></path>
+  <circle cx="24.5" cy="24.5" r="2.8" fill="#0f172a"></circle>
+  <circle cx="39.5" cy="24.5" r="2.8" fill="#0f172a"></circle>
+  <path d="M26 34c1.8 1.6 3.8 2.4 6 2.4s4.2-0.8 6-2.4" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round" fill="none"></path>
+</svg>`.trim();
+      case 'cane':
+        return `
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+  <path d="M36 10c-7 0-12 5.3-12 12v26.5c0 2.6 2.1 4.7 4.7 4.7h2.6c2.6 0 4.7-2.1 4.7-4.7V22c0-2.2 1.8-4 4-4s4 1.8 4 4c0 2.8 2.2 5 5 5s5-2.2 5-5c0-6.7-5.3-12-12-12z" fill="#f87171"></path>
+  <path d="M36 14c-4 0-7 3-7 7v27c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2V22c0-4.4 3.6-8 8-8" fill="#fef2f2"></path>
+  <path d="M31 27h10" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round"></path>
+  <path d="M31 35h10" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round"></path>
+  <path d="M31 43h10" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round"></path>
+</svg>`.trim();
+      case 'hat':
+        return `
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+  <path d="M32 12c-7.5 0-12.8 6.6-13.8 18.1-.4 4.2-.7 8.7-1.2 13.6-.3 2.8 2 5.3 4.8 5.3h20.4c2.8 0 5-2.5 4.8-5.3-.5-4.9-.8-9.4-1.2-13.6C44.8 18.6 39.5 12 32 12z" fill="#111827"></path>
+  <rect x="10" y="42" width="44" height="8" rx="3.2" fill="#1f2937"></rect>
+  <rect x="20" y="32" width="24" height="6" fill="#d946ef"></rect>
+  <path d="M25 32h14" stroke="#f9a8d4" stroke-width="2" stroke-linecap="round"></path>
+</svg>`.trim();
+      default:
+        return '';
+    }
   }
 
   // Adds decorative snow hills at the bottom edge of the navbar (disabled per request)
@@ -508,7 +797,10 @@
 
       const el = ensureGreetingEl();
       const username = getUsername();
-      el.textContent = `Merry Christmas ${username}!, have a holly jolly christmas`;
+      const message = IS_HALLOCHRISTMAS
+        ? `Happy Hallo-Christmas, ${username}! Stay cozy and spooky!`
+        : `Warm winter wishes, ${username}! Stay cozy out there!`;
+      el.textContent = message;
 
       // Show and position after layout
       el.classList.add('show');
@@ -562,3 +854,4 @@
     window.addEventListener('blur', () => { wrap.classList.remove('hover-active'); hideGreeting(); });
   }
 })();
+

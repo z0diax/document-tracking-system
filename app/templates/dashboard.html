@@ -268,28 +268,30 @@
                 <td>{{ document.office }}</td>
                 <td>{{ document.classification }}</td>
                 <td>
-                    {% set _display_barcode = document.barcode if document.barcode else '—' %}
-                    <button type="button"
-                            class="barcode-toggle btn btn-link text-body p-0 align-baseline {% if not document.barcode %}no-barcode{% endif %}"
-                            data-document-id="{{ document.id }}"
-                            data-barcode="{{ document.barcode or '' }}"
-                            data-toggle-url="{{ url_for('main.toggle_no_dtas', document_id=document.id) }}"
-                            aria-pressed="{{ 'true' if document.no_dtas_flag else 'false' }}"
-                            title="Double click to toggle NO DTAS tag">
-                        {{ _display_barcode }}
-                    </button>
-                    {% set suggested = (document.activities_json | default([])) | selectattr('action', 'equalto', 'Barcode Suggested') | list %}
-                    {% if suggested|length > 0 %}
-                        {% set _tooltip = (suggested[-1].remarks if (suggested[-1] is defined and suggested[-1].remarks) else 'Selected from suggestions') %}
-                        <span class="badge rounded-pill bg-info text-dark ms-1" title="{{ _tooltip }}"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
-                    {% endif %}
-                    <span class="badge rounded-pill bg-danger text-light ms-1 no-dtas-badge"
-                          data-doc-id="{{ document.id }}"
-                          title="THIS DOCUMENT CREATED AND DID NOT TAG THE HRMDO"
-                          style="display: {{ 'inline-flex' if document.no_dtas_flag else 'none' }};">
-                        <i class="fas fa-ban me-1" aria-hidden="true"></i>
-                        NO DTAS
-                    </span>
+                    <div class="barcode-cell {% if document.no_dtas_flag %}has-no-dtas{% endif %}" data-doc-id="{{ document.id }}">
+                        {% set _display_barcode = document.barcode if document.barcode else '—' %}
+                        <button type="button"
+                                class="barcode-toggle btn btn-link text-body p-0 align-baseline {% if not document.barcode %}no-barcode{% endif %}"
+                                data-document-id="{{ document.id }}"
+                                data-barcode="{{ document.barcode or '' }}"
+                                data-toggle-url="{{ url_for('main.toggle_no_dtas', document_id=document.id) }}"
+                                aria-pressed="{{ 'true' if document.no_dtas_flag else 'false' }}"
+                                title="Double click to toggle NO DTAS tag">
+                            {{ _display_barcode }}
+                        </button>
+                        {% set suggested = (document.activities_json | default([])) | selectattr('action', 'equalto', 'Barcode Suggested') | list %}
+                        {% if suggested|length > 0 %}
+                            {% set _tooltip = (suggested[-1].remarks if (suggested[-1] is defined and suggested[-1].remarks) else 'Selected from suggestions') %}
+                            <span class="badge rounded-pill bg-info text-dark"
+                                  title="{{ _tooltip }}"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
+                        {% endif %}
+                        <span class="badge rounded-pill bg-danger text-light no-dtas-badge {% if document.no_dtas_flag %}d-inline-flex{% else %}d-none{% endif %}"
+                              data-doc-id="{{ document.id }}"
+                              title="THIS DOCUMENT CREATED AND DID NOT TAG THE HRMDO">
+                            <i class="fas fa-ban me-1" aria-hidden="true"></i>
+                            NO DTAS
+                        </span>
+                    </div>
                 </td>
                 <td>
                     {% if document.status == 'Accepted' %}
@@ -1398,11 +1400,28 @@
       body[data-bs-theme="dark"] .barcode-row-selected > td {
         background-color: rgba(48, 118, 241, 0.4) !important;
       }
-      .no-dtas-badge {
+      .barcode-cell {
+        position: relative;
         display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding-right: 0;
+      }
+      .barcode-cell.has-no-dtas {
+        padding-right: 3.25rem;
+      }
+      .no-dtas-badge {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
         align-items: center;
         gap: 4px;
         font-size: 0.75rem;
+        display: none;
+      }
+      .barcode-cell.has-no-dtas .no-dtas-badge {
+        display: inline-flex;
       }
     </style>
     {% if leave_requests %}
@@ -1668,28 +1687,30 @@
                 <td>{{ document.office }}</td>
                 <td>{{ document.classification }}</td>
                 <td>
-                    {% set _display_barcode = document.barcode if document.barcode else '—' %}
-                    <button type="button"
-                            class="barcode-toggle btn btn-link text-body p-0 align-baseline {% if not document.barcode %}no-barcode{% endif %}"
-                            data-document-id="{{ document.id }}"
-                            data-barcode="{{ document.barcode or '' }}"
-                            data-toggle-url="{{ url_for('main.toggle_no_dtas', document_id=document.id) }}"
-                            aria-pressed="{{ 'true' if document.no_dtas_flag else 'false' }}"
-                            title="Double click to toggle NO DTAS tag">
-                        {{ _display_barcode }}
-                    </button>
-                    {% set suggested = (document.activities_json | default([])) | selectattr('action', 'equalto', 'Barcode Suggested') | list %}
-                    {% if suggested|length > 0 %}
-                        {% set _tooltip = (suggested[-1].remarks if (suggested[-1] is defined and suggested[-1].remarks) else 'Selected from suggestions') %}
-                        <span class="badge rounded-pill bg-info text-dark ms-1" title="{{ _tooltip }}"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
-                    {% endif %}
-                    <span class="badge rounded-pill bg-danger text-light ms-1 no-dtas-badge"
-                          data-doc-id="{{ document.id }}"
-                          title="THIS DOCUMENT CREATED AND DID NOT TAG THE HRMDO"
-                          style="display: {{ 'inline-flex' if document.no_dtas_flag else 'none' }};">
-                        <i class="fas fa-ban me-1" aria-hidden="true"></i>
-                        NO DTAS
-                    </span>
+                    <div class="barcode-cell {% if document.no_dtas_flag %}has-no-dtas{% endif %}" data-doc-id="{{ document.id }}">
+                        {% set _display_barcode = document.barcode if document.barcode else '—' %}
+                        <button type="button"
+                                class="barcode-toggle btn btn-link text-body p-0 align-baseline {% if not document.barcode %}no-barcode{% endif %}"
+                                data-document-id="{{ document.id }}"
+                                data-barcode="{{ document.barcode or '' }}"
+                                data-toggle-url="{{ url_for('main.toggle_no_dtas', document_id=document.id) }}"
+                                aria-pressed="{{ 'true' if document.no_dtas_flag else 'false' }}"
+                                title="Double click to toggle NO DTAS tag">
+                            {{ _display_barcode }}
+                        </button>
+                        {% set suggested = (document.activities_json | default([])) | selectattr('action', 'equalto', 'Barcode Suggested') | list %}
+                        {% if suggested|length > 0 %}
+                            {% set _tooltip = (suggested[-1].remarks if (suggested[-1] is defined and suggested[-1].remarks) else 'Selected from suggestions') %}
+                            <span class="badge rounded-pill bg-info text-dark"
+                                  title="{{ _tooltip }}"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
+                        {% endif %}
+                        <span class="badge rounded-pill bg-danger text-light no-dtas-badge {% if document.no_dtas_flag %}d-inline-flex{% else %}d-none{% endif %}"
+                              data-doc-id="{{ document.id }}"
+                              title="THIS DOCUMENT CREATED AND DID NOT TAG THE HRMDO">
+                            <i class="fas fa-ban me-1" aria-hidden="true"></i>
+                            NO DTAS
+                        </span>
+                    </div>
                 </td>
     <td>
         <span class="badge bg-{{ {
@@ -3500,7 +3521,11 @@ function batchRelease() {
 
 function updateNoDtasBadges(docId, isActive) {
     document.querySelectorAll('.no-dtas-badge[data-doc-id="' + docId + '"]').forEach(function(badge) {
-        badge.style.display = isActive ? 'inline-flex' : 'none';
+        badge.classList.toggle('d-none', !isActive);
+        badge.classList.toggle('d-inline-flex', isActive);
+    });
+    document.querySelectorAll('.barcode-cell[data-doc-id="' + docId + '"]').forEach(function(cell) {
+        cell.classList.toggle('has-no-dtas', isActive);
     });
 }
 

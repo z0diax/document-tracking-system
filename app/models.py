@@ -156,6 +156,7 @@ class Document(db.Model):
     remarks = db.Column(db.Text, nullable=True)
     barcode = db.Column(db.String(50), nullable=True)  # New barcode field
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Creation timestamp
+    no_dtas_flag = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
 
     # Additional timestamps for status changes
     accepted_timestamp = db.Column(db.DateTime, nullable=True)  # When the document was accepted
@@ -211,6 +212,7 @@ class Document(db.Model):
             'remarks': self.remarks,
             'attachment': self.attachment,
             'barcode': self.barcode,  # Add barcode to dictionary
+            'no_dtas_flag': self.no_dtas_flag,
             'creator': self.creator.username,
             'recipient': self.recipient.username,
             'timestamp': format_timestamp(self.timestamp),

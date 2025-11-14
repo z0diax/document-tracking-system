@@ -1789,6 +1789,21 @@ def release_document(document_id):
     flash('Document released successfully.', 'success')
     return redirect(url_for('main.dashboard', view='received', page=page))
 
+
+@main.route('/documents/<int:document_id>/toggle_no_dtas', methods=['POST'])
+@login_required
+def toggle_no_dtas(document_id):
+    document = Document.query.get_or_404(document_id)
+    if not (
+        current_user.is_admin
+        or current_user.id in {document.creator_id, document.recipient_id}
+    ):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    current_value = document.no_dtas_flag if document.no_dtas_flag is not None else True
+    document.no_dtas_flag = not current_value
+    db.session.commit()
+    return jsonify({'success': True, 'no_dtas_flag': document.no_dtas_flag})
+
 @main.route('/decline_document/<int:document_id>', methods=['POST'])
 @login_required
 def decline_document(document_id):

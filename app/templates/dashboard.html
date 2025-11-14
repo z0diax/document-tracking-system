@@ -268,12 +268,28 @@
                 <td>{{ document.office }}</td>
                 <td>{{ document.classification }}</td>
                 <td>
-                    {{ document.barcode }}
+                    {% set _display_barcode = document.barcode if document.barcode else '—' %}
+                    <button type="button"
+                            class="barcode-toggle btn btn-link text-body p-0 align-baseline {% if not document.barcode %}no-barcode{% endif %}"
+                            data-document-id="{{ document.id }}"
+                            data-barcode="{{ document.barcode or '' }}"
+                            data-toggle-url="{{ url_for('main.toggle_no_dtas', document_id=document.id) }}"
+                            aria-pressed="{{ 'true' if document.no_dtas_flag else 'false' }}"
+                            title="Double click to toggle NO DTAS tag">
+                        {{ _display_barcode }}
+                    </button>
                     {% set suggested = (document.activities_json | default([])) | selectattr('action', 'equalto', 'Barcode Suggested') | list %}
                     {% if suggested|length > 0 %}
                         {% set _tooltip = (suggested[-1].remarks if (suggested[-1] is defined and suggested[-1].remarks) else 'Selected from suggestions') %}
                         <span class="badge rounded-pill bg-info text-dark ms-1" title="{{ _tooltip }}"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
                     {% endif %}
+                    <span class="badge rounded-pill bg-danger text-light ms-1 no-dtas-badge"
+                          data-doc-id="{{ document.id }}"
+                          title="THIS DOCUMENT CREATED AND DID NOT TAG THE HRMDO"
+                          style="display: {{ 'inline-flex' if document.no_dtas_flag else 'none' }};">
+                        <i class="fas fa-ban me-1" aria-hidden="true"></i>
+                        NO DTAS
+                    </span>
                 </td>
                 <td>
                     {% if document.status == 'Accepted' %}
@@ -1341,6 +1357,53 @@
       .lr-divider { height: 1px; background: #f1f3f5; margin: 0 16px; }
       .lr-inline { display: inline-flex; align-items: center; gap: 8px; }
       .lr-subtle { color: #6c757d; }
+      .barcode-toggle {
+        border: none;
+        background: none;
+        padding: 0;
+        margin: 0;
+        color: inherit;
+        text-decoration: underline;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .barcode-toggle:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .barcode-toggle.no-barcode {
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .barcode-toggle.barcode-selected {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(13, 110, 253, 0.25);
+        border-radius: 999px;
+        padding: 2px 10px;
+        color: #0d6efd !important;
+        font-weight: 700;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+      }
+      body[data-bs-theme="dark"] .barcode-toggle.barcode-selected {
+        background: rgba(13, 110, 253, 0.55);
+        color: #fff !important;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.35);
+      }
+      .barcode-row-selected > td {
+        background-color: rgba(13, 110, 253, 0.18) !important;
+      }
+      body[data-bs-theme="dark"] .barcode-row-selected > td {
+        background-color: rgba(48, 118, 241, 0.4) !important;
+      }
+      .no-dtas-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+      }
     </style>
     {% if leave_requests %}
         {% for l in leave_requests %}
@@ -1605,12 +1668,28 @@
                 <td>{{ document.office }}</td>
                 <td>{{ document.classification }}</td>
                 <td>
-                    {{ document.barcode }}
+                    {% set _display_barcode = document.barcode if document.barcode else '—' %}
+                    <button type="button"
+                            class="barcode-toggle btn btn-link text-body p-0 align-baseline {% if not document.barcode %}no-barcode{% endif %}"
+                            data-document-id="{{ document.id }}"
+                            data-barcode="{{ document.barcode or '' }}"
+                            data-toggle-url="{{ url_for('main.toggle_no_dtas', document_id=document.id) }}"
+                            aria-pressed="{{ 'true' if document.no_dtas_flag else 'false' }}"
+                            title="Double click to toggle NO DTAS tag">
+                        {{ _display_barcode }}
+                    </button>
                     {% set suggested = (document.activities_json | default([])) | selectattr('action', 'equalto', 'Barcode Suggested') | list %}
                     {% if suggested|length > 0 %}
                         {% set _tooltip = (suggested[-1].remarks if (suggested[-1] is defined and suggested[-1].remarks) else 'Selected from suggestions') %}
                         <span class="badge rounded-pill bg-info text-dark ms-1" title="{{ _tooltip }}"><i class="fas fa-magic" aria-hidden="true"></i><span class="visually-hidden">Suggested</span></span>
                     {% endif %}
+                    <span class="badge rounded-pill bg-danger text-light ms-1 no-dtas-badge"
+                          data-doc-id="{{ document.id }}"
+                          title="THIS DOCUMENT CREATED AND DID NOT TAG THE HRMDO"
+                          style="display: {{ 'inline-flex' if document.no_dtas_flag else 'none' }};">
+                        <i class="fas fa-ban me-1" aria-hidden="true"></i>
+                        NO DTAS
+                    </span>
                 </td>
     <td>
         <span class="badge bg-{{ {
@@ -2115,6 +2194,27 @@ function copyToClipboard(text, feedbackId) {
         }
     } catch (err) {
         console.error('Copy failed', err);
+    }
+}
+
+function copyTextSilent(text) {
+    if (!text) return;
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).catch(function() {});
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+    } catch (err) {
+        console.error('Silent copy failed', err);
     }
 }
 
@@ -3398,6 +3498,108 @@ function batchRelease() {
     }
 }
 
+function updateNoDtasBadges(docId, isActive) {
+    document.querySelectorAll('.no-dtas-badge[data-doc-id="' + docId + '"]').forEach(function(badge) {
+        badge.style.display = isActive ? 'inline-flex' : 'none';
+    });
+}
+
+function highlightBarcodeSelection(button) {
+    document.querySelectorAll('.barcode-toggle.barcode-selected').forEach(function(el) {
+        if (el !== button) {
+            el.classList.remove('barcode-selected');
+        }
+    });
+    if (button) {
+        button.classList.add('barcode-selected');
+        document.querySelectorAll('.barcode-row-selected').forEach(function(row) {
+            if (row !== button.closest('tr')) {
+                row.classList.remove('barcode-row-selected');
+            }
+        });
+        const row = button.closest('tr');
+        if (row) {
+            row.classList.add('barcode-row-selected');
+        }
+    }
+}
+
+function attachNoDtasToggleHandlers() {
+    document.querySelectorAll('.barcode-toggle').forEach(function(button) {
+        if (button.dataset.noDtasInit === '1') return;
+        button.dataset.noDtasInit = '1';
+
+        let clickTimer = null;
+
+        button.addEventListener('click', function() {
+            if (clickTimer) clearTimeout(clickTimer);
+            clickTimer = setTimeout(function() {
+                const barcodeValue = button.getAttribute('data-barcode');
+                if (barcodeValue) {
+                    copyTextSilent(barcodeValue);
+                    highlightBarcodeSelection(button);
+                    if (typeof showToast === 'function') {
+                        showToast('Barcode copied to clipboard.', 'success');
+                    }
+                }
+                clickTimer = null;
+            }, 250);
+        });
+
+        button.addEventListener('dblclick', function(event) {
+            event.preventDefault();
+            if (clickTimer) {
+                clearTimeout(clickTimer);
+                clickTimer = null;
+            }
+            highlightBarcodeSelection(button);
+            const docId = button.getAttribute('data-document-id');
+            const toggleUrl = button.getAttribute('data-toggle-url');
+            if (!docId || !toggleUrl) return;
+            if (button.getAttribute('data-loading') === '1') return;
+            button.setAttribute('data-loading', '1');
+            const formData = new FormData();
+            formData.append('csrf_token', csrfToken);
+            fetch(toggleUrl, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrfToken },
+                credentials: 'same-origin'
+            })
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    return { ok: response.ok, data: data };
+                });
+            })
+            .then(function(result) {
+                if (result.ok && result.data && result.data.success) {
+                    const isActive = !!result.data.no_dtas_flag;
+                    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    updateNoDtasBadges(docId, isActive);
+                } else {
+                    const message = (result.data && result.data.message) ? result.data.message : 'Unable to toggle tag.';
+                    if (typeof showToast === 'function') {
+                        showToast(message, 'danger');
+                    } else {
+                        alert(message);
+                    }
+                }
+            })
+            .catch(function(err) {
+                console.error('Failed to toggle NO DTAS flag', err);
+                if (typeof showToast === 'function') {
+                    showToast('Unable to toggle NO DTAS tag.', 'danger');
+                } else {
+                    alert('Unable to toggle NO DTAS tag.');
+                }
+            })
+            .finally(function() {
+                button.removeAttribute('data-loading');
+            });
+        });
+    });
+}
+
 // Handle batch decline form submission
 document.addEventListener('DOMContentLoaded', function() {
     const batchDeclineForm = document.getElementById('batchDeclineForm');
@@ -3441,6 +3643,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    attachNoDtasToggleHandlers();
 });
 </script>{% endblock %}
 

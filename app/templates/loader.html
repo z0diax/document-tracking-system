@@ -4,8 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cute Cat Paw Loader</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+      /* Minimal styles to avoid CDN dependency */
+      * {
+        box-sizing: border-box;
+      }
+
+      body.loader-body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fdf2f8; /* pink-50 */
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
       @keyframes pawBounce {
         0%,
         100% {
@@ -19,23 +33,65 @@
       .animate-paw {
         animation: pawBounce 1.2s ease-in-out infinite;
       }
+
+      .paw-wrapper {
+        position: relative;
+        width: 6rem;
+        height: 6rem;
+        animation: pawBounce 1.2s ease-in-out infinite;
+      }
+
+      .paw-main {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: #f9a8d4; /* pink-200 */
+        border-radius: 999px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+      }
+
+      .paw-center {
+        position: absolute;
+        width: 2.5rem;
+        height: 2.5rem;
+        background: #f472b6; /* pink-300 */
+        border-radius: 999px;
+        top: 60%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .paw-toe {
+        position: absolute;
+        width: 1.5rem;
+        height: 1.5rem;
+        background: #f472b6;
+        border-radius: 999px;
+        top: 0.8rem;
+      }
+
+      .toe-1 {
+        left: 0.8rem;
+      }
+
+      .toe-2 {
+        left: 50%;
+        transform: translateX(-50%);
+        top: 0.4rem;
+      }
+
+      .toe-3 {
+        right: 0.8rem;
+      }
     </style>
   </head>
-  <body class="flex items-center justify-center h-screen bg-pink-50">
-    <div class="relative w-24 h-24 animate-paw">
-      <!-- Main Paw Pad -->
-      <div class="w-24 h-24 bg-pink-200 rounded-full shadow-md relative">
-        <!-- Center Pad -->
-        <div
-          class="absolute w-10 h-10 bg-pink-300 rounded-full top-[60%] left-[50%] transform -translate-x-1/2 -translate-y-1/2"
-        ></div>
-
-        <!-- Toe Beans -->
-        <div class="absolute w-6 h-6 bg-pink-300 rounded-full top-4 left-4"></div>
-        <div
-          class="absolute w-6 h-6 bg-pink-300 rounded-full top-2 left-[50%] transform -translate-x-1/2"
-        ></div>
-        <div class="absolute w-6 h-6 bg-pink-300 rounded-full top-4 right-4"></div>
+  <body class="loader-body">
+    <div class="paw-wrapper">
+      <div class="paw-main">
+        <div class="paw-center"></div>
+        <div class="paw-toe toe-1"></div>
+        <div class="paw-toe toe-2"></div>
+        <div class="paw-toe toe-3"></div>
       </div>
     </div>
   </body>

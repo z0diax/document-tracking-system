@@ -48,6 +48,575 @@
             50% { opacity: 1; }
             100% { opacity: 0; }
         }
+
+        /* Recipient search component */
+        .recipient-picker .recipient-results {
+            max-height: 240px;
+            overflow-y: auto;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            background: #111827 !important;
+            color: #e5e7eb !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        }
+        .recipient-picker .recipient-results .list-group-item {
+            cursor: pointer;
+            color: #e5e7eb !important;
+            background-color: #111827 !important;
+            border-color: #334155 !important;
+        }
+        .recipient-picker .recipient-results .list-group-item + .list-group-item {
+            border-top-color: #1f2937;
+        }
+        .recipient-picker .recipient-results .list-group-item:hover,
+        .recipient-picker .recipient-results .list-group-item:focus {
+            background-color: #1f2937 !important;
+            color: #f8fafc !important;
+        }
+        .recipient-picker .recipient-search-hint,
+        .recipient-picker .recipient-empty {
+            color: #cbd5e1 !important;
+        }
+        .recipient-pill {
+            font-size: 0.85rem;
+            color: #bfdbfe !important;
+            border-color: #60a5fa !important;
+            background-color: rgba(96,165,250,0.08) !important;
+        }
+        .recipient-pill:hover {
+            color: #e0f2fe !important;
+            border-color: #93c5fd !important;
+            background-color: rgba(147,197,253,0.12) !important;
+        }
+        .recipient-picker .recipient-search-input {
+            color: #e5e7eb !important;
+            background-color: #0b1220 !important;
+            border-color: #334155 !important;
+        }
+        .recipient-picker .recipient-search-input::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1;
+        }
+        .recipient-picker .recipient-clear-btn {
+            color: #e5e7eb !important;
+            border-color: #334155 !important;
+            background-color: #0b1220 !important;
+        }
+        .recipient-picker .recipient-clear-btn:hover {
+            color: #0f172a !important;
+            background-color: #e5e7eb !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        /* RSP tracker cards */
+        .rsp-card {
+            position: relative;
+            height: 100%;
+            border: 1px solid #40308d;
+            border-radius: 22px;
+            background: linear-gradient(160deg, #2b1467 0%, #25185d 38%, #1f205b 72%, #12254e 100%);
+            box-shadow: 0 16px 30px rgba(7, 8, 26, 0.45);
+            overflow: hidden;
+        }
+        .rsp-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: #29f3d0;
+        }
+        .rsp-card.state-on-track::before {
+            background: #29f3d0;
+        }
+        .rsp-card.state-at-risk::before {
+            background: #f8b24d;
+        }
+        .rsp-card.state-behind::before {
+            background: #ff6c83;
+        }
+        .rsp-card-body {
+            padding: 1.25rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .rsp-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.6rem;
+            min-height: 2.6rem;
+        }
+        .rsp-division {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            color: #8d8fc5;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-width: 68%;
+        }
+        .rsp-division i {
+            color: #8fa7dd;
+        }
+        .rsp-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border: 1px solid rgba(60, 80, 155, 0.75);
+            background: rgba(12, 20, 56, 0.85);
+            color: #7fd7ff;
+            flex: 0 0 auto;
+        }
+        .rsp-status--on-track {
+            color: #20d8ff;
+            background: rgba(10, 25, 60, 0.92);
+            border-color: rgba(38, 206, 255, 0.55);
+        }
+        .rsp-status--at-risk {
+            color: #ffc983;
+            background: rgba(72, 43, 12, 0.7);
+            border-color: rgba(255, 171, 74, 0.65);
+        }
+        .rsp-status--on-hold {
+            color: #d2d6ff;
+            background: rgba(37, 39, 89, 0.78);
+            border-color: rgba(152, 162, 255, 0.5);
+        }
+        .rsp-status--behind {
+            color: #ff97a8;
+            background: rgba(82, 20, 39, 0.74);
+            border-color: rgba(255, 121, 146, 0.62);
+        }
+        .rsp-role {
+            margin: -0.12rem 0 0.75rem;
+            font-size: 1.20rem;
+            line-height: 1.16;
+            color: #f3f6ff;
+            font-weight: 700;
+            min-height: 3.55rem;
+            max-height: 3.55rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            white-space: normal;
+            text-overflow: ellipsis;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        .rsp-note {
+            background: rgba(10, 18, 56, 0.45);
+            border: 1px solid rgba(120, 123, 191, 0.3);
+            border-left: 2px solid rgba(142, 132, 214, 0.65);
+            border-radius: 12px;
+            color: #b8c1ec;
+            font-style: italic;
+            padding: 0.75rem 0.95rem;
+            margin-bottom: 1rem;
+            min-height: 3.3rem;
+            max-height: 3.3rem;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rsp-posted {
+            margin: -0.15rem 0 0.8rem;
+            min-height: 1.35rem;
+            max-height: 1.35rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #b0c0ec;
+            font-size: 0.84rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rsp-posted i {
+            color: #9db6ef;
+            font-size: 0.78rem;
+        }
+        .rsp-phase-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.65rem;
+            min-height: 1.9rem;
+            max-height: 1.9rem;
+        }
+        .rsp-phase-label {
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #8f9acb;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .rsp-days-pill {
+            background: rgba(32, 35, 86, 0.78);
+            color: #d4ddff;
+            border-radius: 8px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 0.28rem 0.55rem;
+            white-space: nowrap;
+            flex: 0 0 auto;
+        }
+        .rsp-days-pill--on-track {
+            background: rgba(35, 123, 119, 0.42);
+            color: #92fff2;
+        }
+        .rsp-days-pill--at-risk {
+            background: rgba(164, 109, 42, 0.35);
+            color: #ffd59c;
+        }
+        .rsp-days-pill--behind {
+            background: rgba(150, 62, 82, 0.35);
+            color: #ffb5c3;
+        }
+        .rsp-phase-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            min-height: 5.45rem;
+            max-height: 5.45rem;
+        }
+        .rsp-phase-main > div {
+            min-width: 0;
+            flex: 1 1 auto;
+            min-height: 5.45rem;
+            max-height: 5.45rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .rsp-phase-title {
+            margin: 0;
+            font-size: 1.02rem;
+            line-height: 1.2;
+            font-weight: 700;
+            color: #f3f6ff;
+            min-height: 3.65rem;
+            max-height: 3.65rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            white-space: normal;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        .rsp-phase-meta {
+            margin-top: 0.3rem;
+            font-size: 0.9rem;
+            color: #b7c3ea;
+            min-height: 1.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rsp-phase-alert {
+            margin-top: auto;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.32rem 0.55rem;
+            min-height: 2.1rem;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 1px solid transparent;
+            background: transparent;
+        }
+        .rsp-phase-alert--hidden {
+            visibility: hidden;
+        }
+        .rsp-phase-alert--at-risk {
+            color: #ffd89f;
+            background: rgba(126, 84, 31, 0.34);
+            border: 1px solid rgba(255, 194, 105, 0.55);
+        }
+        .rsp-phase-alert--behind {
+            color: #ffb0bf;
+            background: rgba(126, 38, 65, 0.34);
+            border: 1px solid rgba(255, 130, 155, 0.52);
+        }
+        .rsp-divider {
+            border-color: rgba(123, 130, 187, 0.35);
+            margin: 0.7rem 0;
+        }
+        .rsp-actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.55rem;
+            margin-top: 0;
+            align-items: stretch;
+        }
+        .rsp-advance-btn {
+            background: linear-gradient(160deg, #12133a 0%, #0b1135 100%);
+            color: #eef4ff;
+            border-radius: 12px;
+            border: 1px solid rgba(68, 86, 168, 0.6);
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            min-height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .rsp-advance-btn:not(:disabled):not(.disabled):hover,
+        .rsp-advance-btn:not(:disabled):not(.disabled):focus,
+        .rsp-advance-btn:not(:disabled):not(.disabled):focus-visible,
+        .rsp-advance-btn:not(:disabled):not(.disabled):active {
+            background: linear-gradient(160deg, #17184a 0%, #0f1644 100%) !important;
+            color: #ffffff !important;
+            border-color: rgba(100, 124, 226, 0.75) !important;
+            text-decoration: none;
+        }
+        .rsp-advance-btn:not(:disabled):not(.disabled):focus-visible {
+            outline: 2px solid #60d8ff;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 0.2rem rgba(96, 216, 255, 0.3);
+        }
+        .rsp-advance-btn:disabled {
+            opacity: 0.7;
+            color: #dbe5ff;
+            background: linear-gradient(160deg, #151944 0%, #12153f 100%);
+            border-color: rgba(80, 93, 160, 0.45);
+        }
+        .rsp-delete-btn {
+            border-radius: 12px;
+            border: 1px solid rgba(255, 127, 161, 0.75);
+            color: #ff9db6;
+            min-width: 48px;
+            min-height: 46px;
+            background: rgba(78, 19, 49, 0.45);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .rsp-delete-btn:hover,
+        .rsp-delete-btn:focus,
+        .rsp-delete-btn:focus-visible,
+        .rsp-delete-btn:active {
+            background: rgba(101, 28, 63, 0.65) !important;
+            color: #ffc2d1 !important;
+            border-color: rgba(255, 138, 173, 0.9) !important;
+            text-decoration: none;
+        }
+        .rsp-delete-btn:focus-visible {
+            outline: 2px solid #ff8cad;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 0.2rem rgba(255, 140, 173, 0.22);
+        }
+        .rsp-delete-btn i {
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+        .rsp-log-link {
+            margin-top: 0.55rem;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: #56d8ff;
+            font-size: 0.86rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .rsp-log-link:hover,
+        .rsp-log-link:focus,
+        .rsp-log-link:focus-visible {
+            color: #9ee8ff;
+            text-decoration: underline;
+            outline: none;
+        }
+        .rsp-activity-context {
+            border: 1px solid #dbe5f0;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 0.65rem 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .rsp-activity-position {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #0f2746;
+            line-height: 1.25;
+        }
+        .rsp-activity-office {
+            margin-top: 0.25rem;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            color: #8ea3bd;
+        }
+        .rsp-activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .rsp-activity-item {
+            border: 1px solid #dbe5f0;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 0.75rem 0.85rem;
+        }
+        .rsp-activity-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+        }
+        .rsp-activity-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.2rem 0.55rem;
+            background: #e2e8f0;
+            color: #1e3a5f;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+        .rsp-activity-status {
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #0f766e;
+            font-weight: 700;
+        }
+        .rsp-activity-phase {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f2746;
+            line-height: 1.3;
+            margin-bottom: 0.5rem;
+        }
+        .rsp-activity-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.35rem 0.75rem;
+        }
+        .rsp-activity-time {
+            font-size: 0.86rem;
+            color: #1f3a5a;
+            font-weight: 600;
+        }
+        .rsp-activity-user {
+            font-size: 0.82rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-context {
+            background: #0d223f;
+            border-color: #1f3d67;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-position {
+            color: #e2ecfa;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-office {
+            color: #9db4d5;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-item {
+            background: #122846;
+            border-color: #28486f;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-badge {
+            background: #27476d;
+            color: #d8e6f9;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-status {
+            color: #86efac;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-phase {
+            color: #e2ecfa;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-time {
+            color: #bfdbfe;
+        }
+        body[data-bs-theme="dark"] .rsp-activity-user {
+            color: #9db4d5;
+        }
+        @media (max-width: 991.98px) {
+            .rsp-role,
+            .rsp-note,
+            .rsp-phase-main {
+                min-height: 0;
+            }
+            .rsp-note,
+            .rsp-phase-main {
+                max-height: none;
+            }
+            .rsp-role {
+                display: block;
+                overflow: visible;
+            }
+            .rsp-note {
+                white-space: normal;
+                text-overflow: clip;
+            }
+            .rsp-phase-main > div {
+                min-height: 0;
+            }
+            .rsp-phase-title {
+                min-height: 0;
+                display: block;
+                overflow: visible;
+                -webkit-line-clamp: unset;
+            }
+            .rsp-phase-meta {
+                min-height: 0;
+                white-space: normal;
+                text-overflow: clip;
+            }
+            .rsp-phase-alert {
+                white-space: normal;
+            }
+            .rsp-division {
+                max-width: 100%;
+            }
+            .rsp-head {
+                min-height: 0;
+            }
+        }
+        @media (max-width: 767.98px) {
+            .rsp-role {
+                font-size: 1.45rem;
+            }
+        }
     </style>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -78,12 +647,70 @@
         Create Record
     </button>
 </div>
+{% elif request.args.get('view') == 'rsp' %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h2 class="mb-0">RSP Tracker</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newRspModal">New RSP</button>
+</div>
+
+<div class="modal fade" id="newRspModal" tabindex="-1" aria-labelledby="newRspModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="newRspForm" method="POST" action="{{ url_for('main.create_rsp') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="page" value="{{ request.args.get('page', 1) }}">
+                <input type="hidden" name="tab" value="{{ rsp_active_tab or 'ongoing' }}">
+                <input type="hidden" name="rsp_search" value="{{ rsp_search_query or '' }}">
+                <input type="hidden" name="rsp_office" value="{{ rsp_office_filter or '' }}">
+                <input type="hidden" name="rsp_phase" value="{{ rsp_phase_filter if rsp_phase_filter is not none else '' }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newRspModalLabel">Create New RSP</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="rspPositionInput" class="form-label">Position</label>
+                        <input type="text" class="form-control" id="rspPositionInput" name="position" maxlength="120" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rspOfficeInput" class="form-label">Office</label>
+                        <select class="form-select" id="rspOfficeInput" name="office" required>
+                            <option value="" selected disabled>Select office</option>
+                            {% for choice in rsp_form.office.choices %}
+                            <option value="{{ choice[1] }}">{{ choice[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rspDatePostedInput" class="form-label">Date Posted</label>
+                        <input type="date" class="form-control" id="rspDatePostedInput" name="date_posted" required>
+                    </div>
+                    <div class="mb-0">
+                        <label for="rspRemarksInput" class="form-label">Remarks</label>
+                        <textarea class="form-control" id="rspRemarksInput" name="remarks" rows="3" maxlength="220"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save RSP</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% else %}
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h2 class="mb-0">Dashboard</h2>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDocumentModal">
-        Create New Document
-    </button>
+    <div class="d-flex gap-2">
+        {% if request.args.get('view') == 'received' %}
+        <button type="button" class="btn btn-outline-info text-uppercase" data-bs-toggle="modal" data-bs-target="#releasedDocumentsModal">
+            Released
+        </button>
+        {% endif %}
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDocumentModal">
+            Create New Document
+        </button>
+    </div>
 </div>
 {% endif %}
 
@@ -182,13 +809,17 @@
                         {{ form.remarks(class="form-control", rows=3, placeholder="Enter any additional remarks") }}
                     </div>
                     <div class="mb-3">
-                        {{ form.recipient.label(class="form-label") }}
-                        <select class="form-control" id="{{ form.recipient.id }}" name="{{ form.recipient.name }}">
-                            <option value="" disabled selected>Select a recipient</option>
-                            {% for user_id, username in form.recipient.choices %}
-                            <option value="{{ user_id }}">{{ username }}</option>
-                            {% endfor %}
-                        </select>
+                        {{ form.recipient.label(class="form-label", for="recipient-search") }}
+                        <div class="recipient-picker" id="create-recipient-picker" data-search-url="{{ url_for('main.search_recipients') }}">
+                            <div class="input-group">
+                                <input type="text" class="form-control recipient-search-input" id="recipient-search" placeholder="Type a name to search" autocomplete="off">
+                                <button type="button" class="btn btn-outline-secondary recipient-clear-btn" aria-label="Clear recipient selection">Clear</button>
+                            </div>
+                            <div class="form-text recipient-search-hint">Type to search by name. Recent recipients will appear below.</div>
+                            <div class="recipient-recent mt-2"></div>
+                            <div class="recipient-results list-group mt-2" role="listbox"></div>
+                            {{ form.recipient(class="form-select d-none", id="recipient-hidden") }}
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -199,6 +830,396 @@
         </div>
     </div>
 </div>
+
+<!-- Add Release Batch Modal -->
+<div class="modal fade" id="addReleaseBatchModal" tabindex="-1" aria-labelledby="addReleaseBatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReleaseBatchModalLabel">Add Release Batch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addReleaseBatchForm" novalidate>
+                    <div class="mb-3">
+                        <label for="releaseBatchName" class="form-label">Batch Name</label>
+                        <input type="text" class="form-control" id="releaseBatchName" placeholder="BATCH 1 - 01/01/2025 08:00" required readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="releaseDocSearchInput" class="form-label">Find Document</label>
+                        <input type="text" class="form-control" id="releaseDocSearchInput" placeholder="Search by barcode, title, or office...">
+                        <div class="form-text">Start typing to search. Results update in real time.</div>
+                        <div class="list-group mt-2" id="releaseDocSearchResults" role="listbox"></div>
+                        <div class="mt-2" id="releaseDocSelected" style="display: none;">
+                            <div class="small text-muted">Selected documents:</div>
+                            <div class="d-flex flex-wrap gap-2 mt-1" id="releaseDocSelectedList"></div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="releaseDocClearSelection">Clear all</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="saveReleaseBatchBtn">Save Batch</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Released Documents Mock Modal -->
+<div class="modal fade" id="releasedDocumentsModal" tabindex="-1" aria-labelledby="releasedDocumentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="releasedDocumentsModalLabel">Released Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-end mb-3">
+                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addReleaseBatchModal" data-bs-dismiss="modal">
+                        + Add Release Batch
+                    </button>
+                </div>
+                <div class="mb-3">
+                    <label for="releaseBatchFilter" class="form-label">Search batches by name or linked document</label>
+                    <input type="text" class="form-control" id="releaseBatchFilter" placeholder="Search by batch name, document title, barcode, or office...">
+                </div>
+                <ul class="nav nav-tabs mb-3" id="releaseTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active text-light bg-transparent" id="tab-today" data-bs-toggle="tab" data-bs-target="#release-tab-today" type="button" role="tab" aria-controls="release-tab-today" aria-selected="true">Released Documents (Today)</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-light bg-transparent" id="tab-history" data-bs-toggle="tab" data-bs-target="#release-tab-history" type="button" role="tab" aria-controls="release-tab-history" aria-selected="false">Released Batches</button>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="release-tab-today" role="tabpanel" aria-labelledby="tab-today">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">No.</th>
+                                        <th scope="col">Batch</th>
+                                        <th scope="col">Date and Time Released</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="releasedTableBodyToday">
+                                    {% if release_batches_today %}
+                                        {% for batch in release_batches_today %}
+                                        <tr data-batch-date="{{ batch.release_at.strftime('%Y-%m-%d') if batch.release_at else '' }}" data-batch-id="{{ batch.id }}">
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ batch.name }}</td>
+                                            <td>
+                                                {% if batch.release_at %}
+                                                    {{ batch.release_at|local_time('%b %d, %Y - %I:%M %p') }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="d-flex gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="openBatchModal({{ batch.id }}, false)">
+                                                    View
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBatchModal({{ batch.id }}, true)">
+                                                    Edit
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteBatch({{ batch.id }})">
+                                                    Delete
+                                                </button>
+                                                <span class="badge bg-info text-dark align-self-center">{{ batch.documents|length }} doc(s)</span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">No release batches yet.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="release-tab-history" role="tabpanel" aria-labelledby="tab-history">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">No.</th>
+                                        <th scope="col">Month / Year</th>
+                                        <th scope="col">Latest Release</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="releasedTableBodyHistory">
+                                    {% if release_batches_history_groups %}
+                                        {% for group in release_batches_history_groups %}
+                                        <tr data-release-group="{{ group.key }}">
+                                            <td>{{ loop.index }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#releaseGroupDetails-{{ group.safe_id }}">
+                                                    {{ group.label }}
+                                                </button>
+                                            </td>
+                                            <td>
+                                                {% if group.latest_release_at %}
+                                                    {{ group.latest_release_at|local_time('%b %d, %Y - %I:%M %p') }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="d-flex gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#releaseGroupDetails-{{ group.safe_id }}">
+                                                    View
+                                                </button>
+                                                <span class="badge bg-info text-dark align-self-center">{{ group.batches|length }} batch(es)</span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">
+                                                No release batches yet.
+                                                <div class="mt-2 small text-secondary">
+                                                    Example: <span class="fw-bold">March 2026</span> (4 batch(es))
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="releaseBatchDetailsContainer">
+                    {% for group in release_batches_history_groups %}
+                    <div class="modal fade" id="releaseGroupDetails-{{ group.safe_id }}" tabindex="-1" aria-labelledby="releaseGroupDetailsLabel-{{ group.safe_id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="releaseGroupDetailsLabel-{{ group.safe_id }}">Batches released in {{ group.label }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Day</th>
+                                                    <th>Latest Release</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for day in group.days %}
+                                                <tr>
+                                                    <td>{{ loop.index }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-link p-0" onclick="openReleaseNestedModal('releaseDayDetails-{{ day.safe_id }}', 'releaseGroupDetails-{{ group.safe_id }}')">
+                                                            {{ day.label }}
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        {% if day.latest_release_at %}
+                                                            {{ day.latest_release_at|local_time('%b %d, %Y - %I:%M %p') }}
+                                                        {% else %}
+                                                            -
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="d-flex gap-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openReleaseNestedModal('releaseDayDetails-{{ day.safe_id }}', 'releaseGroupDetails-{{ group.safe_id }}')">
+                                                            View
+                                                        </button>
+                                                        <span class="badge bg-info text-dark align-self-center">{{ day.batches|length }} batch(es)</span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-outline-primary" data-release-back="1">Back</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% for day in group.days %}
+                    <div class="modal fade" id="releaseDayDetails-{{ day.safe_id }}" tabindex="-1" aria-labelledby="releaseDayDetailsLabel-{{ day.safe_id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="releaseDayDetailsLabel-{{ day.safe_id }}">Batches released on {{ day.label }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Released At</th>
+                                                    <th>Docs</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for batch in day.batches %}
+                                                <tr>
+                                                    <td>{{ batch.name or 'Batch' }}</td>
+                                                    <td>
+                                                        {% if batch.release_at %}
+                                                            {{ batch.release_at|local_time('%b %d, %Y - %I:%M %p') }}
+                                                        {% else %}
+                                                            -
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ batch.documents|length }} doc(s)</td>
+                                                    <td class="d-flex gap-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openBatchModal({{ batch.id }}, false, 'releaseDayDetails-{{ day.safe_id }}')">View</button>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBatchModal({{ batch.id }}, true, 'releaseDayDetails-{{ day.safe_id }}')">Edit</button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteBatch({{ batch.id }})">Delete</button>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-outline-primary" data-release-back="1" data-release-back-target="releaseGroupDetails-{{ group.safe_id }}">Back</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                    {% for batch in release_batches %}
+                    <div class="modal fade" id="releaseBatchDetails-{{ batch.id }}" tabindex="-1" aria-labelledby="releaseBatchDetailsLabel-{{ batch.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title d-flex align-items-center gap-2" id="releaseBatchDetailsLabel-{{ batch.id }}">
+                                        <span>Batch Details: {{ batch.name }} {% if batch.release_at %}({{ batch.release_at|local_time('%b %d, %Y - %I:%M %p') }}){% endif %}</span>
+                                        <span class="badge bg-info text-dark">{{ batch.documents|length }} doc(s)</span>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3 batch-edit-section">
+                                        <label class="form-label">Add Document to Batch</label>
+                                        <input type="text" class="form-control batch-doc-search-input" data-batch-id="{{ batch.id }}" id="batch-doc-search-{{ batch.id }}" placeholder="Search by barcode, title, or office...">
+                                        <div class="list-group mt-2 batch-doc-search-results" id="batch-doc-results-{{ batch.id }}" role="listbox"></div>
+                                    </div>
+                                    <div class="mb-2 text-muted small">
+                                        Released on {% if batch.release_at %}{{ batch.release_at|local_time('%b %d, %Y - %I:%M %p') }}{% else %}-{% endif %}
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                    <tr>
+                                                        <th>Barcode</th>
+                                                        <th>Title</th>
+                                                        <th>Office</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="batch-doc-table-body">
+                                                    {% if batch.documents %}
+                                                        {% for link in batch.documents %}
+                                                            {% set doc = link.document %}
+                                                            {% if doc %}
+                                                            <tr data-doc-id="{{ doc.id }}">
+                                                                <td>{{ doc.barcode or 'No barcode' }}</td>
+                                                                <td>{{ doc.title }}</td>
+                                                                <td>{{ doc.office }}</td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                                        data-bs-toggle="modal" data-bs-target="#viewDocumentModal"
+                                                                        onclick='populateViewModal({{ {
+                                                                            "id": doc.id,
+                                                                            "title": doc.title,
+                                                                            "office": doc.office,
+                                                                            "classification": doc.classification,
+                                                                            "barcode": doc.barcode,
+                                                                            "status": doc.status,
+                                                                            "action_taken": doc.action_taken,
+                                                                            "remarks": doc.remarks|default(""),
+                                                                            "attachment": doc.attachment|default(""),
+                                                                            "creator": doc.creator.username,
+                                                                            "recipient": doc.recipient.username,
+                                                                            "timestamp": doc.timestamp|local_time("%B-%d-%Y at %I:%M %p")|tojson,
+                                                                            "activities": []
+                                                                        }|tojson|safe }})'>
+                                                                        View
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary batch-doc-edit-btn"
+                                                                        onclick='openBatchDocEditModal({{ {
+                                                                            "id": doc.id,
+                                                                            "title": doc.title,
+                                                                            "office": doc.office,
+                                                                            "classification": doc.classification,
+                                                                            "barcode": doc.barcode,
+                                                                            "status": doc.status,
+                                                                            "action_taken": doc.action_taken,
+                                                                            "remarks": doc.remarks|default(""),
+                                                                            "attachment": doc.attachment|default(""),
+                                                                            "creator": doc.creator.username,
+                                                                            "recipient": doc.recipient.username,
+                                                                            "timestamp": doc.timestamp|local_time("%B-%d-%Y at %I:%M %p")|tojson,
+                                                                            "activities": []
+                                                                        }|tojson|safe }})'>
+                                                                        Edit
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger batch-doc-remove-btn"
+                                                                            data-batch-id="{{ batch.id }}" data-doc-id="{{ doc.id }}">
+                                                                        Remove
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% else %}
+                                                    <tr>
+                                                        <td colspan="4" class="text-center text-muted">No documents linked.</td>
+                                                    </tr>
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-outline-primary" data-release-back="1">Back</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="releaseBatchDetailsPortal"></div>
+
+<script>
+document.addEventListener('shown.bs.tab', function(event) {
+    if (event.target && event.target.classList.contains('nav-link')) {
+        event.target.classList.add('text-light', 'bg-transparent');
+    }
+    if (event.relatedTarget && event.relatedTarget.classList.contains('nav-link')) {
+        event.relatedTarget.classList.remove('text-light');
+    }
+});
+</script>
 
 {% if request.args.get('view') == 'received' %}
     <!-- Search Bar for Received Documents -->
@@ -433,8 +1454,17 @@
                                     {{ forward_form.action_taken(class="form-control") }}
                                 </div>
                                 <div class="mb-3">
-                                    {{ forward_form.recipient.label(class="form-label") }}
-                                    {{ forward_form.recipient(class="form-control") }}
+                                    {{ forward_form.recipient.label(class="form-label", for="forward-recipient-search-{{ document.id }}") }}
+                                    <div class="recipient-picker" id="forward-recipient-picker-{{ document.id }}" data-search-url="{{ url_for('main.search_recipients') }}">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control recipient-search-input" id="forward-recipient-search-{{ document.id }}" placeholder="Type a name to search" autocomplete="off">
+                                            <button type="button" class="btn btn-outline-secondary recipient-clear-btn" aria-label="Clear recipient selection">Clear</button>
+                                        </div>
+                                        <div class="form-text recipient-search-hint">Type to search by name. Recent recipients will appear below.</div>
+                                        <div class="recipient-recent mt-2"></div>
+                                        <div class="recipient-results list-group mt-2" role="listbox"></div>
+                                        {{ forward_form.recipient(class="form-select d-none", id="forward-recipient-hidden-{{ document.id }}") }}
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     {{ forward_form.remarks.label(class="form-label") }}
@@ -497,7 +1527,7 @@
                     </li>
                 {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">…</span>
+                        <span class="page-link">...</span>
                     </li>
                 {% endif %}
             {% endfor %}
@@ -600,6 +1630,281 @@
             </tbody>
         </table>
     </div>
+{% elif request.args.get('view') == 'rsp' %}
+    {% set _rsp_active_tab = rsp_active_tab|default('ongoing') %}
+    {% set _rsp_search_query = rsp_search_query|default('') %}
+    {% set _rsp_office_filter = rsp_office_filter|default('') %}
+    {% set _rsp_phase_filter = rsp_phase_filter %}
+    <ul class="nav nav-tabs mb-3 leave-ewp-list-tabs">
+      <li class="nav-item">
+        <a class="nav-link {% if _rsp_active_tab == 'ongoing' %}active{% endif %}" href="{{ url_for('main.dashboard', view='rsp', tab='ongoing', rsp_search=_rsp_search_query, rsp_office=_rsp_office_filter, rsp_phase=_rsp_phase_filter if _rsp_phase_filter is not none else '') }}">Ongoing</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if _rsp_active_tab == 'completed' %}active{% endif %}" href="{{ url_for('main.dashboard', view='rsp', tab='completed', rsp_search=_rsp_search_query, rsp_office=_rsp_office_filter, rsp_phase=_rsp_phase_filter if _rsp_phase_filter is not none else '') }}">Completed</a>
+      </li>
+    </ul>
+
+    <div class="mb-3">
+        <form method="GET" action="{{ url_for('main.dashboard') }}" class="row g-2 align-items-end">
+            <input type="hidden" name="view" value="rsp">
+            <input type="hidden" name="tab" value="{{ _rsp_active_tab }}">
+            <div class="col-lg-5 col-md-12">
+                <label for="rsp-search-input" class="form-label mb-1">Search</label>
+                <input id="rsp-search-input" type="text" name="rsp_search" class="form-control" placeholder="Search by position, office, or remarks..." value="{{ _rsp_search_query }}">
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label for="rsp-office-filter" class="form-label mb-1">Office</label>
+                <select id="rsp-office-filter" name="rsp_office" class="form-select">
+                    <option value="">All Offices</option>
+                    {% for choice in rsp_form.office.choices %}
+                    {% set _office_val = choice[1] %}
+                    <option value="{{ _office_val }}" {% if _rsp_office_filter == _office_val %}selected{% endif %}>{{ choice[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label for="rsp-phase-filter" class="form-label mb-1">Phase</label>
+                <select id="rsp-phase-filter" name="rsp_phase" class="form-select">
+                    <option value="">All Phases</option>
+                    {% for p in range(1, rsp_total_phases + 1) %}
+                    <option value="{{ p }}" {% if _rsp_phase_filter == p %}selected{% endif %}>Phase {{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">Apply</button>
+                {% if _rsp_search_query or _rsp_office_filter or _rsp_phase_filter is not none %}
+                <a href="{{ url_for('main.dashboard', view='rsp', tab=_rsp_active_tab) }}" class="btn btn-secondary">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-3" id="rspCardGrid">
+        {% for item in rsp_records %}
+        {% set phase_no = item.phase_number if item.phase_number and item.phase_number > 0 else 1 %}
+        {% set final_phase_logs = item.phase_logs | selectattr('phase_number', 'equalto', rsp_total_phases) | list %}
+        {% set is_completed = (phase_no > rsp_total_phases) or (final_phase_logs|length > 0) %}
+        {% set phase_start = item.date_posted.strftime('%m/%d/%Y') if item.date_posted else (item.phase_started_at|local_time('%m/%d/%Y') if item.phase_started_at else '') %}
+        {% set date_posted = item.date_posted.strftime('%m/%d/%Y') if item.date_posted else (phase_start or '-') %}
+        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+            <article class="rsp-card"
+                     data-phase-no="{{ phase_no }}"
+                     data-is-completed="{{ '1' if is_completed else '0' }}"
+                     data-phase-start="{{ phase_start }}">
+                <div class="rsp-card-body">
+                    <div class="rsp-head">
+                        <div class="rsp-division">
+                            <i class="fas fa-building me-1"></i>{{ item.office }}
+                        </div>
+                        <span class="rsp-status rsp-status--on-track">
+                            <i class="far fa-check-circle"></i> On Track
+                        </span>
+                    </div>
+
+                    <h3 class="rsp-role">{{ item.position }}</h3>
+
+                    <div class="rsp-note">"{{ item.remarks or 'No remarks provided.' }}"</div>
+                    <div class="rsp-posted">
+                        <i class="far fa-calendar-alt"></i>
+                        <span>Date Posted: {{ date_posted }}</span>
+                    </div>
+
+                    <div class="rsp-phase-top">
+                        <span class="rsp-phase-label">Current Phase (<span class="rsp-phase-index">{{ phase_no }}/{{ rsp_total_phases }}</span>)</span>
+                        <span class="rsp-days-pill">-</span>
+                    </div>
+
+                    <div class="rsp-phase-main">
+                        <div>
+                            <p class="rsp-phase-title mb-0">-</p>
+                            <div class="rsp-phase-meta">Date Posted: {{ phase_start or '-' }} | 0 days elapsed</div>
+                        </div>
+                    </div>
+                    <div class="rsp-phase-alert rsp-phase-alert--hidden" aria-live="polite"></div>
+
+                    <hr class="rsp-divider">
+
+                    <div class="rsp-actions">
+                        <button class="btn rsp-advance-btn w-100"
+                                type="button"
+                                {% if is_completed %}disabled{% endif %}
+                                {% if (not is_completed) and phase_no >= rsp_total_phases %}data-bs-toggle="modal" data-bs-target="#rspCompleteModal-{{ item.id }}"{% elif not is_completed %}data-bs-toggle="modal" data-bs-target="#rspAdvanceModal-{{ item.id }}"{% endif %}>
+                            {% if is_completed %}
+                            Process Completed <i class="fas fa-check ms-2"></i>
+                            {% elif phase_no >= rsp_total_phases %}
+                            Complete <i class="fas fa-check ms-2"></i>
+                            {% else %}
+                            Advance to Phase {{ phase_no + 1 }} <i class="fas fa-chevron-right ms-2"></i>
+                            {% endif %}
+                        </button>
+                        <form method="POST" action="{{ url_for('main.delete_rsp', rsp_id=item.id) }}" class="m-0" onsubmit="return confirm('Delete this RSP card?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="page" value="{{ request.args.get('page', 1) }}">
+                            <input type="hidden" name="tab" value="{{ _rsp_active_tab }}">
+                            <input type="hidden" name="rsp_search" value="{{ _rsp_search_query }}">
+                            <input type="hidden" name="rsp_office" value="{{ _rsp_office_filter }}">
+                            <input type="hidden" name="rsp_phase" value="{{ _rsp_phase_filter if _rsp_phase_filter is not none else '' }}">
+                            <button class="btn rsp-delete-btn" type="submit" aria-label="Delete RSP" title="Delete RSP">
+                                <i class="fas fa-trash-can"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <button type="button" class="rsp-log-link" data-bs-toggle="modal" data-bs-target="#rspActivityModal-{{ item.id }}">
+                        <i class="fas fa-clock-rotate-left"></i> Activity Log
+                    </button>
+                </div>
+            </article>
+        </div>
+
+        <div class="modal fade" id="rspActivityModal-{{ item.id }}" tabindex="-1" aria-labelledby="rspActivityModalLabel-{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rspActivityModalLabel-{{ item.id }}">RSP Activity Log</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="rsp-activity-context">
+                            <div class="rsp-activity-position">{{ item.position }}</div>
+                            <div class="rsp-activity-office">{{ item.office }}</div>
+                        </div>
+                        <div class="rsp-activity-list">
+                            {% if item.phase_logs %}
+                                {% for log in item.phase_logs %}
+                                <article class="rsp-activity-item">
+                                    <div class="rsp-activity-top">
+                                        <span class="rsp-activity-badge">Phase {{ log.phase_number }}</span>
+                                        <span class="rsp-activity-status">Finished</span>
+                                    </div>
+                                    <div class="rsp-activity-phase">{{ log.phase_name or ('Phase ' ~ log.phase_number) }}</div>
+                                    <div class="rsp-activity-meta">
+                                        <div class="rsp-activity-time">
+                                            <i class="far fa-calendar-check me-1"></i>
+                                            {{ (log.completed_at|local_time('%B %d, %Y at %I:%M%p')|replace('AM', 'am')|replace('PM', 'pm')) if log.completed_at else '-' }}
+                                        </div>
+                                        <div class="rsp-activity-user">By: {{ log.completed_by.username if log.completed_by else 'System' }}</div>
+                                    </div>
+                                </article>
+                                {% endfor %}
+                            {% else %}
+                                <div class="rsp-activity-item text-muted">No completed phases yet.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if (not is_completed) and phase_no < rsp_total_phases %}
+        <div class="modal fade" id="rspAdvanceModal-{{ item.id }}" tabindex="-1" aria-labelledby="rspAdvanceModalLabel-{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rspAdvanceModalLabel-{{ item.id }}">Advance RSP Phase</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">You are currently at <strong>Phase {{ phase_no }}</strong>.</p>
+                        <p class="mb-0">Are you sure you want to advance <strong>{{ item.position }}</strong> to <strong>Phase {{ phase_no + 1 }}</strong>?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ url_for('main.advance_rsp_phase', rsp_id=item.id) }}" class="m-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="page" value="{{ request.args.get('page', 1) }}">
+                            <input type="hidden" name="tab" value="{{ _rsp_active_tab }}">
+                            <input type="hidden" name="rsp_search" value="{{ _rsp_search_query }}">
+                            <input type="hidden" name="rsp_office" value="{{ _rsp_office_filter }}">
+                            <input type="hidden" name="rsp_phase" value="{{ _rsp_phase_filter if _rsp_phase_filter is not none else '' }}">
+                            <button type="submit" class="btn btn-primary">Confirm Advance</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if (not is_completed) and phase_no >= rsp_total_phases %}
+        <div class="modal fade" id="rspCompleteModal-{{ item.id }}" tabindex="-1" aria-labelledby="rspCompleteModalLabel-{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rspCompleteModalLabel-{{ item.id }}">Complete RSP Process</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">You are currently at <strong>Phase {{ rsp_total_phases }}</strong>.</p>
+                        <p class="mb-0">Are you sure you want to mark <strong>{{ item.position }}</strong> as completed?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ url_for('main.complete_rsp', rsp_id=item.id) }}" class="m-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="page" value="{{ request.args.get('page', 1) }}">
+                            <input type="hidden" name="tab" value="{{ _rsp_active_tab }}">
+                            <input type="hidden" name="rsp_search" value="{{ _rsp_search_query }}">
+                            <input type="hidden" name="rsp_office" value="{{ _rsp_office_filter }}">
+                            <input type="hidden" name="rsp_phase" value="{{ _rsp_phase_filter if _rsp_phase_filter is not none else '' }}">
+                            <button type="submit" class="btn btn-primary">Confirm Complete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% if not rsp_records %}
+        <div class="col-12">
+            <div class="alert alert-secondary mb-0">
+                {% if _rsp_active_tab == 'completed' %}
+                No completed RSP records yet.
+                {% else %}
+                No ongoing RSP records yet. Click <strong>New RSP</strong> to add one.
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if rsp_pagination and rsp_pagination.pages > 1 %}
+    <nav aria-label="RSP tracker pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if rsp_pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.dashboard', view='rsp', tab=_rsp_active_tab, page=rsp_pagination.prev_num, rsp_search=_rsp_search_query, rsp_office=_rsp_office_filter, rsp_phase=_rsp_phase_filter if _rsp_phase_filter is not none else '') }}">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for p in rsp_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+            {% if p %}
+            <li class="page-item {% if p == rsp_pagination.page %}active{% endif %}">
+                {% if p == rsp_pagination.page %}
+                <span class="page-link">{{ p }}</span>
+                {% else %}
+                <a class="page-link" href="{{ url_for('main.dashboard', view='rsp', tab=_rsp_active_tab, page=p, rsp_search=_rsp_search_query, rsp_office=_rsp_office_filter, rsp_phase=_rsp_phase_filter if _rsp_phase_filter is not none else '') }}">{{ p }}</a>
+                {% endif %}
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endfor %}
+
+            {% if rsp_pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.dashboard', view='rsp', tab=_rsp_active_tab, page=rsp_pagination.next_num, rsp_search=_rsp_search_query, rsp_office=_rsp_office_filter, rsp_phase=_rsp_phase_filter if _rsp_phase_filter is not none else '') }}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 {% elif request.args.get('view') == 'leave' %}
     <!-- Leave: Create Form -->
 
@@ -722,7 +2027,6 @@
                                             <option value="AM_HALF">AM half-day (08:00am–12:00pm)</option>
                                             <option value="PM_HALF">PM half-day (1:00pm–5:00pm)</option>
                                         </select>
-                                        <!-- remove button appears only on additional inputs -->
                                     </div>
                                 </div>
                                 <button type="button" id="add-date-range-btn" class="btn btn-sm btn-outline-primary mt-2">+ Add another date range</button>
@@ -1065,7 +2369,7 @@
                         <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
                     </li>
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
             {% endfor %}
 
@@ -1638,7 +2942,7 @@
                         <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
                     </li>
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
             {% endfor %}
 
@@ -1748,7 +3052,7 @@
                         <span class="visually-hidden">View</span>
                     </button>
 
-                    {% if document.status != 'Declined' and document.status != 'Released' %}
+                    {% if document.status != 'Declined' %}
                         <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editModal-{{ document.id }}" aria-label="Edit" title="Edit">
                             <i class="fas fa-pen-to-square" aria-hidden="true"></i>
                             <span class="visually-hidden">Edit</span>
@@ -1760,7 +3064,7 @@
                         </button>
                     {% endif %}
 
-                    {% if document.status != 'Released' %}
+                    {% if document.creator_id == current_user.id %}
                         <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ document.id }}" aria-label="Delete" title="Delete">
                             <i class="fas fa-trash" aria-hidden="true"></i>
                             <span class="visually-hidden">Delete</span>
@@ -1794,7 +3098,7 @@
                     </li>
                 {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">…</span>
+                        <span class="page-link">...</span>
                     </li>
                 {% endif %}
             {% endfor %}
@@ -2114,8 +3418,17 @@
                 <form method="POST" action="{{ url_for('main.batch_forward_documents', page=request.args.get('page', 1), view=request.args.get('view', 'created'), search=request.args.get('search', '')) }}" id="batchForwardForm">
                     {{ batch_forward_form.csrf_token }}
                     <div class="mb-3">
-                        {{ batch_forward_form.recipient.label(class="form-label") }}
-                        {{ batch_forward_form.recipient(class="form-control") }}
+                        {{ batch_forward_form.recipient.label(class="form-label", for="batch-recipient-search") }}
+                        <div class="recipient-picker" id="batch-recipient-picker" data-search-url="{{ url_for('main.search_recipients') }}">
+                            <div class="input-group">
+                                <input type="text" class="form-control recipient-search-input" id="batch-recipient-search" placeholder="Type a name to search" autocomplete="off">
+                                <button type="button" class="btn btn-outline-secondary recipient-clear-btn" aria-label="Clear recipient selection">Clear</button>
+                            </div>
+                            <div class="form-text recipient-search-hint">Type to search by name. Recent recipients will appear below.</div>
+                            <div class="recipient-recent mt-2"></div>
+                            <div class="recipient-results list-group mt-2" role="listbox"></div>
+                            {{ batch_forward_form.recipient(class="form-select d-none", id="batch-recipient-hidden") }}
+                        </div>
                     </div>
                     <div class="mb-3">
                         {{ batch_forward_form.action_taken.label(class="form-label") }}
@@ -2189,6 +3502,36 @@ const dashboardState = {
     view: {{ request.args.get('view', 'created')|tojson }},
     search: {{ request.args.get('search', '')|tojson }}
 };
+const releaseBatchCreateUrl = "{{ url_for('main.create_release_batch') }}";
+const releaseBatchListUrl = "{{ url_for('main.list_release_batches') }}";
+    const releaseBatchPortal = document.getElementById('releaseBatchDetailsPortal');
+    const releaseBatchPreContainer = document.getElementById('releaseBatchDetailsContainer');
+    const updateDocUrl = "{{ url_for('main.update_document_basic') }}";
+    const addBatchDocUrlTemplate = "{{ url_for('main.add_docs_to_release_batch', batch_id=0) }}";
+    const removeBatchDocUrlTemplate = "{{ url_for('main.remove_doc_from_release_batch', batch_id=0) }}";
+    const deleteBatchUrlTemplate = "{{ url_for('main.delete_release_batch', batch_id=0) }}";
+    function setBatchModalEditState(modalEl, canEdit) {
+        if (!modalEl) return;
+        modalEl.dataset.desiredMode = canEdit ? 'edit' : 'view';
+        modalEl.querySelectorAll('.batch-edit-section').forEach(function(el) {
+            el.style.display = canEdit ? '' : 'none';
+        });
+        modalEl.querySelectorAll('.batch-doc-edit-btn, .batch-doc-remove-btn').forEach(function(el) {
+            el.classList.toggle('d-none', !canEdit);
+            el.disabled = !canEdit;
+        });
+        const searchInput = modalEl.querySelector('.batch-doc-search-input');
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.disabled = !canEdit;
+        }
+        const searchResults = modalEl.querySelector('.batch-doc-search-results');
+        if (searchResults) {
+            if (!canEdit) searchResults.innerHTML = '';
+        }
+    }
+let releaseBatchCache = [];
+let releaseGroupModals = {};
 
 // Copy helper for Leave barcode
 function copyToClipboard(text, feedbackId) {
@@ -2237,6 +3580,165 @@ function copyTextSilent(text) {
     } catch (err) {
         console.error('Silent copy failed', err);
     }
+}
+
+function initRecipientPicker(container) {
+    if (!container) return;
+    const searchUrl = container.dataset.searchUrl || container.getAttribute('data-search-url');
+    const input = container.querySelector('.recipient-search-input');
+    const results = container.querySelector('.recipient-results');
+    const recentContainer = container.querySelector('.recipient-recent');
+    const clearBtn = container.querySelector('.recipient-clear-btn');
+    const hiddenSelect = container.querySelector('select[name="recipient"]');
+    if (!searchUrl || !input || !hiddenSelect) return;
+
+    let recentLoaded = false;
+    let activeController = null;
+    let debounceTimer = null;
+
+    function ensureOptionPresent(id, label) {
+        const value = String(id);
+        let option = Array.from(hiddenSelect.options || []).find(function(opt) { return opt.value === value; });
+        if (!option) {
+            option = new Option(label, value);
+            hiddenSelect.add(option);
+        } else {
+            option.textContent = label;
+        }
+    }
+
+    function setRecipient(id, label) {
+        ensureOptionPresent(id, label);
+        hiddenSelect.value = String(id);
+        input.value = label;
+        container.setAttribute('data-selected-id', String(id));
+        if (results) {
+            results.innerHTML = '';
+        }
+    }
+
+    function renderResults(items) {
+        if (!results) return;
+        results.innerHTML = '';
+        if (!items || items.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'recipient-empty small px-3 py-2';
+            empty.textContent = 'No matches found.';
+            results.appendChild(empty);
+            return;
+        }
+        items.forEach(function(item) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action';
+            btn.textContent = item.label;
+            btn.dataset.id = item.id;
+            btn.addEventListener('click', function() {
+                setRecipient(item.id, item.label);
+            });
+            results.appendChild(btn);
+        });
+    }
+
+    function renderRecent(items) {
+        if (!recentContainer) return;
+        recentContainer.innerHTML = '';
+        if (!items || items.length === 0) return;
+
+        const label = document.createElement('div');
+        label.className = 'small text-muted mb-1';
+        label.textContent = 'Recent recipients:';
+        recentContainer.appendChild(label);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'd-flex flex-wrap gap-2';
+        items.forEach(function(item) {
+            const pill = document.createElement('button');
+            pill.type = 'button';
+            pill.className = 'btn btn-outline-primary btn-sm recipient-pill';
+            pill.textContent = item.label;
+            pill.dataset.id = item.id;
+            pill.addEventListener('click', function() {
+                setRecipient(item.id, item.label);
+            });
+            wrap.appendChild(pill);
+        });
+        recentContainer.appendChild(wrap);
+    }
+
+    function clearSelection() {
+        hiddenSelect.value = '';
+        container.removeAttribute('data-selected-id');
+    }
+
+    function runSearch(term, opts) {
+        if (activeController) activeController.abort();
+        const controller = new AbortController();
+        activeController = controller;
+        const url = new URL(searchUrl, window.location.origin);
+        if (term) url.searchParams.set('q', term);
+        url.searchParams.set('limit', '8');
+        if (opts && opts.includeRecent) {
+            url.searchParams.set('include_recent', '1');
+        }
+        fetch(url.toString(), { signal: controller.signal, credentials: 'same-origin' })
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                if (controller.signal.aborted) return;
+                renderResults((data && data.results) ? data.results : []);
+                if ((opts && opts.includeRecent) && data) {
+                    renderRecent(data.recent || []);
+                    recentLoaded = true;
+                }
+            })
+            .catch(function(err) {
+                if (err.name === 'AbortError') return;
+                console.error('Recipient search failed', err);
+            });
+    }
+
+    input.addEventListener('input', function() {
+        const term = input.value.trim();
+        clearSelection();
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function() {
+            if (term.length === 0) {
+                if (results) results.innerHTML = '';
+                if (!recentLoaded) {
+                    runSearch('', { includeRecent: true });
+                }
+                return;
+            }
+            runSearch(term, { includeRecent: !recentLoaded });
+        }, 200);
+    });
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            input.value = '';
+            if (results) results.innerHTML = '';
+            clearSelection();
+            input.focus();
+        });
+    }
+
+    const parentForm = container.closest('form');
+    if (parentForm && !container.dataset.recipientGuardAttached) {
+        container.dataset.recipientGuardAttached = '1';
+        parentForm.addEventListener('submit', function(e) {
+            if (!hiddenSelect.value) {
+                e.preventDefault();
+                if (typeof showToast === 'function') {
+                    showToast('Please select a recipient.', 'warning');
+                } else {
+                    alert('Please select a recipient.');
+                }
+                input.focus();
+            }
+        });
+    }
+
+    runSearch('', { includeRecent: true });
 }
 
 function populateViewModal(data) {
@@ -2338,6 +3840,232 @@ function setArchiveDocumentId(documentId) {
 }
 
     document.addEventListener('DOMContentLoaded', function() {
+        try {
+            document.querySelectorAll('.recipient-picker').forEach(function(el) {
+                initRecipientPicker(el);
+            });
+        } catch (err) {
+            console.error('Recipient picker initialization failed', err);
+        }
+
+        // RSP tracker: process flow and SLA color coding
+        (function() {
+            var rspGrid = document.getElementById('rspCardGrid');
+            if (!rspGrid) return;
+
+            var rspProcessFlow = [
+                { name: 'Publication of Vacant Positions/Talent Sourcing/Notice to NIR', days: 15, unit: 'calendar' },
+                { name: 'Preliminary Evaluation', days: 3, unit: 'working' },
+                { name: 'Notification for Pre-Qualifying Examination', days: 3, unit: 'working' },
+                { name: 'Conduct of Pre-Qualifying Examination', days: 1, unit: 'working' },
+                { name: 'Establishment of Pre-Qualifying Examination Result', days: 1, unit: 'working' },
+                { name: 'Notification of Qualified Applicants for HRMPSB Deliberation', days: 3, unit: 'working' },
+                { name: 'Conduct of HRMPSB Deliberation', days: 1, unit: 'working' },
+                { name: 'Finalization and Confirmation', days: 3, unit: 'working' },
+                { name: 'Conduct of Background Investigation', days: 3, unit: 'working' },
+                { name: 'Endorsement of Assessment Results to Appointing Authority', days: 14, unit: 'calendar', allowedLabel: '2 Calendar Weeks Allowed' },
+                { name: 'Preparation and Issuance of Appointment', days: 3, unit: 'working' },
+                { name: 'Posting of Notice of Appointment', days: 15, unit: 'calendar' }
+            ];
+
+            function getTodayMMDDYYYY() {
+                var d = new Date();
+                var mm = String(d.getMonth() + 1).padStart(2, '0');
+                var dd = String(d.getDate()).padStart(2, '0');
+                var yyyy = d.getFullYear();
+                return mm + '/' + dd + '/' + yyyy;
+            }
+
+            function parseMMDDYYYY(value) {
+                var match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(value || '').trim());
+                if (!match) return null;
+                var month = parseInt(match[1], 10) - 1;
+                var day = parseInt(match[2], 10);
+                var year = parseInt(match[3], 10);
+                var date = new Date(year, month, day);
+                if (isNaN(date.getTime())) return null;
+                return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            }
+
+            function startOfToday() {
+                var now = new Date();
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            }
+
+            function getCalendarElapsed(startDate, today) {
+                var msPerDay = 24 * 60 * 60 * 1000;
+                var diff = Math.floor((today.getTime() - startDate.getTime()) / msPerDay);
+                return diff < 0 ? 0 : diff;
+            }
+
+            function getWorkingElapsed(startDate, today) {
+                if (startDate.getTime() >= today.getTime()) return 0;
+                var count = 0;
+                var cursor = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 1);
+                while (cursor.getTime() <= today.getTime()) {
+                    var day = cursor.getDay();
+                    if (day !== 0 && day !== 6) count += 1;
+                    cursor.setDate(cursor.getDate() + 1);
+                }
+                return count;
+            }
+
+            function getSlaState(elapsed, allowedDays) {
+                var remaining = allowedDays - elapsed;
+                if (elapsed > allowedDays) {
+                    return { key: 'behind', text: 'Late', behind: elapsed - allowedDays, remaining: remaining };
+                }
+                if (remaining <= 1) {
+                    return { key: 'at-risk', text: 'Due Soon', behind: 0, remaining: remaining };
+                }
+                return { key: 'on-track', text: 'On Track', behind: 0, remaining: remaining };
+            }
+
+            function setCardStateVisuals(card, slaState) {
+                card.classList.remove('state-on-track', 'state-at-risk', 'state-behind');
+                card.classList.add('state-' + slaState.key);
+
+                var statusEl = card.querySelector('.rsp-status');
+                if (statusEl) {
+                    statusEl.classList.remove('rsp-status--on-track', 'rsp-status--at-risk', 'rsp-status--on-hold', 'rsp-status--behind');
+                    if (slaState.key === 'behind') {
+                        statusEl.classList.add('rsp-status--behind');
+                        statusEl.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Late';
+                    } else if (slaState.key === 'at-risk') {
+                        statusEl.classList.add('rsp-status--at-risk');
+                        statusEl.innerHTML = '<i class="far fa-clock"></i> Due Soon';
+                    } else {
+                        statusEl.classList.add('rsp-status--on-track');
+                        statusEl.innerHTML = '<i class="far fa-check-circle"></i> On Track';
+                    }
+                }
+
+                var daysPill = card.querySelector('.rsp-days-pill');
+                if (daysPill) {
+                    daysPill.classList.remove('rsp-days-pill--on-track', 'rsp-days-pill--at-risk', 'rsp-days-pill--behind');
+                    daysPill.classList.add('rsp-days-pill--' + slaState.key);
+                }
+
+                var alertEl = card.querySelector('.rsp-phase-alert');
+                if (!alertEl) return;
+                alertEl.classList.remove('rsp-phase-alert--hidden', 'rsp-phase-alert--at-risk', 'rsp-phase-alert--behind');
+                if (slaState.key === 'behind') {
+                    alertEl.classList.add('rsp-phase-alert--behind');
+                    alertEl.textContent = 'Warning: Behind schedule by ' + slaState.behind + ' day(s).';
+                } else if (slaState.key === 'at-risk') {
+                    alertEl.classList.add('rsp-phase-alert--at-risk');
+                    alertEl.textContent = slaState.remaining <= 0 ? 'Warning: Phase is due today.' : 'Warning: Due in ' + slaState.remaining + ' day(s).';
+                } else {
+                    alertEl.classList.add('rsp-phase-alert--hidden');
+                    alertEl.textContent = 'On schedule';
+                }
+            }
+
+            function setCardCompletedVisuals(card) {
+                card.classList.remove('state-on-track', 'state-at-risk', 'state-behind');
+                card.classList.add('state-on-track');
+
+                var statusEl = card.querySelector('.rsp-status');
+                if (statusEl) {
+                    statusEl.classList.remove('rsp-status--on-track', 'rsp-status--at-risk', 'rsp-status--on-hold', 'rsp-status--behind');
+                    statusEl.classList.add('rsp-status--on-track');
+                    statusEl.innerHTML = '<i class="fas fa-circle-check"></i> Completed';
+                }
+
+                var daysPill = card.querySelector('.rsp-days-pill');
+                if (daysPill) {
+                    daysPill.classList.remove('rsp-days-pill--on-track', 'rsp-days-pill--at-risk', 'rsp-days-pill--behind');
+                    daysPill.classList.add('rsp-days-pill--on-track');
+                }
+
+                var alertEl = card.querySelector('.rsp-phase-alert');
+                if (!alertEl) return;
+                alertEl.classList.remove('rsp-phase-alert--at-risk', 'rsp-phase-alert--behind');
+                alertEl.classList.add('rsp-phase-alert--hidden');
+                alertEl.textContent = 'Process completed';
+            }
+
+            function renderRspCard(card) {
+                if (!card) return null;
+                var today = startOfToday();
+                var totalPhases = rspProcessFlow.length;
+                var rawPhaseNo = parseInt(card.getAttribute('data-phase-no') || '1', 10);
+                if (!rawPhaseNo || rawPhaseNo < 1) rawPhaseNo = 1;
+                var isCompleted = String(card.getAttribute('data-is-completed') || '') === '1' || rawPhaseNo > totalPhases;
+                var phaseNo = rawPhaseNo > totalPhases ? totalPhases : rawPhaseNo;
+                card.setAttribute('data-phase-no', String(rawPhaseNo));
+                card.setAttribute('data-is-completed', isCompleted ? '1' : '0');
+
+                var startText = card.getAttribute('data-phase-start') || '';
+                var startDate = parseMMDDYYYY(startText);
+                if (!startDate) {
+                    startDate = today;
+                    startText = getTodayMMDDYYYY();
+                    card.setAttribute('data-phase-start', startText);
+                }
+
+                var phase = rspProcessFlow[phaseNo - 1];
+                var elapsed = phase.unit === 'working'
+                    ? getWorkingElapsed(startDate, today)
+                    : getCalendarElapsed(startDate, today);
+                var slaState = getSlaState(elapsed, phase.days);
+
+                var phaseIndexEl = card.querySelector('.rsp-phase-index');
+                if (phaseIndexEl) phaseIndexEl.textContent = phaseNo + '/' + totalPhases;
+
+                var phaseTitleEl = card.querySelector('.rsp-phase-title');
+                if (phaseTitleEl) phaseTitleEl.textContent = phase.name;
+
+                var daysPillEl = card.querySelector('.rsp-days-pill');
+                if (daysPillEl) {
+                    daysPillEl.textContent = phase.allowedLabel || (phase.days + ' ' + (phase.unit === 'working' ? 'Working' : 'Calendar') + ' Days Allowed');
+                }
+
+                var phaseMetaEl = card.querySelector('.rsp-phase-meta');
+                if (phaseMetaEl) {
+                    var elapsedLabel = elapsed + ' ' + (elapsed === 1 ? 'day' : 'days') + ' elapsed';
+                    phaseMetaEl.textContent = 'Date Posted: ' + startText + ' | ' + elapsedLabel;
+                }
+
+                var advanceBtn = card.querySelector('.rsp-advance-btn');
+                if (advanceBtn) {
+                    if (isCompleted) {
+                        advanceBtn.disabled = true;
+                        advanceBtn.innerHTML = 'Process Completed <i class="fas fa-check ms-2"></i>';
+                    } else if (phaseNo >= totalPhases) {
+                        advanceBtn.disabled = false;
+                        advanceBtn.innerHTML = 'Complete <i class="fas fa-check ms-2"></i>';
+                    } else {
+                        advanceBtn.disabled = false;
+                        advanceBtn.innerHTML = 'Advance to Phase ' + (phaseNo + 1) + ' <i class="fas fa-chevron-right ms-2"></i>';
+                    }
+                }
+
+                if (isCompleted) {
+                    setCardCompletedVisuals(card);
+                    return {
+                        phaseNo: phaseNo,
+                        totalPhases: totalPhases,
+                        slaState: { key: 'completed', text: 'Completed', behind: 0, remaining: 0 }
+                    };
+                }
+
+                setCardStateVisuals(card, slaState);
+                return { phaseNo: phaseNo, totalPhases: totalPhases, slaState: slaState };
+            }
+
+            var behindCount = 0;
+            rspGrid.querySelectorAll('.rsp-card').forEach(function(card) {
+                var state = renderRspCard(card);
+                if (state && state.slaState && state.slaState.key === 'behind') {
+                    behindCount += 1;
+                }
+            });
+            if (behindCount > 0 && typeof showToast === 'function') {
+                showToast(behindCount + ' RSP item(s) are behind schedule.', 'warning');
+            }
+        })();
+
         // Setup tabs for Leave/EWP in Create Leave modal
         (function() {
             try {
@@ -2710,6 +4438,8 @@ function setArchiveDocumentId(documentId) {
     const subClassification = document.getElementById('sub-classification');
     const fullClassification = document.getElementById('full-classification');
     const createDocumentForm = document.getElementById('createDocumentForm');
+    const recipientHidden = document.getElementById('recipient-hidden');
+    const recipientSearchInput = document.getElementById('recipient-search');
     
     if (createDocumentForm) {
         // Show/hide sub-classification based on main classification selection
@@ -2761,10 +4491,12 @@ function setArchiveDocumentId(documentId) {
                     'Trust fund',
                     'Terminal Pay',
                     'Overtime Pay',
+                    'Mid Year Bonus',
                     'Subsistence Allowance',
                     'Travel Allowance',
                     'RATA',
-                    'Mobile Allowance'
+                    'Mobile Allowance',
+                    'Clothing Allowance'
                 ];
                 
                 payrollOptions.forEach(function(option) {
@@ -2932,8 +4664,9 @@ function setArchiveDocumentId(documentId) {
                     } else if (mainClass === 'Request') {
                         subOptions = ['Certificate of Employment', 'Service Record', 'Clearance'];
                     } else if (mainClass === 'Payroll') {
-                        subOptions = ['Salary', 'Voucher', 'Trust fund', 'Terminal Pay', 'Overtime Pay', 
-                                      'Subsistence Allowance', 'Travel Allowance', 'RATA', 'Mobile Allowance'];
+                        subOptions = ['Salary', 'Voucher', 'Trust fund', 'Terminal Pay', 'Overtime Pay',
+                                      'Mid Year Bonus', 'Subsistence Allowance', 'Travel Allowance', 'RATA', 'Mobile Allowance',
+                                      'Clothing Allowance'];
                     }
                     
                     // Add options to the select
@@ -2982,8 +4715,9 @@ function setArchiveDocumentId(documentId) {
                     }
                     else if (this.value === 'Payroll') {
                         // Add Payroll options
-                        const payrollOptions = ['Salary', 'Voucher', 'Trust fund', 'Terminal Pay', 'Overtime Pay', 
-                                                'Subsistence Allowance', 'Travel Allowance', 'RATA', 'Mobile Allowance'];
+                        const payrollOptions = ['Salary', 'Voucher', 'Trust fund', 'Terminal Pay', 'Overtime Pay',
+                                                'Mid Year Bonus', 'Subsistence Allowance', 'Travel Allowance', 'RATA', 'Mobile Allowance',
+                                                'Clothing Allowance'];
                         payrollOptions.forEach(function(option) {
                             const optEl = document.createElement('option');
                             optEl.value = option;
@@ -3242,6 +4976,22 @@ function setArchiveDocumentId(documentId) {
                 barcodeFeedback.textContent = 'Please use a valid barcode';
                 barcodeFeedback.classList.add('invalid');
                 barcodeInput.focus();
+            }
+        });
+    }
+
+    if (createDocumentForm && recipientHidden) {
+        createDocumentForm.addEventListener('submit', function(e) {
+            if (!recipientHidden.value) {
+                e.preventDefault();
+                if (typeof showToast === 'function') {
+                    showToast('Please select a recipient.', 'warning');
+                } else {
+                    alert('Please select a recipient.');
+                }
+                if (recipientSearchInput) {
+                    recipientSearchInput.focus();
+                }
             }
         });
     }
@@ -3519,6 +5269,969 @@ function batchRelease() {
     }
 }
 
+function getLocalISOStringNow() {
+    try {
+        const now = new Date();
+        const tzOffsetMs = now.getTimezoneOffset() * 60000;
+        return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 16);
+    } catch (e) {
+        console.warn('Unable to build local ISO string', e);
+        return '';
+    }
+}
+
+function formatReleaseBatchDate(dtValue) {
+    if (!dtValue) {
+        return 'N/A';
+    }
+    try {
+        const parsed = new Date(dtValue);
+        if (!isNaN(parsed.getTime())) {
+            return parsed.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'Asia/Manila'
+            });
+        }
+    } catch (e) {
+        console.warn('Unable to format release batch date', e);
+    }
+    return dtValue;
+}
+
+function normalizeDateKey(dtValue) {
+    try {
+        if (typeof dtValue === 'string') {
+            const match = dtValue.match(/^(\d{4}-\d{2}-\d{2})/);
+            if (match && match[1]) {
+                return match[1];
+            }
+        }
+        const parsed = new Date(dtValue);
+        if (!isNaN(parsed.getTime())) {
+            const year = parsed.getFullYear();
+            const month = String(parsed.getMonth() + 1).padStart(2, '0');
+            const day = String(parsed.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    } catch (e) {
+        console.warn('Unable to normalize release batch date', e);
+    }
+    return '';
+}
+
+function formatDateForBatchLabel(dtValue) {
+    try {
+        const parsed = new Date(dtValue);
+        if (!isNaN(parsed.getTime())) {
+            const day = String(parsed.getDate()).padStart(2, '0');
+            const month = String(parsed.getMonth() + 1).padStart(2, '0');
+            const year = parsed.getFullYear();
+            const timeStr = parsed.toLocaleString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            return `${day}/${month}/${year} ${timeStr}`;
+        }
+    } catch (e) {
+        console.warn('Unable to format batch label date', e);
+    }
+    return dtValue || '';
+}
+
+function getNextBatchNumberForDate(dtValue) {
+    const key = normalizeDateKey(dtValue);
+    if (!key) return 1;
+    const tables = [
+        document.getElementById('releasedTableBodyToday'),
+        document.getElementById('releasedTableBodyHistory')
+    ].filter(Boolean);
+    let count = 0;
+    tables.forEach(function(tbl) {
+        count += tbl.querySelectorAll(`tr[data-batch-date="${key}"]`).length;
+    });
+    return count + 1;
+}
+
+function buildAutoBatchName(dtValue) {
+    const count = getNextBatchNumberForDate(dtValue);
+    const formatted = formatDateForBatchLabel(dtValue);
+    return `BATCH ${count} - ${formatted}`.trim();
+}
+
+function appendReleaseBatchRow(batchName, dtValue, batchId, documents, isToday) {
+    const tableBody = document.getElementById(isToday ? 'releasedTableBodyToday' : 'releasedTableBodyHistory');
+    if (!tableBody) return;
+    const nextIndex = tableBody.querySelectorAll('tr').length + 1;
+    // Remove empty-state row if present
+    tableBody.querySelectorAll('tr').forEach(function(row) {
+        if (row.dataset && !row.dataset.batchId && row.querySelectorAll('td').length === 1) {
+            row.remove();
+        }
+    });
+    const row = document.createElement('tr');
+
+    const noCell = document.createElement('td');
+    noCell.textContent = nextIndex;
+    const batchCell = document.createElement('td');
+    batchCell.textContent = batchName;
+    const dateCell = document.createElement('td');
+    dateCell.textContent = formatReleaseBatchDate(dtValue);
+    const actionsCell = document.createElement('td');
+    actionsCell.className = 'd-flex gap-2';
+
+    const viewBtn = document.createElement('button');
+    viewBtn.type = 'button';
+    viewBtn.className = 'btn btn-sm btn-outline-primary';
+    if (batchId) {
+        viewBtn.addEventListener('click', function() {
+            addReleaseBatchModal(batchId, batchName, dtValue, documents || []);
+            openBatchModal(batchId, false);
+        });
+    } else {
+        viewBtn.disabled = true;
+    }
+    viewBtn.textContent = 'View';
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'btn btn-sm btn-outline-secondary';
+    editBtn.textContent = 'Edit';
+    if (batchId) {
+        editBtn.addEventListener('click', function() {
+            addReleaseBatchModal(batchId, batchName, dtValue, documents || []);
+            openBatchModal(batchId, true);
+        });
+    } else {
+        editBtn.disabled = true;
+    }
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+    deleteBtn.textContent = 'Delete';
+    if (batchId) {
+        deleteBtn.addEventListener('click', function() {
+            confirmDeleteBatch(batchId);
+        });
+    } else {
+        deleteBtn.disabled = true;
+    }
+
+    actionsCell.appendChild(viewBtn);
+    actionsCell.appendChild(editBtn);
+    actionsCell.appendChild(deleteBtn);
+
+    row.appendChild(noCell);
+    row.appendChild(batchCell);
+    row.appendChild(dateCell);
+    row.appendChild(actionsCell);
+    const normalizedKey = normalizeDateKey(dtValue);
+    if (normalizedKey) {
+        row.setAttribute('data-batch-date', normalizedKey);
+    }
+    if (batchId) {
+        row.setAttribute('data-batch-id', batchId);
+    }
+    tableBody.appendChild(row);
+}
+
+function batchReleaseTimestamp(batch) {
+    if (!batch) return Number.NEGATIVE_INFINITY;
+    const releaseAt = batch.release_at_local || batch.release_at || '';
+    const parsed = new Date(releaseAt);
+    return isNaN(parsed.getTime()) ? Number.NEGATIVE_INFINITY : parsed.getTime();
+}
+
+function dayKeyFromBatch(batch) {
+    if (!batch) return '';
+    const releaseAt = batch.release_at_local || batch.release_at || '';
+    const directKey = batch.release_date_key || dateKeyFromValue(releaseAt);
+    if (directKey) return directKey;
+    const name = batch.name || '';
+    const match = name.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    if (match) {
+        return `${match[3]}-${match[2]}-${match[1]}`;
+    }
+    return '';
+}
+
+function dayLabelFromBatch(batch) {
+    if (!batch) return '';
+    if (batch.release_date_label) return batch.release_date_label;
+    const releaseAt = batch.release_at_local || batch.release_at || '';
+    const label = dateLabelFromValue(releaseAt);
+    if (label) return label;
+    const key = dayKeyFromBatch(batch);
+    return key ? dateLabelFromValue(key) : '';
+}
+
+function showReleaseModal(targetModal, sourceModal) {
+    if (!targetModal || typeof bootstrap === 'undefined' || !bootstrap.Modal) return;
+    const targetInstance = bootstrap.Modal.getOrCreateInstance(targetModal);
+    if (sourceModal && sourceModal !== targetModal) {
+        const sourceInstance = bootstrap.Modal.getInstance(sourceModal) || bootstrap.Modal.getOrCreateInstance(sourceModal);
+        sourceModal.addEventListener('hidden.bs.modal', function handleHidden() {
+            targetInstance.show();
+        }, { once: true });
+        sourceInstance.hide();
+        return;
+    }
+    targetInstance.show();
+}
+
+function openReleaseNestedModal(targetModalId, sourceModalId) {
+    const targetModal = document.getElementById(targetModalId);
+    if (!targetModal) return;
+    const sourceModal = sourceModalId ? document.getElementById(sourceModalId) : null;
+    if (sourceModalId) {
+        targetModal.dataset.returnModal = sourceModalId;
+    }
+    showReleaseModal(targetModal, sourceModal);
+}
+
+function addReleaseDayModal(dayId, dayLabel, parentGroupId, batches) {
+    const container = releaseBatchPortal || document.getElementById('releaseBatchDetailsContainer');
+    if (!container || document.getElementById(`releaseDayDetails-${dayId}`)) return;
+    const sortedBatches = [...(batches || [])].sort(function(a, b) {
+        return batchReleaseTimestamp(b) - batchReleaseTimestamp(a);
+    });
+    const rows = sortedBatches.map(function(batch) {
+        const rel = batch.release_at_local || batch.release_at || '';
+        const relFmt = formatReleaseBatchDate(rel);
+        const count = (batch.documents || []).length;
+        return `
+            <tr>
+                <td>${batch.name || 'Batch'}</td>
+                <td>${relFmt}</td>
+                <td>${count} doc(s)</td>
+                <td class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openBatchModal(${batch.id}, false, 'releaseDayDetails-${dayId}')">View</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBatchModal(${batch.id}, true, 'releaseDayDetails-${dayId}')">Edit</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteBatch(${batch.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+    }).join('') || '<tr><td colspan="4" class="text-center text-muted">No batches for this day.</td></tr>';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = `releaseDayDetails-${dayId}`;
+    modal.tabIndex = -1;
+    modal.setAttribute('aria-labelledby', `releaseDayDetailsLabel-${dayId}`);
+    modal.setAttribute('aria-hidden', 'true');
+    modal.dataset.returnModal = `releaseGroupDetails-${parentGroupId}`;
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="releaseDayDetailsLabel-${dayId}">Batches released on ${dayLabel}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Released At</th>
+                                    <th>Docs</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-primary" data-release-back="1" data-release-back-target="releaseGroupDetails-${parentGroupId}">Back</button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(modal);
+}
+
+function addReleaseGroupModal(groupId, groupLabel, batches) {
+    const container = releaseBatchPortal || document.getElementById('releaseBatchDetailsContainer');
+    if (!container || document.getElementById(`releaseGroupDetails-${groupId}`)) return;
+    const sortedBatches = [...(batches || [])].sort(function(a, b) {
+        return batchReleaseTimestamp(b) - batchReleaseTimestamp(a);
+    });
+    const dayGroups = {};
+    sortedBatches.forEach(function(batch) {
+        const dayKey = dayKeyFromBatch(batch) || 'unknown';
+        const dayLabel = dayLabelFromBatch(batch) || 'Unknown Release Day';
+        if (!dayGroups[dayKey]) {
+            dayGroups[dayKey] = {
+                label: dayLabel,
+                batches: [],
+                latestReleaseAt: '',
+                safeId: `${groupId}-${dayKey.replace(/[^A-Za-z0-9]/g, '') || 'unknownday'}`
+            };
+        }
+        dayGroups[dayKey].batches.push(batch);
+        if (batchReleaseTimestamp(batch) > batchReleaseTimestamp({ release_at_local: dayGroups[dayKey].latestReleaseAt })) {
+            dayGroups[dayKey].latestReleaseAt = batch.release_at_local || batch.release_at || dayGroups[dayKey].latestReleaseAt;
+        }
+    });
+    const rows = Object.keys(dayGroups).sort().reverse().map(function(dayKey, index) {
+        const dayGroup = dayGroups[dayKey];
+        const latestReleaseLabel = dayGroup.latestReleaseAt ? formatReleaseBatchDate(dayGroup.latestReleaseAt) : '-';
+        addReleaseDayModal(dayGroup.safeId, dayGroup.label, groupId, dayGroup.batches);
+        return `
+            <tr>
+                <td>${index + 1}</td>
+                <td><button type="button" class="btn btn-link p-0" onclick="openReleaseNestedModal('releaseDayDetails-${dayGroup.safeId}', 'releaseGroupDetails-${groupId}')">${dayGroup.label}</button></td>
+                <td>${latestReleaseLabel}</td>
+                <td class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openReleaseNestedModal('releaseDayDetails-${dayGroup.safeId}', 'releaseGroupDetails-${groupId}')">View</button>
+                    <span class="badge bg-info text-dark align-self-center">${dayGroup.batches.length} batch(es)</span>
+                </td>
+            </tr>
+        `;
+    }).join('') || '<tr><td colspan="4" class="text-center text-muted">No batches for this month.</td></tr>';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = `releaseGroupDetails-${groupId}`;
+    modal.tabIndex = -1;
+    modal.setAttribute('aria-labelledby', `releaseGroupDetailsLabel-${groupId}`);
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="releaseGroupDetailsLabel-${groupId}">Batches released in ${groupLabel}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Day</th>
+                                    <th>Latest Release</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-primary" data-release-back="1">Back</button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(modal);
+    releaseGroupModals[groupId] = modal;
+}
+
+function addReleaseBatchModal(batchId, batchName, dtValue, documents) {
+    const container = releaseBatchPortal || document.getElementById('releaseBatchDetailsContainer');
+    if (!container || document.getElementById(`releaseBatchDetails-${batchId}`)) return;
+    const releaseAtFormatted = formatReleaseBatchDate(dtValue);
+    const docsSafe = Array.isArray(documents) ? documents : [];
+    const docCount = docsSafe.length;
+    const rows = docsSafe.map(function(doc) {
+        const barcode = doc.barcode || 'No barcode';
+        const title = doc.title || 'Untitled';
+        const office = doc.office || 'No office';
+        const payload = {
+            id: doc.id,
+            title: doc.title,
+            office: doc.office,
+            classification: doc.classification || '',
+            barcode: doc.barcode,
+            status: doc.status || '',
+            action_taken: doc.action_taken || '',
+            remarks: doc.remarks || '',
+            attachment: doc.attachment || '',
+            creator: doc.creator || '',
+            recipient: doc.recipient || '',
+            timestamp: doc.timestamp || ''
+        };
+        return `
+            <tr data-doc-id="${doc.id}">
+                <td>${barcode}</td>
+                <td>${title}</td>
+                <td>${office}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                        data-bs-toggle="modal" data-bs-target="#viewDocumentModal"
+                        onclick='populateViewModal(${JSON.stringify(payload)})'>
+                        View
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                        onclick='openBatchDocEditModal(${JSON.stringify(payload)})'>
+                        Edit
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger batch-doc-remove-btn"
+                        data-batch-id="${batchId}" data-doc-id="${doc.id}">
+                        Remove
+                    </button>
+                </td>                  
+            </tr>
+        `;
+    }).join('') || '<tr><td colspan="4" class="text-center text-muted">No documents linked.</td></tr>';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = `releaseBatchDetails-${batchId}`;
+    modal.tabIndex = -1;
+    modal.setAttribute('aria-labelledby', `releaseBatchDetailsLabel-${batchId}`);
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="releaseBatchDetailsLabel-${batchId}">
+                        <span>Batch Details: ${batchName} ${releaseAtFormatted ? `(${releaseAtFormatted})` : ''}</span>
+                        <span class="badge bg-info text-dark">${docCount} doc(s)</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 batch-edit-section">
+                        <label class="form-label">Add Document to Batch</label>
+                        <input type="text" class="form-control batch-doc-search-input" data-batch-id="${batchId}" id="batch-doc-search-${batchId}" placeholder="Search by barcode, title, or office...">
+                        <div class="list-group mt-2 batch-doc-search-results" id="batch-doc-results-${batchId}" role="listbox"></div>
+                    </div>
+                    <div class="mb-2 text-muted small">
+                        Released on ${releaseAtFormatted || '-'}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Barcode</th>
+                                    <th>Title</th>
+                                    <th>Office</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="batch-doc-table-body">${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-primary" data-release-back="1">Back</button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(modal);
+    modal.dataset.desiredMode = modal.dataset.desiredMode || 'view';
+    bindBatchModalControls(modal, batchId);
+}
+
+function isReleaseToday(dtValue, todayKey) {
+    if (!dtValue) return false;
+    try {
+        const key = normalizeDateKey(dtValue);
+        return key && key === todayKey;
+    } catch (e) {
+        console.warn('Unable to determine today for batch', e);
+    }
+    return false;
+}
+
+function dateKeyFromValue(dtValue) {
+    if (!dtValue) return '';
+    try {
+        return normalizeDateKey(dtValue);
+    } catch (e) {
+        console.warn('Unable to build date key', e);
+    }
+    return '';
+}
+
+function dateLabelFromValue(dtValue) {
+    if (!dtValue) return '';
+    try {
+        const key = normalizeDateKey(dtValue);
+        if (key) {
+            const parts = key.split('-');
+            if (parts.length === 3) {
+                const year = Number(parts[0]);
+                const month = Number(parts[1]) - 1;
+                const day = Number(parts[2]);
+                const parsed = new Date(year, month, day);
+                if (!isNaN(parsed.getTime())) {
+                    return parsed.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                }
+            }
+            return key;
+        }
+    } catch (e) {
+        console.warn('Unable to build date label', e);
+    }
+    return dtValue;
+}
+
+function monthKeyFromValue(dtValue) {
+    if (!dtValue) return '';
+    try {
+        const normalizedDate = normalizeDateKey(dtValue);
+        if (normalizedDate) {
+            return normalizedDate.slice(0, 7);
+        }
+    } catch (e) {
+        console.warn('Unable to build month key', e);
+    }
+    return '';
+}
+
+function monthLabelFromValue(dtValue) {
+    if (!dtValue) return '';
+    try {
+        const monthKey = monthKeyFromValue(dtValue);
+        if (monthKey) {
+            const parts = monthKey.split('-');
+            if (parts.length === 2) {
+                const year = Number(parts[0]);
+                const month = Number(parts[1]) - 1;
+                const parsed = new Date(year, month, 1);
+                if (!isNaN(parsed.getTime())) {
+                    return parsed.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                }
+            }
+            return monthKey;
+        }
+    } catch (e) {
+        console.warn('Unable to build month label', e);
+    }
+    return dtValue;
+}
+
+function monthKeyFromBatch(batch) {
+    if (!batch) return '';
+    const releaseAt = batch.release_at_local || batch.release_at || '';
+    const directKey = batch.release_month_key || monthKeyFromValue(releaseAt);
+    if (directKey) return directKey;
+    const name = batch.name || '';
+    const match = name.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    if (match) {
+        return `${match[3]}-${match[2]}`;
+    }
+    return '';
+}
+
+function monthLabelFromBatch(batch) {
+    if (!batch) return '';
+    if (batch.release_month_label) return batch.release_month_label;
+    const releaseAt = batch.release_at_local || batch.release_at || '';
+    const label = monthLabelFromValue(releaseAt);
+    if (label) return label;
+    const key = monthKeyFromBatch(batch);
+    return key ? monthLabelFromValue(`${key}-01`) : '';
+}
+
+function openBatchModal(batchId, canEdit, returnModalId) {
+    if (!batchId) return;
+    const modalId = `releaseBatchDetails-${batchId}`;
+    let modalEl = document.getElementById(modalId);
+    if (!modalEl && Array.isArray(releaseBatchCache)) {
+        const cached = releaseBatchCache.find(function(b) { return String(b.id) === String(batchId); });
+        if (cached) {
+            addReleaseBatchModal(cached.id, cached.name, cached.release_at_local || cached.release_at, cached.documents || []);
+            modalEl = document.getElementById(modalId);
+        }
+    }
+    if (!modalEl) {
+        console.warn('Batch modal not found for', batchId);
+        return;
+    }
+    modalEl.dataset.returnModal = returnModalId || 'releasedDocumentsModal';
+    setBatchModalEditState(modalEl, !!canEdit);
+    const sourceModal = returnModalId ? document.getElementById(returnModalId) : null;
+    showReleaseModal(modalEl, sourceModal);
+}
+
+function openBatchDocEditModal(doc) {
+    if (!doc || !doc.id) return;
+    const modalId = `batchDocEdit-${doc.id}`;
+    let modalEl = document.getElementById(modalId);
+    if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.className = 'modal fade';
+        modalEl.id = modalId;
+        modalEl.tabIndex = -1;
+        modalEl.setAttribute('aria-hidden', 'true');
+        modalEl.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Document</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="batchDocEditForm-${doc.id}">
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control" name="title" value="">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Office</label>
+                                <input type="text" class="form-control" name="office" value="">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Barcode</label>
+                                <input type="text" class="form-control" name="barcode" value="">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Remarks</label>
+                                <textarea class="form-control" name="remarks" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="batchDocEditSave-${doc.id}">Save</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        (releaseBatchPortal || document.body).appendChild(modalEl);
+    }
+
+    const form = modalEl.querySelector('form');
+    if (form) {
+        form.querySelector('[name="title"]').value = doc.title || '';
+        form.querySelector('[name="office"]').value = doc.office || '';
+        form.querySelector('[name="barcode"]').value = doc.barcode || '';
+        form.querySelector('[name="remarks"]').value = doc.remarks || '';
+    }
+
+    const saveBtn = modalEl.querySelector(`#batchDocEditSave-${doc.id}`);
+    if (saveBtn && !saveBtn.dataset.bound) {
+        saveBtn.dataset.bound = '1';
+        saveBtn.addEventListener('click', function() {
+            if (!form) return;
+            const formData = new FormData(form);
+            formData.append('csrf_token', csrfToken);
+            formData.append('document_id', doc.id);
+            fetch(updateDocUrl, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrfToken },
+                credentials: 'same-origin'
+            }).then(function(resp) {
+                return resp.json().then(function(data) {
+                    return { ok: resp.ok, data };
+                });
+            }).then(function(result) {
+                if (!result.ok || !result.data || !result.data.success) {
+                    const msg = (result.data && result.data.message) ? result.data.message : 'Unable to update document.';
+                    if (typeof showToast === 'function') showToast(msg, 'danger'); else alert(msg);
+                    return;
+                }
+                if (typeof showToast === 'function') showToast('Document updated.', 'success');
+                const updated = result.data.document || {};
+                // Update visible row in any batch detail table
+                document.querySelectorAll(`tr[data-doc-id="${doc.id}"]`).forEach(function(row) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[0]) cells[0].textContent = updated.barcode || 'No barcode';
+                    if (cells[1]) cells[1].textContent = updated.title || 'Untitled';
+                    if (cells[2]) cells[2].textContent = updated.office || 'No office';
+                });
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    const instance = bootstrap.Modal.getInstance(modalEl);
+                    if (instance) instance.hide();
+                }
+            }).catch(function(err) {
+                console.error('Failed to update document', err);
+                if (typeof showToast === 'function') showToast('Unable to update document.', 'danger'); else alert('Unable to update document.');
+            });
+        });
+    }
+
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        instance.show();
+    }
+}
+
+function buildBatchUrl(template, batchId) {
+    return template.replace(/0(?!.*0)/, batchId);
+}
+
+function renderBatchDocs(modalEl, docs, batchId) {
+    if (!modalEl) return;
+    const tbody = modalEl.querySelector('.batch-doc-table-body');
+    if (!tbody) return;
+    const rows = (docs || []).map(function(doc) {
+        const barcode = doc.barcode || 'No barcode';
+        const title = doc.title || 'Untitled';
+        const office = doc.office || 'No office';
+        const payload = {
+            id: doc.id,
+            title: doc.title,
+            office: doc.office,
+            classification: doc.classification || '',
+            barcode: doc.barcode,
+            status: doc.status || '',
+            action_taken: doc.action_taken || '',
+            remarks: doc.remarks || '',
+            attachment: doc.attachment || '',
+            creator: doc.creator || '',
+            recipient: doc.recipient || '',
+            timestamp: doc.timestamp || ''
+        };
+        return `
+            <tr data-doc-id="${doc.id}">
+                <td>${barcode}</td>
+                <td>${title}</td>
+                <td>${office}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                        data-bs-toggle="modal" data-bs-target="#viewDocumentModal"
+                        onclick='populateViewModal(${JSON.stringify(payload)})'>
+                        View
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary batch-doc-edit-btn"
+                        onclick='openBatchDocEditModal(${JSON.stringify(payload)})'>
+                        Edit
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger batch-doc-remove-btn"
+                        data-batch-id="${batchId}" data-doc-id="${doc.id}">
+                        Remove
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('') || '<tr><td colspan="4" class="text-center text-muted">No documents linked.</td></tr>';
+    tbody.innerHTML = rows;
+    if (typeof setBatchModalEditState === 'function') {
+        setBatchModalEditState(modalEl, modalEl.dataset.desiredMode === 'edit');
+    }
+}
+
+function addDocToBatch(batchId, docId, modalEl) {
+    const url = buildBatchUrl(addBatchDocUrlTemplate, batchId);
+    const formData = new FormData();
+    formData.append('csrf_token', csrfToken);
+    formData.append('document_id', docId);
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRFToken': csrfToken },
+        credentials: 'same-origin'
+    }).then(function(resp) {
+        return resp.json().then(function(data) {
+            return { ok: resp.ok, data };
+        });
+    }).then(function(result) {
+        if (!result.ok || !result.data || !result.data.success) {
+            const msg = (result.data && result.data.message) ? result.data.message : 'Unable to add document.';
+            if (typeof showToast === 'function') showToast(msg, 'danger'); else alert(msg);
+            return;
+        }
+        renderBatchDocs(modalEl, result.data.documents, batchId);
+        if (typeof showToast === 'function' && modalEl.dataset.desiredMode === 'edit') showToast('Document added to batch.', 'success');
+    }).catch(function(err) {
+        console.error('Failed to add doc to batch', err);
+        if (typeof showToast === 'function') showToast('Unable to add document.', 'danger'); else alert('Unable to add document.');
+    });
+}
+
+function removeDocFromBatch(batchId, docId, modalEl) {
+    const url = buildBatchUrl(removeBatchDocUrlTemplate, batchId);
+    const formData = new FormData();
+    formData.append('csrf_token', csrfToken);
+    formData.append('document_id', docId);
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRFToken': csrfToken },
+        credentials: 'same-origin'
+    }).then(function(resp) {
+        return resp.json().then(function(data) {
+            return { ok: resp.ok, data };
+        });
+    }).then(function(result) {
+        if (!result.ok || !result.data || !result.data.success) {
+            const msg = (result.data && result.data.message) ? result.data.message : 'Unable to remove document.';
+            if (typeof showToast === 'function') showToast(msg, 'danger'); else alert(msg);
+            return;
+        }
+        renderBatchDocs(modalEl, result.data.documents, batchId);
+        if (typeof showToast === 'function' && modalEl.dataset.desiredMode === 'edit') showToast('Document removed.', 'success');
+    }).catch(function(err) {
+        console.error('Failed to remove doc from batch', err);
+        if (typeof showToast === 'function') showToast('Unable to remove document.', 'danger'); else alert('Unable to remove document.');
+    });
+}
+
+function bindBatchModalControls(modalEl, batchId) {
+    if (!modalEl || modalEl.dataset.bound === '1') return;
+    modalEl.dataset.bound = '1';
+    modalEl.dataset.desiredMode = modalEl.dataset.desiredMode || 'view';
+    const isEditMode = function() { return modalEl.dataset.desiredMode === 'edit'; };
+    const searchInput = modalEl.querySelector(`#batch-doc-search-${batchId}`);
+    const searchResults = modalEl.querySelector(`#batch-doc-results-${batchId}`);
+    let searchTimer = null;
+
+    modalEl.addEventListener('show.bs.modal', function() {
+        setBatchModalEditState(modalEl, isEditMode());
+    });
+
+    function renderSearchResults(results) {
+        if (!searchResults) return;
+        searchResults.innerHTML = '';
+        if (!results || !results.length) {
+            const empty = document.createElement('div');
+            empty.className = 'list-group-item text-muted';
+            empty.textContent = 'No documents found.';
+            searchResults.appendChild(empty);
+            return;
+        }
+        results.forEach(function(item) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action';
+            btn.dataset.docId = item.id;
+            btn.dataset.barcode = item.barcode || '';
+            btn.dataset.title = item.title || '';
+            btn.dataset.office = item.office || '';
+            btn.textContent = `${item.barcode || 'No barcode'} | ${item.title || 'Untitled'} | ${item.office || 'No office'}`;
+            searchResults.appendChild(btn);
+        });
+    }
+
+    function doSearch(term) {
+        if (!searchResults) return;
+        if (!term || term.length < 2) {
+            searchResults.innerHTML = '';
+            return;
+        }
+        if (!isEditMode()) {
+            searchResults.innerHTML = '';
+            return;
+        }
+        fetch(`{{ url_for('main.search_documents') }}?q=${encodeURIComponent(term)}`, { credentials: 'same-origin' })
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                renderSearchResults((data && data.results) ? data.results : []);
+            })
+            .catch(function(err) {
+                console.error('Doc search failed', err);
+                searchResults.innerHTML = '<div class="list-group-item text-danger">Unable to search documents.</div>';
+            });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const term = e.target.value || '';
+            if (!isEditMode()) return;
+            if (searchTimer) clearTimeout(searchTimer);
+            searchTimer = setTimeout(function() {
+                doSearch(term.trim());
+            }, 250);
+        });
+    }
+
+    if (searchResults) {
+        searchResults.addEventListener('click', function(e) {
+            if (!isEditMode()) return;
+            const target = e.target.closest('.list-group-item-action');
+            if (target && target.dataset.docId) {
+                addDocToBatch(batchId, target.dataset.docId, modalEl);
+                searchResults.innerHTML = '';
+                if (searchInput) searchInput.value = '';
+            }
+        });
+    }
+
+    modalEl.addEventListener('click', function(e) {
+        const removeBtn = e.target.closest('.batch-doc-remove-btn');
+        if (removeBtn) {
+            if (!isEditMode()) return;
+            const docId = removeBtn.dataset.docId;
+            removeDocFromBatch(batchId, docId, modalEl);
+        }
+    });
+}
+
+function confirmDeleteBatch(batchId) {
+    if (!batchId) return;
+    if (!confirm('Delete this batch? This will remove the batch link from its documents.')) return;
+    const url = buildBatchUrl(deleteBatchUrlTemplate, batchId);
+    const formData = new FormData();
+    formData.append('csrf_token', csrfToken);
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRFToken': csrfToken },
+        credentials: 'same-origin'
+    }).then(function(resp) {
+        return resp.json().then(function(data) {
+            return { ok: resp.ok, data };
+        });
+    }).then(function(result) {
+        if (!result.ok || !result.data || !result.data.success) {
+            const msg = (result.data && result.data.message) ? result.data.message : 'Unable to delete batch.';
+            if (typeof showToast === 'function') showToast(msg, 'danger'); else alert(msg);
+            return;
+        }
+        const activeModal = document.querySelector('#releaseBatchDetailsContainer .modal.show');
+        if (activeModal && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const activeInstance = bootstrap.Modal.getInstance(activeModal);
+            if (activeInstance) {
+                activeInstance.hide();
+            }
+        }
+        const modalEl = document.getElementById(`releaseBatchDetails-${batchId}`);
+        if (modalEl) {
+            modalEl.remove();
+        }
+        if (typeof window.refreshReleaseBatches === 'function') {
+            window.refreshReleaseBatches();
+        }
+        if (typeof showToast === 'function') showToast('Batch deleted.', 'success');
+    }).catch(function(err) {
+        console.error('Failed to delete batch', err);
+        if (typeof showToast === 'function') showToast('Unable to delete batch.', 'danger'); else alert('Unable to delete batch.');
+    });
+}
+
+function renderReleaseDocResults(results, container) {
+    if (!container) return;
+    container.innerHTML = '';
+    if (!results || results.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'list-group-item text-muted';
+        empty.textContent = 'No documents found.';
+        container.appendChild(empty);
+        return;
+    }
+    results.forEach(function(item) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'list-group-item list-group-item-action';
+        btn.setAttribute('role', 'option');
+        btn.dataset.docId = item.id;
+        btn.dataset.barcode = item.barcode || '';
+        btn.dataset.title = item.title || '';
+        btn.dataset.office = item.office || '';
+        btn.innerHTML = `<div class="fw-bold">${item.barcode || 'No barcode'}</div>
+                         <div>${item.title || 'Untitled'}</div>
+                         <div class="text-muted small">${item.office || 'No office'}</div>`;
+        container.appendChild(btn);
+    });
+}
+
 function updateNoDtasBadges(docId, isActive) {
     document.querySelectorAll('.no-dtas-badge[data-doc-id="' + docId + '"]').forEach(function(badge) {
         badge.classList.toggle('d-none', !isActive);
@@ -3627,6 +6340,412 @@ function attachNoDtasToggleHandlers() {
 
 // Handle batch decline form submission
 document.addEventListener('DOMContentLoaded', function() {
+    const releaseBatchForm = document.getElementById('addReleaseBatchForm');
+    const releaseBatchModalEl = document.getElementById('addReleaseBatchModal');
+    const releasedModalEl = document.getElementById('releasedDocumentsModal');
+    const releaseBatchFilter = document.getElementById('releaseBatchFilter');
+    const releaseBatchName = document.getElementById('releaseBatchName');
+    const saveReleaseBatchBtn = document.getElementById('saveReleaseBatchBtn');
+    let releaseBatchDateTimeValue = '';
+    const docSearchInput = document.getElementById('releaseDocSearchInput');
+    const docSearchResults = document.getElementById('releaseDocSearchResults');
+    const docSelectedWrapper = document.getElementById('releaseDocSelected');
+    const docSelectedList = document.getElementById('releaseDocSelectedList');
+    const docClearSelectionBtn = document.getElementById('releaseDocClearSelection');
+    releaseGroupModals = {};
+    let docSearchTimer = null;
+    let selectedDocs = [];
+
+    if (releaseBatchForm) {
+        releaseBatchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (saveReleaseBatchBtn) {
+                saveReleaseBatchBtn.click();
+            }
+        });
+    }
+
+    if (releaseBatchModalEl) {
+        releaseBatchModalEl.addEventListener('shown.bs.modal', function() {
+            releaseBatchDateTimeValue = getLocalISOStringNow();
+            if (releaseBatchName) {
+                releaseBatchName.value = buildAutoBatchName(releaseBatchDateTimeValue);
+                releaseBatchName.focus();
+            }
+        });
+    }
+
+    if (saveReleaseBatchBtn) {
+        saveReleaseBatchBtn.addEventListener('click', function() {
+            const batchValue = releaseBatchName ? releaseBatchName.value.trim() : '';
+            const dtValue = releaseBatchDateTimeValue || getLocalISOStringNow();
+            if (!batchValue || !dtValue) {
+                if (typeof showToast === 'function') {
+                    showToast('Unable to add batch. Try again.', 'warning');
+                } else {
+                    alert('Unable to add batch. Try again.');
+                }
+                return;
+            }
+            if (!selectedDocs.length) {
+                if (typeof showToast === 'function') {
+                    showToast('Select at least one document for this batch.', 'warning');
+                } else {
+                    alert('Select at least one document for this batch.');
+                }
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('csrf_token', csrfToken);
+            formData.append('batch_name', batchValue);
+            selectedDocs.forEach(function(doc) {
+                formData.append('release_doc_ids[]', doc.id);
+            });
+
+            fetch(releaseBatchCreateUrl, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrfToken },
+                credentials: 'same-origin'
+            })
+            .then(function(resp) {
+                return resp.json().then(function(data) {
+                    return { ok: resp.ok, data: data };
+                });
+            })
+            .then(function(result) {
+                if (!result.ok || !result.data || !result.data.success) {
+                    const msg = (result.data && result.data.message) ? result.data.message : 'Unable to save batch.';
+                    if (typeof showToast === 'function') {
+                        showToast(msg, 'danger');
+                    } else {
+                        alert(msg);
+                    }
+                    return;
+                }
+                const batch = result.data.batch || {};
+                const releaseAt = batch.release_at_local || batch.release_at || dtValue;
+                appendReleaseBatchRow(batch.name || batchValue, releaseAt, batch.id, result.data.documents, true);
+                clearDocSelection();
+                if (releaseBatchForm) {
+                    releaseBatchForm.reset();
+                }
+                    releaseBatchDateTimeValue = '';
+                    if (releaseBatchModalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const addModalInstance = bootstrap.Modal.getInstance(releaseBatchModalEl);
+                        if (addModalInstance) {
+                            addModalInstance.hide();
+                        }
+                    }
+                    if (releasedModalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const releasedModal = bootstrap.Modal.getInstance(releasedModalEl) || new bootstrap.Modal(releasedModalEl);
+                        releasedModal.show();
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast('Release batch saved.', 'success');
+                    }
+                })
+            .catch(function(err) {
+                console.error('Failed to save release batch', err);
+                if (typeof showToast === 'function') {
+                    showToast('Unable to save release batch.', 'danger');
+                } else {
+                    alert('Unable to save release batch.');
+                }
+            });
+        });
+    }
+
+    function updateDocSelectionUI() {
+        if (!docSelectedWrapper || !docSelectedList) return;
+        docSelectedList.innerHTML = '';
+        if (!selectedDocs.length) {
+            docSelectedWrapper.style.display = 'none';
+            return;
+        }
+        docSelectedWrapper.style.display = 'block';
+        selectedDocs.forEach(function(doc) {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary text-light d-flex align-items-center gap-2';
+            badge.dataset.docId = doc.id;
+            badge.innerHTML = `<span>${[doc.barcode, doc.title, doc.office].filter(Boolean).join(' | ')}</span>`;
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-sm btn-outline-light text-dark release-doc-remove';
+            removeBtn.dataset.docId = doc.id;
+            removeBtn.textContent = '×';
+            badge.appendChild(removeBtn);
+
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'release_doc_ids[]';
+            hiddenInput.value = doc.id;
+            badge.appendChild(hiddenInput);
+
+            docSelectedList.appendChild(badge);
+        });
+    }
+
+    function clearDocSelection() {
+        selectedDocs = [];
+        updateDocSelectionUI();
+    }
+
+    function handleDocSelection(el) {
+        if (!el) return;
+        const docId = el.dataset.docId || '';
+        if (!docId) return;
+        if (selectedDocs.some(function(d) { return String(d.id) === String(docId); })) {
+            return;
+        }
+        const docData = {
+            id: docId,
+            barcode: el.dataset.barcode || '',
+            title: el.dataset.title || '',
+            office: el.dataset.office || ''
+        };
+        selectedDocs.push(docData);
+        updateDocSelectionUI();
+        if (docSearchResults) {
+            docSearchResults.innerHTML = '';
+        }
+    }
+
+    function performDocSearch(term) {
+        if (!docSearchResults) return;
+        if (!term || term.length < 2) {
+            docSearchResults.innerHTML = '';
+            return;
+        }
+        fetch(`{{ url_for('main.search_documents') }}?q=${encodeURIComponent(term)}`, {
+            credentials: 'same-origin'
+        }).then(function(resp) {
+            return resp.json();
+        }).then(function(payload) {
+            const results = (payload && payload.results) ? payload.results : [];
+            renderReleaseDocResults(results, docSearchResults);
+        }).catch(function(err) {
+            console.error('Document search failed', err);
+            docSearchResults.innerHTML = '<div class="list-group-item text-danger">Unable to search documents.</div>';
+        });
+    }
+
+    if (docSearchInput) {
+        docSearchInput.addEventListener('input', function(e) {
+            const term = e.target.value || '';
+            if (docSearchTimer) {
+                clearTimeout(docSearchTimer);
+            }
+            docSearchTimer = setTimeout(function() {
+                performDocSearch(term.trim());
+            }, 250);
+        });
+    }
+
+    function setReleaseBatchTable(batches) {
+        const todayBody = document.getElementById('releasedTableBodyToday');
+        const histBody = document.getElementById('releasedTableBodyHistory');
+        const modalContainer = releaseBatchPortal || document.getElementById('releaseBatchDetailsContainer');
+        if (!todayBody || !histBody || !modalContainer) return;
+        todayBody.innerHTML = '';
+        histBody.innerHTML = '';
+        modalContainer.innerHTML = '';
+        releaseGroupModals = {};
+        const makeSampleRow = (textOnly = false) => {
+            const tr = document.createElement('tr');
+            if (textOnly) {
+                const td = document.createElement('td');
+                td.colSpan = 4;
+                td.className = 'text-center text-muted';
+                td.textContent = 'No release batches yet.';
+                tr.appendChild(td);
+            } else {
+                tr.innerHTML = `
+                    <td>1</td>
+                    <td>Sample Batch ABC</td>
+                    <td>Jan 01, 2025 - 01:00 PM</td>
+                    <td class="text-muted">—</td>
+                `;
+            }
+            return tr;
+        };
+        if (!batches || !batches.length) {
+            todayBody.appendChild(makeSampleRow(true));
+            histBody.appendChild(makeSampleRow(true));
+            return;
+        }
+        const sortedBatches = [...batches].sort(function(a, b) {
+            return batchReleaseTimestamp(b) - batchReleaseTimestamp(a);
+        });
+        const todayKey = normalizeDateKey(new Date());
+        const historyGroups = {};
+        sortedBatches.forEach(function(batch) {
+            const releaseAt = batch.release_at_local || batch.release_at;
+            const dateKey = (batch.release_date_key || dateKeyFromValue(releaseAt));
+            const isToday = (typeof batch.is_today === 'boolean')
+                ? batch.is_today
+                : (dateKey ? dateKey === todayKey : isReleaseToday(releaseAt, todayKey));
+
+            addReleaseBatchModal(batch.id, batch.name, releaseAt, batch.documents || []);
+
+            if (isToday) {
+                appendReleaseBatchRow(batch.name, releaseAt, batch.id, batch.documents, true);
+                const modalEl = document.getElementById(`releaseBatchDetails-${batch.id}`);
+                if (modalEl) bindBatchModalControls(modalEl, batch.id);
+            } else {
+                const monthKey = monthKeyFromBatch(batch) || 'unknown';
+                const monthLabel = monthLabelFromBatch(batch) || 'Unknown Release Month';
+                if (!historyGroups[monthKey]) {
+                    historyGroups[monthKey] = {
+                        label: monthLabel,
+                        batches: [],
+                        latestReleaseAt: releaseAt || ''
+                    };
+                }
+                historyGroups[monthKey].batches.push(batch);
+                if (batchReleaseTimestamp(batch) > batchReleaseTimestamp({ release_at_local: historyGroups[monthKey].latestReleaseAt })) {
+                    historyGroups[monthKey].latestReleaseAt = releaseAt || historyGroups[monthKey].latestReleaseAt;
+                }
+            }
+        });
+
+        // Render grouped history rows
+        if (Object.keys(historyGroups).length === 0) {
+            histBody.appendChild(makeSampleRow(true));
+        } else {
+            let idx = 1;
+            Object.keys(historyGroups).sort().reverse().forEach(function(key) {
+                const group = historyGroups[key];
+                const groupId = key.replace(/[^A-Za-z0-9]/g, '') || 'unknown';
+                const latestReleaseLabel = group.latestReleaseAt ? formatReleaseBatchDate(group.latestReleaseAt) : '-';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${idx}</td>
+                    <td><button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#releaseGroupDetails-${groupId}">${group.label}</button></td>
+                    <td>${latestReleaseLabel}</td>
+                    <td class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#releaseGroupDetails-${groupId}">View</button>
+                        <span class="badge bg-info text-dark align-self-center">${group.batches.length} batch(es)</span>
+                    </td>
+                `;
+                histBody.appendChild(row);
+                addReleaseGroupModal(groupId, group.label, group.batches);
+                idx += 1;
+            });
+        }
+    }
+
+    function loadReleaseBatches() {
+        fetch(releaseBatchListUrl, { credentials: 'same-origin' })
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                releaseBatchCache = (data && data.results) ? data.results : [];
+                renderFilteredReleaseBatches();
+            })
+            .catch(function(err) {
+                console.error('Failed to load release batches', err);
+            });
+    }
+
+    window.refreshReleaseBatches = loadReleaseBatches;
+
+    function renderFilteredReleaseBatches() {
+        const filterInput = document.getElementById('releaseBatchFilter');
+        const term = (filterInput ? filterInput.value : '').trim().toLowerCase();
+        if (!term) {
+            setReleaseBatchTable(releaseBatchCache);
+            return;
+        }
+        const filtered = releaseBatchCache.filter(function(batch) {
+            const nameMatch = (batch.name || '').toLowerCase().includes(term);
+            const docMatch = (batch.documents || []).some(function(doc) {
+                return (doc.barcode || '').toLowerCase().includes(term) ||
+                       (doc.title || '').toLowerCase().includes(term) ||
+                       (doc.office || '').toLowerCase().includes(term);
+            });
+            return nameMatch || docMatch;
+        });
+        setReleaseBatchTable(filtered);
+    }
+
+    if (docSearchResults) {
+        docSearchResults.addEventListener('click', function(e) {
+            const target = e.target.closest('.list-group-item-action');
+            if (target) {
+                handleDocSelection(target);
+            }
+        });
+    }
+
+    if (docSelectedList) {
+        docSelectedList.addEventListener('click', function(e) {
+            const removeBtn = e.target.closest('.release-doc-remove');
+            if (removeBtn) {
+                const id = removeBtn.dataset.docId;
+                selectedDocs = selectedDocs.filter(function(d) { return String(d.id) !== String(id); });
+                updateDocSelectionUI();
+            }
+        });
+    }
+
+    if (docClearSelectionBtn) {
+        docClearSelectionBtn.addEventListener('click', function() {
+            clearDocSelection();
+            if (docSearchInput) {
+                docSearchInput.value = '';
+                docSearchInput.focus();
+            }
+        });
+    }
+
+    if (releasedModalEl) {
+        releasedModalEl.addEventListener('show.bs.modal', function() {
+            loadReleaseBatches();
+        });
+    }
+
+    if (releaseBatchFilter) {
+        releaseBatchFilter.addEventListener('input', function() {
+            renderFilteredReleaseBatches();
+        });
+    }
+
+    if (releaseBatchModalEl) {
+        releaseBatchModalEl.addEventListener('hidden.bs.modal', function() {
+            if (docSearchInput) {
+                docSearchInput.value = '';
+            }
+            if (docSearchResults) {
+                docSearchResults.innerHTML = '';
+            }
+            clearDocSelection();
+        });
+    }
+
+    if (releaseBatchPortal && releaseBatchPreContainer && releaseBatchPreContainer !== releaseBatchPortal) {
+        while (releaseBatchPreContainer.firstChild) {
+            releaseBatchPortal.appendChild(releaseBatchPreContainer.firstChild);
+        }
+    }
+    // Bind existing batch modals
+    document.querySelectorAll('[id^="releaseBatchDetails-"]').forEach(function(modalEl) {
+        const idMatch = modalEl.id.match(/releaseBatchDetails-(\d+)/);
+        if (idMatch && idMatch[1]) {
+            bindBatchModalControls(modalEl, idMatch[1]);
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        const backBtn = e.target.closest('[data-release-back]');
+        if (backBtn) {
+            const modalEl = backBtn.closest('.modal');
+            const targetModalId = backBtn.dataset.releaseBackTarget || (modalEl ? modalEl.dataset.returnModal : '') || 'releasedDocumentsModal';
+            const targetModal = document.getElementById(targetModalId);
+            showReleaseModal(targetModal, modalEl);
+        }
+    });
+
     const batchDeclineForm = document.getElementById('batchDeclineForm');
     if (batchDeclineForm) {
         batchDeclineForm.addEventListener('submit', function(e) {
@@ -3657,6 +6776,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Please select at least one document to forward.');
                 return;
             }
+
+            const recipientSelect = batchForwardForm.querySelector('.recipient-picker select[name="recipient"]');
+            if (!recipientSelect || !recipientSelect.value) {
+                e.preventDefault();
+                if (typeof showToast === 'function') {
+                    showToast('Please select a recipient.', 'warning');
+                } else {
+                    alert('Please select a recipient.');
+                }
+                const searchInput = batchForwardForm.querySelector('.recipient-picker .recipient-search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+                return;
+            }
             
             // Add selected document IDs to the form
             selectedIds.forEach(function(id) {
@@ -3672,4 +6806,3 @@ document.addEventListener('DOMContentLoaded', function() {
     attachNoDtasToggleHandlers();
 });
 </script>{% endblock %}
-

@@ -1,0 +1,394 @@
+/* Amihan Bloom theme (Jan-Mar): cool breeze into early bloom */
+
+:root {
+  --amihan-sky-1: #e1f8ff;
+  --amihan-sky-2: #dcf7e8;
+  --amihan-mist: #c6f2d7;
+  --amihan-sun: #fff1b6;
+  --amihan-apricot: #ffb7c8;
+  --amihan-accent: #5ac8fa;
+  --amihan-deep: #2f6f63;
+  --amihan-bloom: #7ee8a3;
+  --amihan-blossom: 255, 139, 177;
+}
+
+body[data-season-theme="amihan"] {
+  --amihan-petal: rgba(255, 139, 177, 0.85);
+  --amihan-petal-edge: rgba(90, 200, 250, 0.4);
+  --amihan-petal-shadow: rgba(47, 111, 99, 0.14);
+  --amihan-kite-line: rgba(47, 111, 99, 0.28);
+  --amihan-kite-shadow: rgba(47, 111, 99, 0.18);
+  --amihan-kite-rose: #ff8bb1;
+  --amihan-kite-rose-tail: rgba(255, 139, 177, 0.75);
+  --amihan-kite-sun: #ffd36a;
+  --amihan-kite-sun-tail: rgba(255, 210, 90, 0.78);
+  --amihan-kite-mint: #7ee8a3;
+  --amihan-kite-mint-tail: rgba(126, 232, 163, 0.75);
+  --amihan-kite-sky: #5ac8fa;
+  --amihan-kite-sky-tail: rgba(90, 200, 250, 0.75);
+  --amihan-kite-lilac: #b38cff;
+  --amihan-kite-lilac-tail: rgba(179, 140, 255, 0.7);
+  background:
+    radial-gradient(70% 50% at 90% -10%, rgba(var(--amihan-blossom), 0.22), transparent 62%),
+    radial-gradient(60% 45% at 10% 5%, rgba(126, 232, 163, 0.28), transparent 60%),
+    radial-gradient(45% 35% at 50% 15%, rgba(90, 200, 250, 0.22), transparent 55%),
+    linear-gradient(180deg, var(--amihan-sky-1) 0%, var(--amihan-sky-2) 45%, var(--amihan-sun) 100%) !important;
+  background-attachment: fixed;
+}
+
+body[data-season-theme="amihan"] #amihan-petals {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 350;
+}
+
+body[data-season-theme="amihan"] .amihan-petal-wind {
+  position: absolute;
+  top: -12vh;
+  left: var(--petal-left, 50%);
+  width: 0;
+  height: 0;
+  transform: translateX(0);
+  will-change: transform;
+  animation: amihan-petal-wind var(--petal-wind-duration, 9s) ease-in-out var(--petal-delay, 0s) infinite;
+}
+
+body[data-season-theme="amihan"] #amihan-garland {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body[data-season-theme="amihan"] #amihan-garland .amihan-garland-track {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 20px 18px 10px;
+}
+
+body[data-season-theme="amihan"] #amihan-garland .amihan-garland-track::before {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 16px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--amihan-kite-line) 12%, var(--amihan-kite-line) 88%, transparent);
+  opacity: 0.75;
+}
+
+body[data-season-theme="amihan"] .navbar .container,
+body[data-season-theme="amihan"] .navbar > img {
+  position: relative;
+  z-index: 2;
+}
+
+body[data-season-theme="amihan"] .amihan-kite {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 46px;
+  transform-origin: 50% -10px;
+  animation: amihan-kite-sway var(--kite-sway, 7.2s) ease-in-out infinite;
+}
+
+body[data-season-theme="amihan"] .amihan-kite::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 2px;
+  height: 12px;
+  transform: translateX(-50%);
+  background: var(--amihan-kite-line);
+  border-radius: 999px;
+}
+
+body[data-season-theme="amihan"] .amihan-kite-body {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 3px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, var(--kite-color) 55%, rgba(0, 0, 0, 0.08) 100%);
+  box-shadow: 0 4px 8px var(--amihan-kite-shadow);
+}
+
+body[data-season-theme="amihan"] .amihan-kite-body::after {
+  content: "";
+  position: absolute;
+  inset: 4px 6px 8px 6px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+body[data-season-theme="amihan"] .amihan-kite-tail {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: 2px;
+  height: 26px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, var(--kite-tail) 0%, rgba(255, 255, 255, 0) 85%);
+}
+
+body[data-season-theme="amihan"] .amihan-kite-tail::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 10px;
+  height: 6px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(135deg, var(--kite-tail) 0 55%, transparent 55%),
+    linear-gradient(225deg, var(--kite-tail) 0 55%, transparent 55%);
+  opacity: 0.7;
+  box-shadow: 0 9px 0 0 var(--kite-tail), 0 18px 0 0 var(--kite-tail);
+}
+
+body[data-season-theme="amihan"] .amihan-kite-rose {
+  --kite-color: var(--amihan-kite-rose);
+  --kite-tail: var(--amihan-kite-rose-tail);
+}
+
+body[data-season-theme="amihan"] .amihan-kite-sun {
+  --kite-color: var(--amihan-kite-sun);
+  --kite-tail: var(--amihan-kite-sun-tail);
+}
+
+body[data-season-theme="amihan"] .amihan-kite-mint {
+  --kite-color: var(--amihan-kite-mint);
+  --kite-tail: var(--amihan-kite-mint-tail);
+}
+
+body[data-season-theme="amihan"] .amihan-kite-sky {
+  --kite-color: var(--amihan-kite-sky);
+  --kite-tail: var(--amihan-kite-sky-tail);
+}
+
+body[data-season-theme="amihan"] .amihan-kite-lilac {
+  --kite-color: var(--amihan-kite-lilac);
+  --kite-tail: var(--amihan-kite-lilac-tail);
+}
+
+body[data-season-theme="amihan"] .amihan-kite:nth-child(3n) {
+  --kite-sway: 7.8s;
+  animation-delay: -2.6s;
+}
+
+body[data-season-theme="amihan"] .amihan-kite:nth-child(4n) {
+  --kite-sway: 6.4s;
+  animation-delay: -1.2s;
+}
+
+body[data-season-theme="amihan"] .amihan-petal {
+  position: relative;
+  width: var(--petal-width, 12px);
+  height: var(--petal-height, 9px);
+  opacity: var(--petal-opacity, 0.6);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  animation: amihan-petal-fall var(--petal-duration, 22s) linear var(--petal-delay, 0s) infinite;
+}
+
+body[data-season-theme="amihan"] .amihan-petal-shape {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(140deg, var(--petal-color, var(--amihan-petal)) 0%, var(--petal-edge, var(--amihan-petal-edge)) 100%);
+  border-radius: 60% 40% 55% 45% / 70% 45% 55% 30%;
+  filter: drop-shadow(0 2px 2px var(--amihan-petal-shadow));
+  transform-origin: var(--petal-origin-x, 30%) var(--petal-origin-y, 60%);
+  animation: amihan-petal-spin var(--petal-spin-duration, 7s) ease-in-out var(--petal-delay, 0s) infinite;
+}
+
+body[data-season-theme="amihan"] .amihan-petal-shape::before {
+  content: "";
+  position: absolute;
+  inset: 18% 45% 42% 10%;
+  border-radius: 60% 40% 60% 40%;
+  background: rgba(255, 255, 255, 0.45);
+  transform: rotate(-10deg);
+  opacity: 0.5;
+}
+
+@keyframes amihan-petal-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--petal-opacity, 0.6);
+  }
+  35% {
+    transform: translate3d(var(--petal-drift-1, 10px), 30vh, 0);
+  }
+  60% {
+    transform: translate3d(var(--petal-drift-2, -10px), 60vh, 0);
+  }
+  85% {
+    transform: translate3d(var(--petal-drift-3, 12px), 90vh, 0);
+  }
+  100% {
+    transform: translate3d(var(--petal-drift-4, 20px), 112vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes amihan-petal-spin {
+  0% {
+    transform: rotate(var(--petal-rotate, 0deg)) scaleX(var(--petal-scale-x, 1)) scaleY(var(--petal-scale-y, 1));
+  }
+  30% {
+    transform: rotate(calc(var(--petal-rotate, 0deg) + var(--petal-wobble, 12deg))) scaleX(var(--petal-scale-x, 1)) scaleY(var(--petal-scale-y, 1));
+  }
+  60% {
+    transform: rotate(calc(var(--petal-rotate, 0deg) + 180deg)) scaleX(var(--petal-scale-x, 1)) scaleY(var(--petal-scale-y, 1));
+  }
+  100% {
+    transform: rotate(calc(var(--petal-rotate, 0deg) + 360deg)) scaleX(var(--petal-scale-x, 1)) scaleY(var(--petal-scale-y, 1));
+  }
+}
+
+@keyframes amihan-petal-wind {
+  0% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(var(--petal-wind, 16px));
+  }
+  65% {
+    transform: translateX(var(--petal-wind-neg, -12px));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes amihan-kite-sway {
+  0% {
+    transform: rotate(-5deg) translateY(0);
+  }
+  50% {
+    transform: rotate(6deg) translateY(2px);
+  }
+  100% {
+    transform: rotate(-5deg) translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  body[data-season-theme="amihan"] #amihan-garland {
+    top: -6px;
+    height: 52px;
+  }
+
+  body[data-season-theme="amihan"] #amihan-garland .amihan-garland-track {
+    gap: 10px;
+    padding: 16px 12px 6px;
+  }
+
+  body[data-season-theme="amihan"] .amihan-kite {
+    width: 24px;
+    height: 38px;
+  }
+
+  body[data-season-theme="amihan"] .amihan-kite-body {
+    width: 16px;
+    height: 16px;
+  }
+
+  body[data-season-theme="amihan"] .amihan-kite-tail {
+    top: 16px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 520px) {
+  body[data-season-theme="amihan"] #amihan-garland .amihan-kite:nth-child(n+8) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-season-theme="amihan"] .amihan-petal-wind,
+  body[data-season-theme="amihan"] .amihan-petal,
+  body[data-season-theme="amihan"] .amihan-petal-shape,
+  body[data-season-theme="amihan"] .amihan-kite {
+    animation: none !important;
+  }
+}
+
+body[data-season-theme="amihan"] .navbar {
+  overflow: visible;
+  background: linear-gradient(135deg, var(--amihan-sky-1) 0%, var(--amihan-bloom) 40%, var(--amihan-apricot) 100%) !important;
+  border-bottom: 1px solid rgba(47, 111, 99, 0.18);
+  box-shadow: 0 4px 16px rgba(47, 111, 99, 0.14);
+}
+
+body[data-season-theme="amihan"] .navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(90, 200, 250, 0.3), transparent 60%),
+    radial-gradient(circle at 82% 0%, rgba(255, 139, 177, 0.35), transparent 55%);
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+body[data-season-theme="amihan"] .navbar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  width: 82%;
+  height: 48px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(126, 232, 163, 0.26) 0%, rgba(255, 139, 177, 0.22) 55%, transparent 100%);
+  filter: blur(18px);
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body[data-season-theme="amihan"] .navbar-brand,
+body[data-season-theme="amihan"] .nav-link,
+body[data-season-theme="amihan"] .btn-link {
+  color: #1f3b2f !important;
+}
+
+body[data-season-theme="amihan"] .nav-item .btn-link {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+body[data-season-theme="amihan"] .nav-item .btn-link:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+body[data-season-theme="amihan"] .offcanvas-header {
+  background: linear-gradient(135deg, #e6fff2 0%, #c9f0ff 55%, #ffdeea 100%) !important;
+}
+
+body[data-season-theme="amihan"] .offcanvas-title {
+  color: #1f2937 !important;
+}
+
+body[data-season-theme="amihan"] .offcanvas-header .btn-close {
+  filter: none;
+}

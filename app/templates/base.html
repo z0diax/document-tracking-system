@@ -98,6 +98,133 @@
             color: #2c7a4c;
         }
 
+        .settings-menu {
+            min-width: 22rem;
+            padding-top: 0.35rem;
+            padding-bottom: 0.35rem;
+        }
+
+        .season-theme-panel {
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 12px;
+            padding: 0.7rem;
+            background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.9));
+        }
+
+        .season-theme-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.73rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #64748b;
+            text-align: left;
+        }
+
+        .season-theme-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.4rem;
+        }
+
+        .theme-option-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.45rem;
+            width: 100%;
+            padding: 0.45rem 0.55rem;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #334155;
+            font-size: 0.86rem;
+            font-weight: 600;
+            line-height: 1.15;
+            text-align: left;
+            transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .theme-option-btn i {
+            width: 0.95rem;
+            text-align: center;
+            font-size: 0.82rem;
+            opacity: 0.95;
+            flex-shrink: 0;
+        }
+
+        .theme-option-wide {
+            grid-column: 1 / -1;
+        }
+
+        .theme-option-btn.theme-option-inactive {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(148, 163, 184, 0.45);
+            color: #334155;
+        }
+
+        .theme-option-btn.theme-option-inactive:hover {
+            background: #ffffff;
+            border-color: rgba(100, 116, 139, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .theme-option-btn.theme-option-active {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border-color: #1d4ed8;
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .theme-option-btn:disabled {
+            cursor: default;
+            opacity: 1;
+        }
+
+        .season-theme-status {
+            display: block;
+            margin-top: 0.55rem;
+            font-size: 0.78rem;
+            color: #64748b;
+            text-align: left;
+            line-height: 1.35;
+        }
+
+        html[data-theme="dark"] .season-theme-panel {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(30, 41, 59, 0.82));
+            border-color: rgba(148, 163, 184, 0.26);
+        }
+
+        html[data-theme="dark"] .season-theme-label,
+        html[data-theme="dark"] .season-theme-status {
+            color: #94a3b8;
+        }
+
+        html[data-theme="dark"] .theme-option-btn.theme-option-inactive {
+            background: rgba(30, 41, 59, 0.76);
+            border-color: rgba(148, 163, 184, 0.3);
+            color: #e2e8f0;
+        }
+
+        html[data-theme="dark"] .theme-option-btn.theme-option-inactive:hover {
+            background: rgba(51, 65, 85, 0.82);
+            border-color: rgba(148, 163, 184, 0.46);
+        }
+
+        html[data-theme="dark"] .theme-option-btn.theme-option-active {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border-color: #3b82f6;
+            color: #eff6ff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        @media (max-width: 576px) {
+            .settings-menu {
+                min-width: 19rem;
+            }
+        }
+
         .navbar::before,
         .navbar::after {
             content: none;
@@ -645,14 +772,18 @@
             animation: highlight 2s ease;
         }
     </style>
-    <!-- Use specific version of Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Local vendor assets for offline support -->
+    <link href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='vendor/chart.js/chart.umd.min.js') }}"></script>
+    <link href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='amihan.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='valentines.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='womensmonth.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='winter.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='chinesenewyear.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dark.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/flatpickr/flatpickr.min.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         function showToast(message, category) {
@@ -708,36 +839,73 @@
                     <button class="btn-link" type="button" id="settingsDropdown" data-bs-toggle="dropdown">
                         <i class="fas fa-cog"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end settings-menu">
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="fas fa-id-badge me-2"></i>Profile</a></li>
 {% if current_user.is_admin %}
                         <li><hr class="dropdown-divider"></li>
-                        <li class="px-3 py-2 text-center">
-                            <div class="small text-muted mb-2">Seasonal Theme</div>
-                            <div class="btn-group w-100" role="group" aria-label="Seasonal theme selector">
+                        <li class="px-3 py-2">
+                            <div class="season-theme-panel">
+                            <span class="season-theme-label">Seasonal Theme</span>
+                            <div class="season-theme-grid" role="group" aria-label="Seasonal theme selector">
                                 <button type="button"
-                                        class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 btn-outline-secondary theme-option-btn"
-                                        data-base-class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 theme-option-btn"
-                                        data-active-class="btn-secondary text-white"
-                                        data-inactive-class="btn-outline-secondary"
+                                        class="theme-option-btn theme-option-inactive"
+                                        data-base-class="theme-option-btn"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
                                         data-season-option="classic">
                                     <i class="fas fa-circle"></i>
                                     Classic
                                 </button>
                                 <button type="button"
-                                        class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 btn-outline-primary theme-option-btn"
-                                        data-base-class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 theme-option-btn"
-                                        data-active-class="btn-primary text-white"
-                                        data-inactive-class="btn-outline-primary"
+                                        class="theme-option-btn theme-option-inactive"
+                                        data-base-class="theme-option-btn"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
+                                        data-season-option="valentines">
+                                    <i class="fas fa-heart"></i>
+                                    Valentine
+                                </button>
+                                <button type="button"
+                                        class="theme-option-btn theme-option-inactive theme-option-wide"
+                                        data-base-class="theme-option-btn theme-option-wide"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
+                                        data-season-option="womensmonth">
+                                    <i class="fas fa-venus"></i>
+                                    National Women's Month
+                                </button>
+                                <button type="button"
+                                        class="theme-option-btn theme-option-inactive"
+                                        data-base-class="theme-option-btn"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
+                                        data-season-option="amihan">
+                                    <i class="fas fa-seedling"></i>
+                                    Amihan Bloom
+                                </button>
+                                <button type="button"
+                                        class="theme-option-btn theme-option-inactive"
+                                        data-base-class="theme-option-btn"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
                                         data-season-option="winter">
                                     <i class="fas fa-snowflake"></i>
                                     Winter
                                 </button>
                                 <button type="button"
-                                        class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 btn-outline-danger theme-option-btn"
-                                        data-base-class="btn btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 theme-option-btn"
-                                        data-active-class="btn-danger text-white"
-                                        data-inactive-class="btn-outline-danger"
+                                        class="theme-option-btn theme-option-inactive theme-option-wide"
+                                        data-base-class="theme-option-btn theme-option-wide"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
+                                        data-season-option="chinesenewyear">
+                                    <i class="fas fa-star"></i>
+                                    Chinese New Year
+                                </button>
+                                <button type="button"
+                                        class="theme-option-btn theme-option-inactive theme-option-wide"
+                                        data-base-class="theme-option-btn theme-option-wide"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
                                         data-season-option="hallochristmas">
                                     <i class="fas fa-hat-wizard"></i>
                                     Hallo-Christmas
@@ -746,15 +914,24 @@
                             {% set _theme_label = 'Classic' %}
                             {% if system_theme == 'hallochristmas' %}
                                 {% set _theme_label = 'Hallo-Christmas' %}
+                            {% elif system_theme == 'valentines' %}
+                                {% set _theme_label = 'Valentine' %}
+                            {% elif system_theme == 'womensmonth' %}
+                                {% set _theme_label = "National Women's Month" %}
+                            {% elif system_theme == 'amihan' %}
+                                {% set _theme_label = 'Amihan Bloom' %}
                             {% elif system_theme == 'winter' %}
                                 {% set _theme_label = 'Winter' %}
+                            {% elif system_theme == 'chinesenewyear' %}
+                                {% set _theme_label = 'Chinese New Year' %}
                             {% endif %}
-                            <small class="d-block mt-2 text-muted" id="seasonThemeStatus">
+                            <small class="season-theme-status" id="seasonThemeStatus">
                                 Current: {{ _theme_label }}
                                 {% if system_theme_state.get('updated_by') %}
                                     &middot; by {{ system_theme_state.get('updated_by') }}
                                 {% endif %}
                             </small>
+                            </div>
                         </li>
 {% endif %}
                         <li><hr class="dropdown-divider"></li>
@@ -769,12 +946,7 @@
                     </ul>
                 </li>
                 {% endif %}
-            </div>
-            
-            <img src="{{ url_for('static', filename='border.png') }}" alt="Navbar Logo" 
-            style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); height:60px;">
 
-        </div>
     </nav>
 
     <div id="notification-container">
@@ -831,9 +1003,14 @@
                                 <i class="fas fa-id-card"></i>Employee Records
                             </a>
                             {% endif %}
-                            {% if current_user.can_access_leave %}
+                            {% if current_user.is_admin or current_user.can_access_leave %}
                             <a href="{{ url_for('main.dashboard', view='leave') }}" class="list-group-item list-group-item-action sub-item {% if request.args.get('view') == 'leave' %}active{% endif %}">
                                 <i class="fas fa-plane-departure"></i>Leave
+                            </a>
+                            {% endif %}
+                            {% if current_user.is_admin or current_user.can_see_rsp_tracker %}
+                            <a href="{{ url_for('main.dashboard', view='rsp') }}" class="list-group-item list-group-item-action sub-item {% if request.args.get('view') == 'rsp' %}active{% endif %}">
+                                <i class="fas fa-clipboard-list"></i>RSP Tracker
                             </a>
                             {% endif %}
                         </div>
@@ -988,8 +1165,8 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/flatpickr/flatpickr.min.js') }}"></script>
     
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
@@ -1851,7 +2028,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var statusEl = document.getElementById('seasonThemeStatus');
     var state = {{ system_theme_state|tojson|safe }} || {};
-    var THEMES = ['classic', 'winter', 'hallochristmas'];
+    var THEMES = ['classic', 'valentines', 'womensmonth', 'amihan', 'winter', 'hallochristmas', 'chinesenewyear'];
     var isLoading = false;
     var currentTheme = null;
 
@@ -1864,7 +2041,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function friendly(theme) {
         var current = normalize(theme);
         if (current === 'hallochristmas') return 'Hallo-Christmas';
+        if (current === 'valentines') return 'Valentine';
+        if (current === 'womensmonth') return 'National Women\'s Month';
+        if (current === 'amihan') return 'Amihan Bloom';
         if (current === 'winter') return 'Winter';
+        if (current === 'chinesenewyear') return 'Chinese New Year';
         return 'Classic';
     }
 
@@ -1886,9 +2067,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function syncUI(theme, meta) {
         currentTheme = normalize(theme);
         buttons.forEach(function(btn) {
-            var base = btn.dataset.baseClass || 'btn btn-sm flex-fill theme-option-btn';
-            var activeClass = btn.dataset.activeClass || 'btn-primary text-white';
-            var inactiveClass = btn.dataset.inactiveClass || 'btn-outline-secondary';
+            var base = btn.dataset.baseClass || 'theme-option-btn';
+            var activeClass = btn.dataset.activeClass || 'theme-option-active';
+            var inactiveClass = btn.dataset.inactiveClass || 'theme-option-inactive';
             var option = normalize(btn.dataset.seasonOption);
             var classes = base + ' ' + (option === currentTheme ? activeClass : inactiveClass);
             btn.className = classes;
@@ -2110,10 +2291,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 })();
 </script>
+<script src="{{ url_for('static', filename='amihan.js') }}" defer></script>
+<script src="{{ url_for('static', filename='valentines.js') }}" defer></script>
+<script src="{{ url_for('static', filename='womensmonth.js') }}" defer></script>
+<script src="{{ url_for('static', filename='chinesenewyear.js') }}" defer></script>
 <script src="{{ url_for('static', filename='winter.js') }}" defer></script>
 </body>
 </html>
-
-
-
-

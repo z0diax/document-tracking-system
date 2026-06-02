@@ -10,6 +10,7 @@ LEAVE_TYPE_CHOICES = [
     ('Vacation Leave', 'Vacation Leave'),
     ('Mandatory/Forced Leave', 'Mandatory/Forced Leave'),
     ('Sick Leave', 'Sick Leave'),
+    ('Wellness Leave', 'Wellness Leave'),
     ('Maternity Leave', 'Maternity Leave'),
     ('Paternity Leave', 'Paternity Leave'),
     ('Special Privilege Leave', 'Special Privilege Leave'),
@@ -133,6 +134,13 @@ class EWPForm(FlaskForm):
         ('Released', 'Released')
     ], validators=[Optional()])
     submit = SubmitField('Create EWP')
+
+class RSPRecordForm(FlaskForm):
+    position = StringField('Position', validators=[DataRequired(), Length(min=2, max=120)])
+    office = SelectField('Office', choices=[], validators=[DataRequired()])
+    date_posted = DateField('Date Posted', validators=[DataRequired()], format='%Y-%m-%d')
+    remarks = TextAreaField('Remarks', validators=[Optional(), Length(max=220)])
+    submit = SubmitField('Save RSP')
 
 class EmployeeForm(FlaskForm):
     # Core fields

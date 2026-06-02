@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 EDUCATION_FIELD_NAMES = (
     'school_name',
@@ -69,9 +69,18 @@ class User(db.Model, UserMixin):
     can_access_leave = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
     # Per-user permission to access Employee Records module
     can_access_employee_records = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
+    # Per-user permission to access RSP Tracker module
+    can_see_rsp_tracker = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
     status = db.Column(db.String(20), default='Pending', server_default='Pending', nullable=False)  # Add server_default
     documents_created = db.relationship('Document', backref='creator', lazy=True, foreign_keys='Document.creator_id')
     documents_received = db.relationship('Document', backref='recipient', lazy=True, foreign_keys='Document.recipient_id')
+    rsp_records = db.relationship(
+        'RSPRecord',
+        backref='created_by',
+        lazy=True,
+        foreign_keys='RSPRecord.created_by_user_id',
+        cascade='all, delete-orphan'
+    )
     
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -252,6 +261,33 @@ class ActivityLog(db.Model):
             'remarks': self.remarks,
             'user': {'username': self.user.username} if self.user else None
         }
+
+class ReleaseBatch(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    release_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    created_by = db.relationship('User', foreign_keys=[created_by_id])
+    documents = db.relationship('ReleaseBatchDocument', cascade='all, delete-orphan', back_populates='batch')
+
+    __table_args__ = (
+        db.Index('ix_release_batch_created_at', 'created_at'),
+    )
+
+class ReleaseBatchDocument(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    release_batch_id = db.Column(db.Integer, db.ForeignKey('release_batch.id', ondelete='CASCADE'), nullable=False)
+    document_id = db.Column(db.Integer, db.ForeignKey('document.id', ondelete='CASCADE'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    batch = db.relationship('ReleaseBatch', back_populates='documents')
+    document = db.relationship('Document')
+
+    __table_args__ = (
+        db.Index('ix_release_batch_document', 'release_batch_id', 'document_id', unique=True),
+    )
 
 def format_timedelta(td):
     if not hasattr(td, 'days'):
@@ -460,6 +496,73 @@ class EWPRecord(db.Model):
             'status': self.status,
             'created_timestamp': format_timestamp(self.created_timestamp),
             'created_by_user_id': self.created_by_user_id
+        }
+
+
+class RSPRecord(db.Model):
+    __tablename__ = 'rsp_records'
+
+    id = db.Column(db.Integer, primary_key=True)
+    position = db.Column(db.String(120), nullable=False)
+    office = db.Column(db.String(100), nullable=False)
+    remarks = db.Column(db.Text, nullable=True)
+    date_posted = db.Column(db.Date, nullable=True)
+    phase_number = db.Column(db.Integer, nullable=False, default=1, server_default='1')
+    phase_started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    phase_logs = db.relationship(
+        'RSPPhaseLog',
+        backref='rsp_record',
+        lazy=True,
+        cascade='all, delete-orphan',
+        order_by='RSPPhaseLog.completed_at.desc()'
+    )
+
+    __table_args__ = (
+        db.Index('ix_rsp_records_created_at', 'created_at'),
+        db.Index('ix_rsp_records_phase_started_at', 'phase_started_at'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'position': self.position,
+            'office': self.office,
+            'remarks': self.remarks,
+            'date_posted': self.date_posted.isoformat() if self.date_posted else None,
+            'phase_number': self.phase_number,
+            'phase_started_at': format_timestamp(self.phase_started_at),
+            'created_at': format_timestamp(self.created_at),
+            'updated_at': format_timestamp(self.updated_at),
+            'created_by_user_id': self.created_by_user_id
+        }
+
+class RSPPhaseLog(db.Model):
+    __tablename__ = 'rsp_phase_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    rsp_record_id = db.Column(db.Integer, db.ForeignKey('rsp_records.id', ondelete='CASCADE'), nullable=False, index=True)
+    phase_number = db.Column(db.Integer, nullable=False)
+    phase_name = db.Column(db.String(220), nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    completed_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+
+    completed_by = db.relationship('User', foreign_keys=[completed_by_user_id])
+
+    __table_args__ = (
+        db.Index('ix_rsp_phase_logs_completed_at', 'completed_at'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'rsp_record_id': self.rsp_record_id,
+            'phase_number': self.phase_number,
+            'phase_name': self.phase_name,
+            'completed_at': format_timestamp(self.completed_at),
+            'completed_by_user_id': self.completed_by_user_id
         }
 
 # New Employee model for Employee Records functionality

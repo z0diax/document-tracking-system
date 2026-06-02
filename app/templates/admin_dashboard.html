@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block content %}
 <!-- Enhanced styling -->
@@ -126,6 +126,9 @@ html {
 <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="mb-0">Admin Dashboard</h2>
     <div class="d-print-none">
+        <button type="button" class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#missingOfficesModal">
+            <i class="fas fa-clipboard-list me-1"></i> Generate Report
+        </button>
         <a class="btn btn-sm btn-outline-primary me-2" href="{{ url_for('main.admin_sla_alerts') }}">
             <i class="fas fa-stopwatch me-1"></i> SLA Alerts
         </a>
@@ -559,7 +562,7 @@ html {
                     </thead>
                     <tbody>
                         {% for user in users %}
-                        <tr data-status="{{ user.status|lower }}" data-user-id="{{ user.id }}">
+                        <tr data-status="{{ user.status|lower }}" data-user-id="{{ user.id }}" data-can-see-rsp="{{ 1 if user.can_see_rsp_tracker else 0 }}">
                             <td>{{ user.id }}</td>   
                             <td>
 <a href="javascript:void(0);" onclick='openUserMetrics({{ user.id }}, {{ user.username|tojson }}); return false;'>
@@ -578,7 +581,7 @@ html {
                                 </span>
                             </td>
                             <td>
-                                <div class="btn-group" role="group">
+                                <div class="btn-group user-status-actions" role="group">
                                     {% if user.status == 'Pending' %}
                                     <!-- Approval actions for pending users -->
                                     <button type="button" class="btn btn-sm btn-outline-success" 
@@ -611,6 +614,17 @@ html {
                                             data-restriction-reason="Cannot delete users with documents ({{ user.documents_created|length + user.documents_received|length }})"
                                             {% endif %}>
                                         <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                                <div class="btn-group ms-1 user-access-actions" role="group">
+                                    <button type="button"
+                                            class="btn btn-sm rsp-access-btn {{ 'btn-success' if user.can_see_rsp_tracker else 'btn-outline-secondary' }}"
+                                            data-user-id="{{ user.id }}"
+                                            data-can-see-rsp="{{ 1 if user.can_see_rsp_tracker else 0 }}"
+                                            onclick="toggleRspTrackerAccess({{ user.id }})"
+                                            {% if user.is_admin %}disabled{% endif %}
+                                            title="{% if user.is_admin %}Admins always have RSP access{% else %}Toggle RSP Tracker access{% endif %}">
+                                        <i class="fas fa-clipboard-list"></i>
                                     </button>
                                 </div>
                             </td>
@@ -882,6 +896,152 @@ html {
                     <div class="card-body">
                         <div style="position: relative; height: 250px;">
                             <canvas id="leaveTypeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4 mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between gap-3">
+                        <div>
+                            <h5 class="card-title mb-1">Employees by Leave Type</h5>
+                            <div class="text-muted small">Filter by date range and leave type, then review employees 10 at a time.</div>
+                        </div>
+                        <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="leaveTypeEmployeeDateRangeSelect" class="form-label mb-0 small text-muted">Date Range</label>
+                                <select id="leaveTypeEmployeeDateRangeSelect" class="form-select form-select-sm">
+                                    {% for option in leave_type_employee_date_range_options %}
+                                    <option value="{{ option.value }}" {% if option.value == selected_leave_type_employee_date_range %}selected{% endif %}>{{ option.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="leaveTypeEmployeeYearSelect" class="form-label mb-0 small text-muted">Year</label>
+                                <select id="leaveTypeEmployeeYearSelect" class="form-select form-select-sm" disabled>
+                                    {% for year in leave_type_employee_year_options %}
+                                    <option value="{{ year }}" {% if year|string == selected_leave_type_employee_year %}selected{% endif %}>{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="leaveTypeEmployeeSelect" class="form-label mb-0 small text-muted">Leave Type</label>
+                                <select id="leaveTypeEmployeeSelect" class="form-select form-select-sm" {% if not selected_leave_type_employee_options %}disabled{% endif %}>
+                                    {% if selected_leave_type_employee_options %}
+                                        {% for leave_type in selected_leave_type_employee_options %}
+                                        <option value="{{ leave_type }}" {% if leave_type == selected_leave_type_employee_option %}selected{% endif %}>{{ leave_type }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="">No leave data</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% set initial_employee_total = selected_leave_type_employee_data.employees|length %}
+                        {% set initial_page_employee_count = leave_type_employee_page_size if initial_employee_total > leave_type_employee_page_size else initial_employee_total %}
+                        {% set initial_page_total = ((initial_employee_total - 1) // leave_type_employee_page_size) + 1 if initial_employee_total else 0 %}
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 h-100 bg-light">
+                                    <div class="small text-muted mb-1">Date Range</div>
+                                    <div class="fw-semibold" id="selectedLeaveTypeDateRangeLabel">
+                                        {{ selected_leave_type_employee_range_label }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 h-100 bg-light">
+                                    <div class="small text-muted mb-1">Selected Leave Type</div>
+                                    <div class="fw-semibold" id="selectedLeaveTypeLabel">
+                                        {{ selected_leave_type_employee_option or 'No leave data' }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 h-100 bg-light">
+                                    <div class="small text-muted mb-1">Total Requests</div>
+                                    <div class="fw-semibold" id="selectedLeaveTypeTotalRequests">
+                                        {{ selected_leave_type_employee_data.total_requests or 0 }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 h-100 bg-light">
+                                    <div class="small text-muted mb-1">Unique Employees</div>
+                                    <div class="fw-semibold" id="selectedLeaveTypeUniqueEmployees">
+                                        {{ selected_leave_type_employee_data.unique_employees or 0 }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 align-items-start">
+                            <div class="col-lg-7">
+                                <div id="leaveTypeEmployeesEmptyState" class="alert alert-light border {% if selected_leave_type_employee_data.employees %}d-none{% endif %}">
+                                    No employee leave usage data available for the selected filters.
+                                </div>
+                                <div id="leaveTypeEmployeesChartWrap" class="{% if not selected_leave_type_employee_data.employees %}d-none{% endif %}" style="position: relative; height: 320px;">
+                                    <canvas id="leaveTypeEmployeesChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="d-flex justify-content-between align-items-center mb-2 gap-2">
+                                    <div class="small text-muted" id="leaveTypeEmployeesPageSummary">
+                                        {% if initial_employee_total %}
+                                            Showing 1 to {{ initial_page_employee_count }} of {{ initial_employee_total }} employees
+                                        {% else %}
+                                            Showing 0 to 0 of 0 employees
+                                        {% endif %}
+                                    </div>
+                                    <div class="small text-muted">10 per page</div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Office</th>
+                                                <th>Requests</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="leaveTypeEmployeesTableBody">
+                                            {% if selected_leave_type_employee_data.employees %}
+                                                {% for employee_usage in selected_leave_type_employee_data.employees[:leave_type_employee_page_size] %}
+                                                <tr>
+                                                    <td>{{ employee_usage.employee_name }}</td>
+                                                    <td>{{ employee_usage.office }}</td>
+                                                    <td>{{ employee_usage.request_count }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="3" class="text-center text-muted">No employee leave usage data available.</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3 gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="leaveTypeEmployeesPrevPage" {% if not initial_employee_total or initial_page_total <= 1 %}disabled{% endif %}>
+                                        Previous
+                                    </button>
+                                    <div class="small text-muted text-center" id="leaveTypeEmployeesPageIndicator">
+                                        {% if initial_page_total %}
+                                            Page 1 of {{ initial_page_total }}
+                                        {% else %}
+                                            No pages
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="leaveTypeEmployeesNextPage" {% if not initial_employee_total or initial_page_total <= 1 %}disabled{% endif %}>
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1218,6 +1378,76 @@ html {
           <i class="fas fa-print me-1"></i> Print
         </button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Leave Analytics Drill-down Modal -->
+<div class="modal fade" id="leaveAnalyticsDrilldownModal" tabindex="-1" aria-labelledby="leaveAnalyticsDrilldownModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="leaveAnalyticsDrilldownModalLabel">
+          <i class="fas fa-filter me-2"></i>
+          Leave Analytics Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="border rounded p-3 h-100 bg-light">
+              <div class="small text-muted mb-1">Drill-down Filter</div>
+              <div class="fw-semibold" id="leaveDrilldownMetricLabel">-</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="border rounded p-3 h-100 bg-light">
+              <div class="small text-muted mb-1">Date Range</div>
+              <div class="fw-semibold" id="leaveDrilldownRangeLabel">-</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="border rounded p-3 h-100 bg-light">
+              <div class="small text-muted mb-1">Matching Records</div>
+              <div class="fw-semibold" id="leaveDrilldownTotalLabel">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="leaveDrilldownError" class="alert alert-danger d-none"></div>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Office</th>
+                <th>Leave Type</th>
+                <th>Status</th>
+                <th>Requested Dates</th>
+                <th>Created</th>
+                <th>Released</th>
+                <th>Barcode</th>
+              </tr>
+            </thead>
+            <tbody id="leaveDrilldownTableBody">
+              <tr>
+                <td colspan="8" class="text-center text-muted">Click a Leave chart item to view matching requests.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between align-items-center gap-2">
+        <div class="small text-muted" id="leaveDrilldownPageSummary">No records loaded</div>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="leaveDrilldownPrevPage" disabled>Previous</button>
+          <div class="small text-muted text-center" id="leaveDrilldownPageIndicator">No pages</div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="leaveDrilldownNextPage" disabled>Next</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1654,6 +1884,15 @@ function printUserMetrics() {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: function(_event, elements, chart) {
+                        if (!elements || !elements.length) {
+                            return;
+                        }
+                        const selectedLabel = chart.data.labels[elements[0].index];
+                        if (selectedLabel) {
+                            openLeaveAnalyticsDrilldown('status', selectedLabel, 1);
+                        }
+                    },
                     plugins: {
                         legend: {
                             position: 'right',
@@ -1679,19 +1918,22 @@ function printUserMetrics() {
         }
 
         // Leave Analytics Charts
+        const leaveAnalyticsByRange = {{ leave_analytics_by_range|tojson|safe }};
+        const leaveAnalyticsByYear = {{ leave_analytics_by_year|tojson|safe }};
+        const leaveChartStatusLabels = ['Pending', 'For Computation', 'For Signature', 'Released'];
+        let leaveStatusChartInstance = null;
+        let leaveTypeChartInstance = null;
         const leaveStatusEl = document.getElementById('leaveStatusChart');
         if (leaveStatusEl && typeof Chart !== 'undefined') {
             const lsCtx = leaveStatusEl.getContext('2d');
-            const leaveStatusData = [
-                {{ leave_total_pending|default(0) }},
-                {{ leave_total_forcomp|default(0) }},
-                {{ leave_total_forsignature|default(0) }},
-                {{ leave_total_released|default(0) }}
-            ];
-            new Chart(lsCtx, {
+            const initialLeaveAnalytics = leaveAnalyticsByRange.all_time || {};
+            const leaveStatusData = leaveChartStatusLabels.map(function(statusLabel) {
+                return Number(((initialLeaveAnalytics.status_counts || {})[statusLabel]) || 0);
+            });
+            leaveStatusChartInstance = new Chart(lsCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Pending', 'For Computation', 'For Signature', 'Released'],
+                    labels: leaveChartStatusLabels,
                     datasets: [{
                         label: 'Leave Status',
                         data: leaveStatusData,
@@ -1729,9 +1971,10 @@ function printUserMetrics() {
         const leaveTypeEl = document.getElementById('leaveTypeChart');
         if (leaveTypeEl && typeof Chart !== 'undefined') {
             const ltCtx = leaveTypeEl.getContext('2d');
-            const leaveTypesLabels = {{ leave_types_labels|tojson|safe }};
-            const leaveTypesCounts = {{ leave_types_counts|tojson|safe }};
-            new Chart(ltCtx, {
+            const initialLeaveAnalytics = leaveAnalyticsByRange.all_time || {};
+            const leaveTypesLabels = initialLeaveAnalytics.type_labels || [];
+            const leaveTypesCounts = initialLeaveAnalytics.type_counts || [];
+            leaveTypeChartInstance = new Chart(ltCtx, {
                 type: 'bar',
                 data: {
                     labels: leaveTypesLabels,
@@ -1746,6 +1989,15 @@ function printUserMetrics() {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: function(_event, elements, chart) {
+                        if (!elements || !elements.length) {
+                            return;
+                        }
+                        const selectedLabel = chart.data.labels[elements[0].index];
+                        if (selectedLabel) {
+                            openLeaveAnalyticsDrilldown('type', selectedLabel, 1);
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -1759,6 +2011,572 @@ function printUserMetrics() {
                         legend: { display: false }
                     }
                 }
+            });
+        }
+
+        const leaveTypeEmployeePageSize = Number({{ leave_type_employee_page_size|default(10) }}) || 10;
+        const initialLeaveTypeEmployeeDateRange = {{ selected_leave_type_employee_date_range|tojson|safe }};
+        const initialLeaveTypeEmployeeYear = {{ selected_leave_type_employee_year|tojson|safe }};
+        const initialLeaveTypeEmployeeOption = {{ selected_leave_type_employee_option|tojson|safe }};
+        const leaveTypeEmployeeDateRangeSelect = document.getElementById('leaveTypeEmployeeDateRangeSelect');
+        const leaveTypeEmployeeYearSelect = document.getElementById('leaveTypeEmployeeYearSelect');
+        const leaveTypeEmployeeSelect = document.getElementById('leaveTypeEmployeeSelect');
+        const leaveTypeEmployeesTableBody = document.getElementById('leaveTypeEmployeesTableBody');
+        const leaveTypeEmployeesEmptyState = document.getElementById('leaveTypeEmployeesEmptyState');
+        const leaveTypeEmployeesChartWrap = document.getElementById('leaveTypeEmployeesChartWrap');
+        const leaveTypeEmployeesChartEl = document.getElementById('leaveTypeEmployeesChart');
+        const leaveTypeEmployeesPageSummary = document.getElementById('leaveTypeEmployeesPageSummary');
+        const leaveTypeEmployeesPageIndicator = document.getElementById('leaveTypeEmployeesPageIndicator');
+        const leaveTypeEmployeesPrevPage = document.getElementById('leaveTypeEmployeesPrevPage');
+        const leaveTypeEmployeesNextPage = document.getElementById('leaveTypeEmployeesNextPage');
+        const selectedLeaveTypeDateRangeLabelEl = document.getElementById('selectedLeaveTypeDateRangeLabel');
+        const selectedLeaveTypeLabelEl = document.getElementById('selectedLeaveTypeLabel');
+        const selectedLeaveTypeTotalRequestsEl = document.getElementById('selectedLeaveTypeTotalRequests');
+        const selectedLeaveTypeUniqueEmployeesEl = document.getElementById('selectedLeaveTypeUniqueEmployees');
+        const leaveAnalyticsDrilldownModalEl = document.getElementById('leaveAnalyticsDrilldownModal');
+        const leaveAnalyticsDrilldownTitleEl = document.getElementById('leaveAnalyticsDrilldownModalLabel');
+        const leaveDrilldownMetricLabelEl = document.getElementById('leaveDrilldownMetricLabel');
+        const leaveDrilldownRangeLabelEl = document.getElementById('leaveDrilldownRangeLabel');
+        const leaveDrilldownTotalLabelEl = document.getElementById('leaveDrilldownTotalLabel');
+        const leaveDrilldownErrorEl = document.getElementById('leaveDrilldownError');
+        const leaveDrilldownTableBody = document.getElementById('leaveDrilldownTableBody');
+        const leaveDrilldownPageSummary = document.getElementById('leaveDrilldownPageSummary');
+        const leaveDrilldownPageIndicator = document.getElementById('leaveDrilldownPageIndicator');
+        const leaveDrilldownPrevPage = document.getElementById('leaveDrilldownPrevPage');
+        const leaveDrilldownNextPage = document.getElementById('leaveDrilldownNextPage');
+        let leaveTypeEmployeesChartInstance = null;
+        let leaveTypeEmployeesCurrentPage = 1;
+        let leaveAnalyticsDrilldownModalInstance = null;
+        let leaveAnalyticsDrilldownState = null;
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function(match) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[match];
+            });
+        }
+
+        function getCurrentLeaveAnalyticsFilters() {
+            return {
+                dateRange: leaveTypeEmployeeDateRangeSelect ? leaveTypeEmployeeDateRangeSelect.value : initialLeaveTypeEmployeeDateRange,
+                year: leaveTypeEmployeeYearSelect ? leaveTypeEmployeeYearSelect.value : initialLeaveTypeEmployeeYear
+            };
+        }
+
+        function setLeaveDrilldownLoadingState(message) {
+            if (leaveDrilldownErrorEl) {
+                leaveDrilldownErrorEl.classList.add('d-none');
+                leaveDrilldownErrorEl.textContent = '';
+            }
+            if (leaveDrilldownTableBody) {
+                leaveDrilldownTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">' + escapeHtml(message || 'Loading...') + '</td></tr>';
+            }
+            if (leaveDrilldownPageSummary) {
+                leaveDrilldownPageSummary.textContent = 'Loading records...';
+            }
+            if (leaveDrilldownPageIndicator) {
+                leaveDrilldownPageIndicator.textContent = '...';
+            }
+            if (leaveDrilldownPrevPage) {
+                leaveDrilldownPrevPage.disabled = true;
+            }
+            if (leaveDrilldownNextPage) {
+                leaveDrilldownNextPage.disabled = true;
+            }
+        }
+
+        function renderLeaveAnalyticsDrilldown(data) {
+            const records = Array.isArray(data.records) ? data.records : [];
+            if (leaveAnalyticsDrilldownState) {
+                leaveAnalyticsDrilldownState.page = Number(data.page || leaveAnalyticsDrilldownState.page || 1);
+            }
+
+            if (leaveAnalyticsDrilldownTitleEl) {
+                leaveAnalyticsDrilldownTitleEl.innerHTML = '<i class="fas fa-filter me-2"></i>' + escapeHtml(data.title || 'Leave Analytics Details');
+            }
+            if (leaveDrilldownMetricLabelEl) {
+                leaveDrilldownMetricLabelEl.textContent = (data.metric_label || 'Filter') + ': ' + (data.value || '-');
+            }
+            if (leaveDrilldownRangeLabelEl) {
+                leaveDrilldownRangeLabelEl.textContent = data.range_label || 'All Time';
+            }
+            if (leaveDrilldownTotalLabelEl) {
+                leaveDrilldownTotalLabelEl.textContent = String(data.total || 0);
+            }
+            if (leaveDrilldownErrorEl) {
+                leaveDrilldownErrorEl.classList.add('d-none');
+                leaveDrilldownErrorEl.textContent = '';
+            }
+            if (leaveDrilldownTableBody) {
+                if (records.length) {
+                    leaveDrilldownTableBody.innerHTML = records.map(function(record) {
+                        return '<tr>'
+                            + '<td>' + escapeHtml(record.employee_name || '-') + '</td>'
+                            + '<td>' + escapeHtml(record.office || '-') + '</td>'
+                            + '<td>' + escapeHtml(record.leave_type || '-') + '</td>'
+                            + '<td>' + escapeHtml(record.status || '-') + '</td>'
+                            + '<td>' + escapeHtml(record.requested_dates || '-') + '</td>'
+                            + '<td>' + escapeHtml(record.created_timestamp || '-') + '</td>'
+                            + '<td>' + escapeHtml(record.released_timestamp || '-') + '</td>'
+                            + '<td>' + escapeHtml(record.barcode || '-') + '</td>'
+                            + '</tr>';
+                    }).join('');
+                } else {
+                    leaveDrilldownTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No matching leave requests found.</td></tr>';
+                }
+            }
+            if (leaveDrilldownPageSummary) {
+                if (data.total) {
+                    const page = Number(data.page || 1);
+                    const perPage = Number(data.per_page || records.length || 1);
+                    const startIndex = ((page - 1) * perPage) + 1;
+                    const endIndex = startIndex + records.length - 1;
+                    leaveDrilldownPageSummary.textContent = 'Showing ' + startIndex + ' to ' + endIndex + ' of ' + data.total + ' records';
+                } else {
+                    leaveDrilldownPageSummary.textContent = 'Showing 0 to 0 of 0 records';
+                }
+            }
+            if (leaveDrilldownPageIndicator) {
+                leaveDrilldownPageIndicator.textContent = data.pages
+                    ? ('Page ' + data.page + ' of ' + data.pages)
+                    : 'No pages';
+            }
+            if (leaveDrilldownPrevPage) {
+                leaveDrilldownPrevPage.disabled = !data.has_prev;
+            }
+            if (leaveDrilldownNextPage) {
+                leaveDrilldownNextPage.disabled = !data.has_next;
+            }
+        }
+
+        function showLeaveAnalyticsDrilldownError(message) {
+            if (leaveDrilldownErrorEl) {
+                leaveDrilldownErrorEl.textContent = message || 'Unable to load matching leave requests.';
+                leaveDrilldownErrorEl.classList.remove('d-none');
+            }
+            if (leaveDrilldownTableBody) {
+                leaveDrilldownTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No data available.</td></tr>';
+            }
+            if (leaveDrilldownPageSummary) {
+                leaveDrilldownPageSummary.textContent = 'No records loaded';
+            }
+            if (leaveDrilldownPageIndicator) {
+                leaveDrilldownPageIndicator.textContent = 'No pages';
+            }
+            if (leaveDrilldownPrevPage) {
+                leaveDrilldownPrevPage.disabled = true;
+            }
+            if (leaveDrilldownNextPage) {
+                leaveDrilldownNextPage.disabled = true;
+            }
+        }
+
+        function openLeaveAnalyticsDrilldown(metric, value, page) {
+            if (!leaveAnalyticsDrilldownModalEl) {
+                return;
+            }
+
+            const filters = getCurrentLeaveAnalyticsFilters();
+            leaveAnalyticsDrilldownState = {
+                metric: metric,
+                value: value,
+                page: page || 1,
+                dateRange: filters.dateRange,
+                year: filters.year
+            };
+
+            if (!leaveAnalyticsDrilldownModalInstance) {
+                leaveAnalyticsDrilldownModalInstance = new bootstrap.Modal(leaveAnalyticsDrilldownModalEl);
+            }
+            leaveAnalyticsDrilldownModalInstance.show();
+            setLeaveDrilldownLoadingState('Loading matching leave requests...');
+
+            const params = new URLSearchParams({
+                metric: leaveAnalyticsDrilldownState.metric,
+                value: leaveAnalyticsDrilldownState.value,
+                date_range: leaveAnalyticsDrilldownState.dateRange,
+                page: String(leaveAnalyticsDrilldownState.page)
+            });
+            if (leaveAnalyticsDrilldownState.dateRange === 'year' && leaveAnalyticsDrilldownState.year) {
+                params.set('year', leaveAnalyticsDrilldownState.year);
+            }
+
+            fetch('/hrdoctrack/admin/leave-analytics/drilldown?' + params.toString(), {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+                .then(function(response) {
+                    return response.json().then(function(data) {
+                        if (!response.ok || !data || data.success === false) {
+                            throw new Error((data && data.error) ? data.error : 'Unable to load matching leave requests');
+                        }
+                        return data;
+                    });
+                })
+                .then(function(data) {
+                    renderLeaveAnalyticsDrilldown(data);
+                })
+                .catch(function(error) {
+                    console.error('Leave analytics drill-down error:', error);
+                    showLeaveAnalyticsDrilldownError(error.message);
+                    if (window.showToast) {
+                        showToast(error.message || 'Unable to load matching leave requests', 'danger');
+                    }
+                });
+        }
+
+        function getLeaveTypeDateRangeData(selectedDateRange) {
+            const rangeData = leaveAnalyticsByRange[selectedDateRange] || {};
+            return {
+                label: rangeData.label || 'All Time',
+                status_counts: rangeData.status_counts || {},
+                type_labels: Array.isArray(rangeData.type_labels) ? rangeData.type_labels : [],
+                type_counts: Array.isArray(rangeData.type_counts) ? rangeData.type_counts : [],
+                leave_types: rangeData.leave_types || {},
+                leave_type_options: Array.isArray(rangeData.leave_type_options) ? rangeData.leave_type_options : []
+            };
+        }
+
+        function getLeaveTypeYearData(selectedYear) {
+            const yearKey = String(selectedYear || '');
+            const yearData = leaveAnalyticsByYear[yearKey] || {};
+            return {
+                label: yearData.label || ('Year ' + yearKey),
+                status_counts: yearData.status_counts || {},
+                type_labels: Array.isArray(yearData.type_labels) ? yearData.type_labels : [],
+                type_counts: Array.isArray(yearData.type_counts) ? yearData.type_counts : [],
+                leave_types: yearData.leave_types || {},
+                leave_type_options: Array.isArray(yearData.leave_type_options) ? yearData.leave_type_options : []
+            };
+        }
+
+        function updateLeaveAnalyticsCharts(analyticsData) {
+            const resolvedAnalyticsData = analyticsData || {
+                status_counts: {},
+                type_labels: [],
+                type_counts: []
+            };
+            const statusData = leaveChartStatusLabels.map(function(statusLabel) {
+                return Number((resolvedAnalyticsData.status_counts || {})[statusLabel] || 0);
+            });
+            const typeLabels = Array.isArray(resolvedAnalyticsData.type_labels)
+                ? resolvedAnalyticsData.type_labels
+                : [];
+            const typeCounts = Array.isArray(resolvedAnalyticsData.type_counts)
+                ? resolvedAnalyticsData.type_counts
+                : [];
+
+            if (leaveStatusChartInstance) {
+                leaveStatusChartInstance.data.labels = leaveChartStatusLabels;
+                leaveStatusChartInstance.data.datasets[0].data = statusData;
+                leaveStatusChartInstance.update();
+            }
+
+            if (leaveTypeChartInstance) {
+                leaveTypeChartInstance.data.labels = typeLabels;
+                leaveTypeChartInstance.data.datasets[0].data = typeCounts;
+                leaveTypeChartInstance.update();
+            }
+        }
+
+        function updateLeaveTypeEmployeeYearState(selectedDateRange, preferredYear) {
+            if (!leaveTypeEmployeeYearSelect) {
+                return '';
+            }
+
+            const yearOptions = Array.from(leaveTypeEmployeeYearSelect.options).map(function(option) {
+                return option.value;
+            });
+            const shouldEnable = selectedDateRange === 'year' && yearOptions.length > 0;
+            leaveTypeEmployeeYearSelect.disabled = !shouldEnable;
+
+            if (!yearOptions.length) {
+                leaveTypeEmployeeYearSelect.innerHTML = '<option value="">No years</option>';
+                return '';
+            }
+
+            const resolvedYear = yearOptions.indexOf(String(preferredYear)) >= 0
+                ? String(preferredYear)
+                : yearOptions[0];
+            leaveTypeEmployeeYearSelect.value = resolvedYear;
+            return resolvedYear;
+        }
+
+        function updateLeaveTypeEmployeeOptions(selectedDateRange, preferredLeaveType) {
+            const selectedYear = updateLeaveTypeEmployeeYearState(
+                selectedDateRange,
+                leaveTypeEmployeeYearSelect ? leaveTypeEmployeeYearSelect.value : initialLeaveTypeEmployeeYear
+            );
+            const rangeData = selectedDateRange === 'year'
+                ? getLeaveTypeYearData(selectedYear)
+                : getLeaveTypeDateRangeData(selectedDateRange);
+            const leaveTypeOptions = rangeData.leave_type_options;
+
+            if (!leaveTypeEmployeeSelect) {
+                return '';
+            }
+
+            if (!leaveTypeOptions.length) {
+                leaveTypeEmployeeSelect.innerHTML = '<option value="">No leave data</option>';
+                leaveTypeEmployeeSelect.disabled = true;
+                return '';
+            }
+
+            leaveTypeEmployeeSelect.disabled = false;
+            leaveTypeEmployeeSelect.innerHTML = leaveTypeOptions.map(function(leaveType) {
+                const isSelected = leaveType === preferredLeaveType ? ' selected' : '';
+                return '<option value="' + escapeHtml(leaveType) + '"' + isSelected + '>' + escapeHtml(leaveType) + '</option>';
+            }).join('');
+
+            const selectedLeaveType = leaveTypeOptions.indexOf(preferredLeaveType) >= 0
+                ? preferredLeaveType
+                : leaveTypeOptions[0];
+            leaveTypeEmployeeSelect.value = selectedLeaveType;
+            return selectedLeaveType;
+        }
+
+        function renderLeaveTypeEmployeeAnalytics(options) {
+            const selectedDateRange = options && options.dateRange
+                ? options.dateRange
+                : (leaveTypeEmployeeDateRangeSelect ? leaveTypeEmployeeDateRangeSelect.value : initialLeaveTypeEmployeeDateRange);
+            const preferredYear = options && Object.prototype.hasOwnProperty.call(options, 'year')
+                ? options.year
+                : (leaveTypeEmployeeYearSelect ? leaveTypeEmployeeYearSelect.value : initialLeaveTypeEmployeeYear);
+            const preferredLeaveType = options && Object.prototype.hasOwnProperty.call(options, 'leaveType')
+                ? options.leaveType
+                : (leaveTypeEmployeeSelect ? leaveTypeEmployeeSelect.value : initialLeaveTypeEmployeeOption);
+            const requestedPage = options && typeof options.page === 'number' ? options.page : 1;
+            const selectedYear = updateLeaveTypeEmployeeYearState(selectedDateRange, preferredYear);
+            const dateRangeData = selectedDateRange === 'year'
+                ? getLeaveTypeYearData(selectedYear)
+                : getLeaveTypeDateRangeData(selectedDateRange);
+            const selectedLeaveType = updateLeaveTypeEmployeeOptions(selectedDateRange, preferredLeaveType);
+            updateLeaveAnalyticsCharts(dateRangeData);
+            const usageData = selectedLeaveType
+                ? (dateRangeData.leave_types[selectedLeaveType] || {
+                    employees: [],
+                    total_requests: 0,
+                    unique_employees: 0
+                })
+                : {
+                    employees: [],
+                    total_requests: 0,
+                    unique_employees: 0
+                };
+            const employees = Array.isArray(usageData.employees) ? usageData.employees : [];
+            const hasData = employees.length > 0;
+            const totalPages = hasData ? Math.ceil(employees.length / leaveTypeEmployeePageSize) : 0;
+            const safePage = hasData ? Math.min(Math.max(requestedPage, 1), totalPages) : 0;
+            const startIndex = hasData ? (safePage - 1) * leaveTypeEmployeePageSize : 0;
+            const pageEmployees = hasData
+                ? employees.slice(startIndex, startIndex + leaveTypeEmployeePageSize)
+                : [];
+            const showingStart = hasData ? startIndex + 1 : 0;
+            const showingEnd = hasData ? startIndex + pageEmployees.length : 0;
+
+            leaveTypeEmployeesCurrentPage = safePage || 1;
+
+            if (selectedLeaveTypeDateRangeLabelEl) {
+                selectedLeaveTypeDateRangeLabelEl.textContent = selectedDateRange === 'year'
+                    ? ('Year ' + (selectedYear || ''))
+                    : dateRangeData.label;
+            }
+            if (selectedLeaveTypeLabelEl) {
+                selectedLeaveTypeLabelEl.textContent = selectedLeaveType || 'No leave data';
+            }
+            if (selectedLeaveTypeTotalRequestsEl) {
+                selectedLeaveTypeTotalRequestsEl.textContent = usageData.total_requests || 0;
+            }
+            if (selectedLeaveTypeUniqueEmployeesEl) {
+                selectedLeaveTypeUniqueEmployeesEl.textContent = usageData.unique_employees || 0;
+            }
+            if (leaveTypeEmployeesPageSummary) {
+                leaveTypeEmployeesPageSummary.textContent = hasData
+                    ? ('Showing ' + showingStart + ' to ' + showingEnd + ' of ' + employees.length + ' employees')
+                    : 'Showing 0 to 0 of 0 employees';
+            }
+            if (leaveTypeEmployeesPageIndicator) {
+                leaveTypeEmployeesPageIndicator.textContent = hasData
+                    ? ('Page ' + safePage + ' of ' + totalPages)
+                    : 'No pages';
+            }
+            if (leaveTypeEmployeesPrevPage) {
+                leaveTypeEmployeesPrevPage.disabled = !hasData || safePage <= 1;
+            }
+            if (leaveTypeEmployeesNextPage) {
+                leaveTypeEmployeesNextPage.disabled = !hasData || safePage >= totalPages;
+            }
+
+            if (leaveTypeEmployeesTableBody) {
+                if (hasData) {
+                    leaveTypeEmployeesTableBody.innerHTML = pageEmployees.map(function(employee) {
+                        return '<tr>'
+                            + '<td>' + escapeHtml(employee.employee_name || '-') + '</td>'
+                            + '<td>' + escapeHtml(employee.office || '-') + '</td>'
+                            + '<td>' + escapeHtml(employee.request_count || 0) + '</td>'
+                            + '</tr>';
+                    }).join('');
+                } else {
+                    leaveTypeEmployeesTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No employee leave usage data available.</td></tr>';
+                }
+            }
+
+            if (leaveTypeEmployeesEmptyState) {
+                leaveTypeEmployeesEmptyState.classList.toggle('d-none', hasData);
+            }
+            if (leaveTypeEmployeesChartWrap) {
+                leaveTypeEmployeesChartWrap.classList.toggle('d-none', !hasData);
+            }
+
+            if (leaveTypeEmployeesChartInstance) {
+                leaveTypeEmployeesChartInstance.destroy();
+                leaveTypeEmployeesChartInstance = null;
+            }
+
+            if (!hasData || !leaveTypeEmployeesChartEl || typeof Chart === 'undefined') {
+                return;
+            }
+
+            leaveTypeEmployeesChartInstance = new Chart(leaveTypeEmployeesChartEl.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: pageEmployees.map(function(employee) {
+                        return employee.chart_label || employee.employee_name || 'Unknown Employee';
+                    }),
+                    datasets: [{
+                        label: 'Leave Requests',
+                        data: pageEmployees.map(function(employee) {
+                            return employee.request_count || 0;
+                        }),
+                        backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Leave Requests'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const count = context.raw || 0;
+                                    return count + ' leave request' + (count === 1 ? '' : 's');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (leaveTypeEmployeeDateRangeSelect) {
+            leaveTypeEmployeeDateRangeSelect.addEventListener('change', function() {
+                renderLeaveTypeEmployeeAnalytics({
+                    dateRange: this.value,
+                    year: leaveTypeEmployeeYearSelect ? leaveTypeEmployeeYearSelect.value : initialLeaveTypeEmployeeYear,
+                    leaveType: '',
+                    page: 1
+                });
+            });
+        }
+
+        if (leaveTypeEmployeeYearSelect) {
+            leaveTypeEmployeeYearSelect.addEventListener('change', function() {
+                renderLeaveTypeEmployeeAnalytics({
+                    dateRange: leaveTypeEmployeeDateRangeSelect ? leaveTypeEmployeeDateRangeSelect.value : 'year',
+                    year: this.value,
+                    leaveType: '',
+                    page: 1
+                });
+            });
+        }
+
+        if (leaveTypeEmployeeSelect) {
+            leaveTypeEmployeeSelect.addEventListener('change', function() {
+                renderLeaveTypeEmployeeAnalytics({
+                    year: leaveTypeEmployeeYearSelect ? leaveTypeEmployeeYearSelect.value : initialLeaveTypeEmployeeYear,
+                    page: 1
+                });
+            });
+        }
+
+        if (leaveTypeEmployeesPrevPage) {
+            leaveTypeEmployeesPrevPage.addEventListener('click', function() {
+                renderLeaveTypeEmployeeAnalytics({
+                    year: leaveTypeEmployeeYearSelect ? leaveTypeEmployeeYearSelect.value : initialLeaveTypeEmployeeYear,
+                    page: leaveTypeEmployeesCurrentPage - 1
+                });
+            });
+        }
+
+        if (leaveTypeEmployeesNextPage) {
+            leaveTypeEmployeesNextPage.addEventListener('click', function() {
+                renderLeaveTypeEmployeeAnalytics({
+                    year: leaveTypeEmployeeYearSelect ? leaveTypeEmployeeYearSelect.value : initialLeaveTypeEmployeeYear,
+                    page: leaveTypeEmployeesCurrentPage + 1
+                });
+            });
+        }
+
+        if (leaveDrilldownPrevPage) {
+            leaveDrilldownPrevPage.addEventListener('click', function() {
+                if (!leaveAnalyticsDrilldownState || !leaveAnalyticsDrilldownState.page || leaveAnalyticsDrilldownState.page <= 1) {
+                    return;
+                }
+                openLeaveAnalyticsDrilldown(
+                    leaveAnalyticsDrilldownState.metric,
+                    leaveAnalyticsDrilldownState.value,
+                    leaveAnalyticsDrilldownState.page - 1
+                );
+            });
+        }
+
+        if (leaveDrilldownNextPage) {
+            leaveDrilldownNextPage.addEventListener('click', function() {
+                if (!leaveAnalyticsDrilldownState) {
+                    return;
+                }
+                openLeaveAnalyticsDrilldown(
+                    leaveAnalyticsDrilldownState.metric,
+                    leaveAnalyticsDrilldownState.value,
+                    leaveAnalyticsDrilldownState.page + 1
+                );
+            });
+        }
+
+        if (leaveTypeEmployeeDateRangeSelect || leaveTypeEmployeeSelect) {
+            renderLeaveTypeEmployeeAnalytics({
+                dateRange: initialLeaveTypeEmployeeDateRange,
+                year: initialLeaveTypeEmployeeYear,
+                leaveType: initialLeaveTypeEmployeeOption,
+                page: 1
             });
         }
 
@@ -1801,6 +2619,7 @@ function printUserMetrics() {
                         // Payroll sub-types
                         'Salary', 'Voucher', 'Trust fund', 'Terminal Pay', 'Overtime Pay',
                         'Subsistence Allowance', 'Travel Allowance', 'RATA', 'Mobile Allowance',
+                        'Clothing Allowance',
                         // Request sub-types
                         'Certificate of Employment', 'Service Record', 'Clearance',
                         // Others category
@@ -1816,7 +2635,7 @@ function printUserMetrics() {
                                 {{ communications_subtypes.get('Travel Authority', 0) }},
                                 // Empty values for other categories
                                 null, null, null, null, null, null, null, null, 
-                                null, null, null, null, null
+                                null, null, null, null, null, null
                             ],
                             backgroundColor: colorSchemes.Communications.backgroundColor,
                             borderColor: colorSchemes.Communications.borderColor,
@@ -1838,6 +2657,7 @@ function printUserMetrics() {
                                 {{ payroll_subtypes.get('Travel Allowance', 0) }},
                                 {{ payroll_subtypes.get('RATA', 0) }},
                                 {{ payroll_subtypes.get('Mobile Allowance', 0) }},
+                                {{ payroll_subtypes.get('Clothing Allowance', 0) }},
                                 // Empty values for Request and Others categories
                                 null, null, null, null
                             ],
@@ -1851,6 +2671,7 @@ function printUserMetrics() {
                             data: [
                                 // Empty values for Communications and Payroll categories
                                 null, null, null, null, null, null, null, null, null, null, null, null,
+                                null,
                                 // Request values
                                 {{ request_subtypes.get('Certificate of Employment', 0) }},
                                 {{ request_subtypes.get('Service Record', 0) }},
@@ -1867,7 +2688,7 @@ function printUserMetrics() {
                             data: [
                                 // Empty values for all other categories
                                 null, null, null, null, null, null, null, null, null, null, null,
-                                null, null, null, null,
+                                null, null, null, null, null,
                                 // Others value
                                 {{ others_count|default(0) }}
                             ],
@@ -2239,7 +3060,7 @@ function printUserMetrics() {
                     statusCell.className = 'badge bg-success';
                     userRow.setAttribute('data-status', 'active');
                     // Replace the buttons with the toggle status button
-                    const actionCell = userRow.querySelector('td:nth-child(5) div');
+                    const actionCell = userRow.querySelector('td:nth-child(5) .user-status-actions');
                     actionCell.innerHTML = `
                         <button type="button" class="btn btn-sm btn-outline-warning" 
                                 onclick="toggleUserStatus(${userId})" 
@@ -2296,7 +3117,7 @@ function printUserMetrics() {
                     statusCell.className = 'badge bg-danger';
                     userRow.setAttribute('data-status', 'disabled');
                     // Replace the buttons with the toggle status button
-                    const actionCell = userRow.querySelector('td:nth-child(5) div');
+                    const actionCell = userRow.querySelector('td:nth-child(5) .user-status-actions');
                     actionCell.innerHTML = `
                         <button type="button" class="btn btn-sm btn-outline-warning" 
                                 onclick="toggleUserStatus(${userId})" 
@@ -2318,6 +3139,49 @@ function printUserMetrics() {
             console.error('Error declining user:', error);
             showToast('An error occurred while declining the user', 'error');
         });
+    }
+
+    // Toggle RSP Tracker access for a user
+    function toggleRspTrackerAccess(userId) {
+        const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+        if (!userRow) return;
+
+        const accessBtn = userRow.querySelector('.rsp-access-btn');
+        if (!accessBtn || accessBtn.disabled) return;
+
+        const formData = new FormData();
+        formData.append('csrf_token', csrfToken);
+
+        fetch('/hrdoctrack/admin/toggle_rsp_tracker_access/' + userId, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData,
+            credentials: 'same-origin'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! Status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    showToast(data.error || 'Failed to update RSP access', 'error');
+                    return;
+                }
+                const hasAccess = !!data.canSeeRspTracker;
+                userRow.setAttribute('data-can-see-rsp', hasAccess ? '1' : '0');
+                accessBtn.setAttribute('data-can-see-rsp', hasAccess ? '1' : '0');
+                accessBtn.classList.toggle('btn-success', hasAccess);
+                accessBtn.classList.toggle('btn-outline-secondary', !hasAccess);
+                showToast(data.message || 'RSP Tracker access updated.', 'success');
+            })
+            .catch(error => {
+                console.error('Error toggling RSP access:', error);
+                showToast('An error occurred while updating RSP Tracker access', 'error');
+            });
     }
 
     // Toggle user status (Active/Disabled)
@@ -2970,4 +3834,297 @@ function openReportText(action) {
   }
 }
 </script>
+
+<!-- Missing Offices Modal -->
+<div class="modal fade" id="missingOfficesModal" tabindex="-1" aria-labelledby="missingOfficesModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="missingOfficesModalLabel">
+          <i class="fas fa-clipboard-list me-2"></i> Generate Missing Office Report
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="missingOfficesClassification" class="form-label">Document Classification</label>
+          <select id="missingOfficesClassification" class="form-select">
+            <option value="">Select classification</option>
+            {% for classification in classification_options %}
+              <option value="{{ classification }}">{{ classification }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">Select a classification to check which offices have or lack records.</div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="missingOfficesDateFrom">Date From</label>
+            <input type="date" id="missingOfficesDateFrom" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="missingOfficesDateTo">Date To</label>
+            <input type="date" id="missingOfficesDateTo" class="form-control">
+          </div>
+        </div>
+        <div class="row g-3 mt-2">
+          <div class="col-md-6">
+            <label class="form-label" for="missingOfficesMonth">Month</label>
+            <select id="missingOfficesMonth" class="form-select">
+              <option value="">All</option>
+              {% for mval, mname in month_options %}
+                <option value="{{ mval }}">{{ mname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="missingOfficesYear">Year</label>
+            <select id="missingOfficesYear" class="form-select">
+              <option value="">All</option>
+              {% for y in year_options %}
+                <option value="{{ y }}">{{ y }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-text mt-2">Use Date From/To (preferred) or Month/Year to filter records.</div>
+        <div id="missingOfficesResult" class="alert alert-info d-none small mb-3" role="alert"></div>
+        <div class="table-responsive d-none" id="missingOfficesTableWrapper">
+          <table class="table table-sm align-middle mb-0" id="missingOfficesTable">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 50%;">Office Name</th>
+                <th style="width: 25%;">Status</th>
+                <th style="width: 15%;">Count</th>
+                <th style="width: 10%;"></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="generateMissingOfficesBtn">
+          <i class="fas fa-search me-1"></i> Generate
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Office Docs Modal -->
+<div class="modal fade" id="officeDocsModal" tabindex="-1" aria-labelledby="officeDocsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="officeDocsModalLabel">
+          <i class="fas fa-folder-open me-2"></i> Documents
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3 fw-semibold" id="officeDocsTitle"></div>
+        <div id="officeDocsBody"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const modalEl = document.getElementById('missingOfficesModal');
+  const classificationSelect = document.getElementById('missingOfficesClassification');
+  const dateFromEl = document.getElementById('missingOfficesDateFrom');
+  const dateToEl = document.getElementById('missingOfficesDateTo');
+  const monthEl = document.getElementById('missingOfficesMonth');
+  const yearEl = document.getElementById('missingOfficesYear');
+  const resultBox = document.getElementById('missingOfficesResult');
+  const tableWrapper = document.getElementById('missingOfficesTableWrapper');
+  const tableBody = document.querySelector('#missingOfficesTable tbody');
+  const generateBtn = document.getElementById('generateMissingOfficesBtn');
+  const docsModalEl = document.getElementById('officeDocsModal');
+  const docsModalBody = document.getElementById('officeDocsBody');
+  const docsModalTitle = document.getElementById('officeDocsTitle');
+
+  if (!modalEl || !classificationSelect || !generateBtn) {
+    return;
+  }
+
+  const resetReportState = () => {
+    if (resultBox) {
+      resultBox.classList.add('d-none');
+      resultBox.classList.remove('alert-danger', 'alert-warning', 'alert-success', 'alert-info');
+      resultBox.textContent = '';
+    }
+    if (tableWrapper) {
+      tableWrapper.classList.add('d-none');
+    }
+    if (tableBody) {
+      tableBody.innerHTML = '';
+    }
+  };
+
+  modalEl.addEventListener('show.bs.modal', resetReportState);
+
+  const renderRows = (rows, classification) => {
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+      const statusBadge = row.has_record
+        ? '<span class="badge bg-success">Has Record</span>'
+        : '<span class="badge bg-danger">No Records</span>';
+
+      tr.innerHTML = `
+        <td>${row.office}</td>
+        <td>${statusBadge}</td>
+        <td>${row.count || 0}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-secondary view-docs-btn" data-office="${row.office}" ${row.has_record ? '' : 'disabled'}>
+            View
+          </button>
+        </td>
+      `;
+      tableBody.appendChild(tr);
+    });
+
+    tableBody.querySelectorAll('.view-docs-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const office = btn.getAttribute('data-office');
+        openDocsModal(classification, office);
+      });
+    });
+  };
+
+  const openDocsModal = (classification, office) => {
+    if (!docsModalEl || !docsModalBody || !docsModalTitle) return;
+    docsModalBody.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>';
+    docsModalTitle.textContent = `${office} - ${classification}`;
+    const bsModal = bootstrap.Modal.getOrCreateInstance(docsModalEl);
+    bsModal.show();
+
+    const params = new URLSearchParams();
+    params.set('classification', classification);
+    params.set('office', office);
+    const df = dateFromEl && dateFromEl.value ? dateFromEl.value : '';
+    const dt = dateToEl && dateToEl.value ? dateToEl.value : '';
+    const m = monthEl && monthEl.value ? monthEl.value : '';
+    const y = yearEl && yearEl.value ? yearEl.value : '';
+    if (df) params.set('date_from', df);
+    if (dt) params.set('date_to', dt);
+    if (!df && !dt) {
+      if (m) params.set('month', m);
+      if (y) params.set('year', y);
+    }
+
+    fetch(`{{ url_for('main.admin_missing_office_details') }}?${params.toString()}`)
+      .then(response => response.json().then(data => ({ ok: response.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          throw new Error(data.error || 'Unable to load documents.');
+        }
+        const docs = data.documents || [];
+        if (!docs.length) {
+          docsModalBody.innerHTML = '<div class="alert alert-info mb-0">No documents found for this office.</div>';
+          return;
+        }
+        const rows = docs.map(doc => `
+          <tr>
+            <td>${doc.title}</td>
+            <td>${doc.classification}</td>
+            <td>${doc.status}</td>
+            <td>${doc.creator}</td>
+            <td>${doc.recipient}</td>
+            <td>${doc.timestamp || ''}</td>
+            <td>${doc.barcode || ''}</td>
+          </tr>
+        `).join('');
+        docsModalBody.innerHTML = `
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Title</th>
+                  <th>Classification</th>
+                  <th>Status</th>
+                  <th>Creator</th>
+                  <th>Recipient</th>
+                  <th>Created</th>
+                  <th>Barcode</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        `;
+      })
+      .catch(err => {
+        docsModalBody.innerHTML = `<div class="alert alert-danger mb-0">${err.message || 'Failed to load documents.'}</div>`;
+      });
+  };
+
+  generateBtn.addEventListener('click', () => {
+    const classification = (classificationSelect.value || '').trim();
+    resetReportState();
+
+    if (!classification) {
+      if (resultBox) {
+        resultBox.classList.remove('d-none');
+        resultBox.classList.add('alert-warning');
+        resultBox.textContent = 'Please select a document classification.';
+      }
+      return;
+    }
+
+    if (resultBox) {
+      resultBox.classList.remove('d-none');
+      resultBox.classList.add('alert-info');
+      resultBox.textContent = 'Generating report...';
+    }
+
+    const params = new URLSearchParams();
+    params.set('classification', classification);
+    const df = dateFromEl && dateFromEl.value ? dateFromEl.value : '';
+    const dt = dateToEl && dateToEl.value ? dateToEl.value : '';
+    const m = monthEl && monthEl.value ? monthEl.value : '';
+    const y = yearEl && yearEl.value ? yearEl.value : '';
+    if (df) params.set('date_from', df);
+    if (dt) params.set('date_to', dt);
+    if (!df && !dt) {
+      if (m) params.set('month', m);
+      if (y) params.set('year', y);
+    }
+
+    fetch(`{{ url_for('main.admin_missing_offices') }}?${params.toString()}`)
+      .then(response => response.json().then(data => ({ ok: response.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          throw new Error(data.error || 'Unable to generate report.');
+        }
+
+        if (resultBox) {
+          resultBox.classList.remove('alert-warning', 'alert-info', 'alert-danger');
+          resultBox.classList.add('alert-info');
+          resultBox.textContent = `Total offices: ${data.total_offices} | With records: ${data.offices_with_records} | No records: ${data.offices_without_records}`;
+        }
+
+        if ((data.rows || []).length && tableWrapper) {
+          tableWrapper.classList.remove('d-none');
+          renderRows(data.rows, classification);
+        }
+      })
+      .catch(err => {
+        if (resultBox) {
+          resultBox.classList.remove('d-none', 'alert-warning', 'alert-info', 'alert-success');
+          resultBox.classList.add('alert-danger');
+          resultBox.textContent = err.message || 'Failed to generate report.';
+        }
+      });
+  });
+});
+</script>
 {% endblock %}
+

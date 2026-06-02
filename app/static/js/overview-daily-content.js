@@ -583,7 +583,7 @@
         const trivia = selectDailyItem('dailyTrivia', 'triviaDate', triviaItems);
         questionEl.textContent = trivia.question;
         answerEl.textContent = trivia.answer;
-        imageContainer.innerHTML = `<img src="${trivia.image}" alt="Trivia image" style="width:100%; height:300px; object-fit:cover; border-radius:10px;" onerror="this.onerror=null;this.src='https://dummyimage.com/800x300/cccccc/000000&text=Image+Not+Found'" />`;
+        imageContainer.innerHTML = `<img src="${trivia.image}" alt="Trivia image" style="width:100%; height:300px; object-fit:cover; border-radius:10px;" onerror="this.onerror=null;this.src='/static/img/offline-placeholder.svg'" />`;
         imageContainer.classList.remove('hidden');
         imageContainer.classList.add('show');
     }

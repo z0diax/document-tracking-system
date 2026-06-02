@@ -1,0 +1,1004 @@
+/* Chinese New Year theme: festive red-gold skin and decorations */
+:root {
+  --cny-red-1: #7f1d1d;
+  --cny-red-2: #b91c1c;
+  --cny-red-3: #dc2626;
+  --cny-gold-1: #f59e0b;
+  --cny-gold-2: #facc15;
+  --cny-gold-3: #fde68a;
+}
+
+body[data-season-theme="chinesenewyear"] {
+  background:
+    radial-gradient(60% 44% at 88% -12%, rgba(250, 204, 21, 0.16), transparent 66%),
+    radial-gradient(54% 40% at 14% 8%, rgba(220, 38, 38, 0.16), transparent 62%),
+    linear-gradient(180deg, #fff8ee 0%, #ffefd8 52%, #fff5e6 100%) !important;
+  background-attachment: fixed;
+}
+
+body[data-season-theme="chinesenewyear"] nav.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  overflow: visible;
+  background: linear-gradient(135deg, var(--cny-red-1) 0%, var(--cny-red-2) 42%, #991b1b 100%) !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.34);
+  box-shadow: 0 8px 24px rgba(69, 10, 10, 0.35);
+}
+
+body[data-season-theme="chinesenewyear"] nav.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(253, 230, 138, 0.18), transparent 58%),
+    radial-gradient(circle at 82% 0%, rgba(250, 204, 21, 0.2), transparent 62%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="chinesenewyear"] nav.navbar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  width: 86%;
+  height: 56px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(250, 204, 21, 0.2) 0%, rgba(220, 38, 38, 0.2) 45%, transparent 100%);
+  filter: blur(16px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+body[data-season-theme="chinesenewyear"] .navbar .container,
+body[data-season-theme="chinesenewyear"] .navbar > img {
+  position: relative;
+  z-index: 2;
+}
+
+body[data-season-theme="chinesenewyear"] .navbar-brand,
+body[data-season-theme="chinesenewyear"] .nav-link,
+body[data-season-theme="chinesenewyear"] .btn-link {
+  color: #fff7dc !important;
+}
+
+body[data-season-theme="chinesenewyear"] .nav-item .btn-link {
+  background: rgba(253, 230, 138, 0.13) !important;
+}
+
+body[data-season-theme="chinesenewyear"] .nav-item .btn-link:hover {
+  background: rgba(253, 230, 138, 0.24) !important;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  height: 78px;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-track {
+  display: flex;
+  gap: 12px;
+  padding: 4px 16px 0;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern {
+  position: relative;
+  width: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  isolation: isolate;
+  transform-origin: top center;
+  animation: cny-lantern-sway var(--lantern-sway-duration, 5.8s) ease-in-out var(--lantern-sway-delay, 0s) infinite;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 17px;
+  width: 36px;
+  height: 36px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(253, 224, 71, 0.62) 0%,
+    rgba(250, 204, 21, 0.34) 36%,
+    rgba(251, 191, 36, 0.08) 58%,
+    rgba(251, 191, 36, 0) 75%
+  );
+  filter: blur(1.6px);
+  opacity: 0.76;
+  pointer-events: none;
+  z-index: 0;
+  animation: cny-lantern-halo 2.8s ease-in-out infinite;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-cord {
+  width: 2px;
+  height: 14px;
+  border-radius: 999px;
+  margin-bottom: 1px;
+  background: linear-gradient(180deg, rgba(255, 236, 179, 0.96), rgba(253, 224, 71, 0.6));
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-cap {
+  width: 13px;
+  height: 4px;
+  margin-bottom: 1px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #facc15 0%, #d97706 100%);
+  box-shadow: 0 1px 0 rgba(255, 251, 235, 0.35) inset;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-body {
+  position: relative;
+  width: 22px;
+  height: 25px;
+  z-index: 1;
+  border-radius: 10px 10px 12px 12px;
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 46%, #991b1b 100%);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 245, 215, 0.35),
+    0 5px 10px rgba(99, 18, 18, 0.5),
+    0 0 12px rgba(250, 204, 21, 0.22);
+  animation: cny-lantern-glow 3.2s ease-in-out infinite;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-body::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  width: 7px;
+  height: 15px;
+  border-radius: 8px;
+  background: rgba(255, 241, 214, 0.28);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(253, 230, 138, 0.02) 0 3px,
+    rgba(253, 230, 138, 0.2) 3px 4px
+  );
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-emblem {
+  position: absolute;
+  left: 50%;
+  top: 9px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff8dc 0%, #facc15 55%, #f59e0b 100%);
+  box-shadow:
+    0 0 0 1px rgba(120, 53, 15, 0.24),
+    0 0 7px rgba(253, 224, 71, 0.45);
+  animation: cny-emblem-glow 2.8s ease-in-out infinite;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-tassel {
+  position: relative;
+  width: 2px;
+  height: 10px;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 232, 179, 0.76), rgba(253, 224, 71, 0.38));
+}
+
+body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern-tassel::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  bottom: 0;
+  width: 8px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 232, 179, 0.68);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-greeting-banner {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  height: 100%;
+  width: min(1040px, calc(100% - 300px));
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-greeting-banner .cny-greeting-inner {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr minmax(240px, 340px) 1fr;
+  align-items: center;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-greeting-banner .cny-greeting-text {
+  justify-self: center;
+  white-space: nowrap;
+  font-family: "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Noto Serif TC", "Times New Roman", serif;
+  font-size: clamp(0.96rem, 1.55vw, 1.20rem);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #ffe5a6;
+  text-shadow:
+    0 1px 0 rgba(120, 53, 15, 0.68),
+    0 0 10px rgba(251, 191, 36, 0.3),
+    0 0 18px rgba(251, 191, 36, 0.2);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-greeting-banner .cny-greeting-spacer {
+  display: block;
+  height: 1px;
+}
+
+html[data-theme="dark"] body[data-season-theme="chinesenewyear"] #cny-greeting-banner .cny-greeting-text {
+  color: #ffe9b8;
+  text-shadow:
+    0 1px 0 rgba(78, 34, 11, 0.72),
+    0 0 10px rgba(251, 191, 36, 0.34),
+    0 0 18px rgba(251, 191, 36, 0.24);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-confetti .cny-confetti-piece {
+  position: absolute;
+  top: -18px;
+  left: var(--cny-left, 50%);
+  width: var(--cny-size, 10px);
+  height: var(--cny-size, 10px);
+  opacity: var(--cny-opacity, 0.65);
+  background: var(--cny-color, var(--cny-gold-1));
+  transform: translate3d(0, 0, 0) rotate(var(--cny-rot-start, 0deg));
+  animation: cny-confetti-fall var(--cny-duration, 12s) linear var(--cny-delay, 0s) infinite;
+  filter: drop-shadow(0 1px 2px rgba(127, 29, 29, 0.35));
+}
+
+body[data-season-theme="chinesenewyear"] #cny-confetti .cny-confetti-piece.is-circle {
+  border-radius: 50%;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-confetti .cny-confetti-piece.is-square {
+  border-radius: 2px;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-confetti .cny-confetti-piece.is-diamond {
+  border-radius: 2px;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 150;
+  overflow: visible;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite {
+  position: absolute;
+  display: block;
+  width: var(--cny-sprite-size, 82px);
+  height: auto;
+  left: var(--cny-sprite-left, 12%);
+  top: var(--cny-sprite-top, 54%);
+  opacity: min(var(--cny-sprite-opacity, 0.5), 0.34);
+  transform: translate3d(0, 0, 0);
+  animation: cny-sprite-drift var(--cny-sprite-duration, 27s) linear infinite;
+  animation-delay: var(--cny-sprite-delay, 0s);
+  filter: drop-shadow(0 12px 24px rgba(120, 53, 15, 0.24));
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-coin .cny-coin-outer {
+  fill: rgba(250, 204, 21, 0.85);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-coin .cny-coin-inner-ring {
+  fill: none;
+  stroke: rgba(180, 83, 9, 0.72);
+  stroke-width: 3.2;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-coin .cny-coin-hole {
+  fill: rgba(120, 53, 15, 0.85);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-coin .cny-coin-engrave {
+  fill: none;
+  stroke: rgba(120, 53, 15, 0.58);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-ingot .cny-ingot-body {
+  fill: rgba(253, 186, 116, 0.86);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-ingot .cny-ingot-top {
+  fill: rgba(254, 243, 199, 0.88);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-ingot .cny-ingot-rim {
+  fill: rgba(245, 158, 11, 0.86);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-firecracker .cny-cracker-body {
+  fill: rgba(220, 38, 38, 0.84);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-firecracker .cny-cracker-band {
+  fill: rgba(250, 204, 21, 0.85);
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-firecracker .cny-cracker-fuse {
+  fill: none;
+  stroke: rgba(250, 204, 21, 0.8);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite-firecracker .cny-cracker-spark {
+  fill: rgba(254, 240, 138, 0.9);
+  animation: cny-spark-pulse 2.1s ease-in-out infinite;
+}
+
+/* Full app CNY skin, scoped to this seasonal theme */
+html body[data-season-theme="chinesenewyear"] {
+  --cny-bg-1: #fff8ee;
+  --cny-bg-2: #ffefd8;
+  --cny-bg-3: #fff5e6;
+  --cny-surface: #fffaf2;
+  --cny-surface-2: #fff3e3;
+  --cny-surface-3: #ffe7cc;
+  --cny-text: #5a1a11;
+  --cny-muted: #8b3b2d;
+  --cny-border: rgba(145, 35, 18, 0.24);
+  --cny-shadow: rgba(145, 35, 18, 0.16);
+  --cny-link: #a33214;
+  --cny-link-hover: #81270f;
+  --cny-primary: #c2410c;
+  --cny-primary-hover: #9a3412;
+  --cny-primary-text: #fff7ed;
+  --cny-secondary: #d4a017;
+  --cny-secondary-hover: #b8860b;
+  --cny-secondary-text: #4a2c05;
+  --cny-success: #15803d;
+  --cny-danger: #b91c1c;
+  --cny-warning: #d97706;
+  --cny-info: #0369a1;
+  --cny-focus: rgba(194, 65, 12, 0.26);
+  --cny-table-head: #ffe7cc;
+  --cny-table-stripe: rgba(194, 65, 12, 0.05);
+  --cny-table-hover: rgba(194, 65, 12, 0.11);
+  --cny-success-soft: rgba(21, 128, 61, 0.1);
+  --cny-success-border: rgba(21, 128, 61, 0.28);
+  --cny-success-text: #14532d;
+  --cny-danger-soft: rgba(185, 28, 28, 0.1);
+  --cny-danger-border: rgba(185, 28, 28, 0.3);
+  --cny-danger-text: #7f1d1d;
+  --cny-warning-soft: rgba(217, 119, 6, 0.14);
+  --cny-warning-border: rgba(217, 119, 6, 0.32);
+  --cny-warning-text: #7c2d12;
+  --cny-info-soft: rgba(3, 105, 161, 0.12);
+  --cny-info-border: rgba(3, 105, 161, 0.3);
+  --cny-info-text: #0c4a6e;
+  --cny-toast-success: rgba(21, 128, 61, 0.9);
+  --cny-toast-danger: rgba(185, 28, 28, 0.9);
+  --cny-toast-warning: rgba(217, 119, 6, 0.9);
+  --cny-toast-info: rgba(3, 105, 161, 0.9);
+  color: var(--cny-text);
+}
+
+html[data-theme="dark"] body[data-season-theme="chinesenewyear"] {
+  --cny-bg-1: #240b07;
+  --cny-bg-2: #150806;
+  --cny-bg-3: #31110a;
+  --cny-surface: #2a110c;
+  --cny-surface-2: #35160f;
+  --cny-surface-3: #4a1f15;
+  --cny-text: #ffe8cc;
+  --cny-muted: #ffbd8a;
+  --cny-border: rgba(251, 191, 36, 0.28);
+  --cny-shadow: rgba(0, 0, 0, 0.42);
+  --cny-link: #fbbf24;
+  --cny-link-hover: #fde68a;
+  --cny-primary: #fb923c;
+  --cny-primary-hover: #f97316;
+  --cny-primary-text: #2a110c;
+  --cny-secondary: #facc15;
+  --cny-secondary-hover: #fbbf24;
+  --cny-secondary-text: #3d2305;
+  --cny-success: #34d399;
+  --cny-danger: #fb7185;
+  --cny-warning: #fbbf24;
+  --cny-info: #38bdf8;
+  --cny-focus: rgba(251, 146, 60, 0.32);
+  --cny-table-head: #4a1f15;
+  --cny-table-stripe: rgba(251, 191, 36, 0.08);
+  --cny-table-hover: rgba(251, 191, 36, 0.14);
+  --cny-success-soft: rgba(52, 211, 153, 0.16);
+  --cny-success-border: rgba(52, 211, 153, 0.32);
+  --cny-success-text: #c7f9e8;
+  --cny-danger-soft: rgba(251, 113, 133, 0.16);
+  --cny-danger-border: rgba(251, 113, 133, 0.34);
+  --cny-danger-text: #ffd3da;
+  --cny-warning-soft: rgba(251, 191, 36, 0.16);
+  --cny-warning-border: rgba(251, 191, 36, 0.35);
+  --cny-warning-text: #ffefc2;
+  --cny-info-soft: rgba(56, 189, 248, 0.16);
+  --cny-info-border: rgba(56, 189, 248, 0.34);
+  --cny-info-text: #d2f2ff;
+  --cny-toast-success: rgba(16, 185, 129, 0.9);
+  --cny-toast-danger: rgba(244, 63, 94, 0.9);
+  --cny-toast-warning: rgba(245, 158, 11, 0.9);
+  --cny-toast-info: rgba(14, 165, 233, 0.9);
+  background:
+    radial-gradient(60% 44% at 88% -10%, rgba(251, 191, 36, 0.15), transparent 67%),
+    radial-gradient(50% 38% at 12% 8%, rgba(248, 113, 113, 0.13), transparent 62%),
+    linear-gradient(180deg, var(--cny-bg-1) 0%, var(--cny-bg-2) 55%, var(--cny-bg-3) 100%) !important;
+  background-attachment: fixed;
+  color: var(--cny-text) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="chinesenewyear"] nav.navbar {
+  background: linear-gradient(135deg, #3f120d 0%, #5f1a13 46%, #7a2318 100%) !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.24);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+html body[data-season-theme="chinesenewyear"] #page-content-wrapper,
+html body[data-season-theme="chinesenewyear"] .container-fluid,
+html body[data-season-theme="chinesenewyear"] .content-wrapper {
+  color: var(--cny-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] a {
+  color: var(--cny-link);
+}
+
+html body[data-season-theme="chinesenewyear"] a:hover {
+  color: var(--cny-link-hover);
+}
+
+html body[data-season-theme="chinesenewyear"] .card {
+  background: var(--cny-surface) !important;
+  color: var(--cny-text) !important;
+  border: 1px solid var(--cny-border) !important;
+  box-shadow: 0 10px 24px var(--cny-shadow) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .card-header {
+  background: linear-gradient(180deg, var(--cny-surface-2), var(--cny-surface-3)) !important;
+  border-bottom: 1px solid var(--cny-border) !important;
+  color: var(--cny-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .table {
+  color: var(--cny-text) !important;
+  background-color: transparent !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .table thead th {
+  background: var(--cny-table-head) !important;
+  color: var(--cny-text) !important;
+  border-top: none !important;
+  border-bottom: 1px solid var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .table td,
+html body[data-season-theme="chinesenewyear"] .table th,
+html body[data-season-theme="chinesenewyear"] .table > :not(caption) > * > * {
+  border-color: var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: var(--cny-table-stripe) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .table-hover tbody tr:hover > * {
+  background-color: var(--cny-table-hover) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .modal-content {
+  background: var(--cny-surface) !important;
+  color: var(--cny-text) !important;
+  border: 1px solid var(--cny-border) !important;
+  box-shadow: 0 16px 36px var(--cny-shadow) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .modal-header,
+html body[data-season-theme="chinesenewyear"] .modal-footer {
+  border-color: var(--cny-border) !important;
+  background: var(--cny-surface-2) !important;
+  color: var(--cny-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .modal-header.bg-primary,
+html body[data-season-theme="chinesenewyear"] .modal-header.bg-primary.text-white {
+  background: linear-gradient(135deg, var(--cny-primary), var(--cny-secondary)) !important;
+  color: #fff7ed !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .dropdown-menu {
+  background: var(--cny-surface) !important;
+  color: var(--cny-text) !important;
+  border: 1px solid var(--cny-border) !important;
+  box-shadow: 0 14px 30px var(--cny-shadow) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .dropdown-item {
+  color: var(--cny-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .dropdown-item:hover,
+html body[data-season-theme="chinesenewyear"] .dropdown-item:focus {
+  background: var(--cny-surface-2) !important;
+  color: var(--cny-link-hover) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .dropdown-divider {
+  border-top-color: var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .alert {
+  background: var(--cny-surface-2) !important;
+  color: var(--cny-text) !important;
+  border: 1px solid var(--cny-border) !important;
+  box-shadow: 0 8px 20px var(--cny-shadow) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .alert-success {
+  background: var(--cny-success-soft) !important;
+  border-color: var(--cny-success-border) !important;
+  color: var(--cny-success-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .alert-danger {
+  background: var(--cny-danger-soft) !important;
+  border-color: var(--cny-danger-border) !important;
+  color: var(--cny-danger-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .alert-warning {
+  background: var(--cny-warning-soft) !important;
+  border-color: var(--cny-warning-border) !important;
+  color: var(--cny-warning-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .alert-info {
+  background: var(--cny-info-soft) !important;
+  border-color: var(--cny-info-border) !important;
+  color: var(--cny-info-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .badge {
+  background: var(--cny-surface-3) !important;
+  color: var(--cny-text) !important;
+  border: 1px solid var(--cny-border);
+}
+
+html body[data-season-theme="chinesenewyear"] .badge.bg-primary {
+  background: var(--cny-primary) !important;
+  color: var(--cny-primary-text) !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .badge.bg-success {
+  background: var(--cny-success) !important;
+  color: #f8fff8 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .badge.bg-danger {
+  background: var(--cny-danger) !important;
+  color: #fff5f7 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .badge.bg-warning {
+  background: var(--cny-warning) !important;
+  color: #3f1a06 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .badge.bg-info {
+  background: var(--cny-info) !important;
+  color: #04273c !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-primary {
+  background-color: var(--cny-primary) !important;
+  border-color: var(--cny-primary) !important;
+  color: var(--cny-primary-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-primary:hover,
+html body[data-season-theme="chinesenewyear"] .btn-primary:focus,
+html body[data-season-theme="chinesenewyear"] .btn-primary:active {
+  background-color: var(--cny-primary-hover) !important;
+  border-color: var(--cny-primary-hover) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-secondary {
+  background-color: var(--cny-secondary) !important;
+  border-color: var(--cny-secondary) !important;
+  color: var(--cny-secondary-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-secondary:hover,
+html body[data-season-theme="chinesenewyear"] .btn-secondary:focus,
+html body[data-season-theme="chinesenewyear"] .btn-secondary:active {
+  background-color: var(--cny-secondary-hover) !important;
+  border-color: var(--cny-secondary-hover) !important;
+  color: var(--cny-secondary-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-outline-primary {
+  color: var(--cny-primary) !important;
+  border-color: var(--cny-primary) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-outline-primary:hover,
+html body[data-season-theme="chinesenewyear"] .btn-outline-primary:focus,
+html body[data-season-theme="chinesenewyear"] .btn-outline-primary:active {
+  background-color: var(--cny-primary) !important;
+  border-color: var(--cny-primary) !important;
+  color: var(--cny-primary-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-outline-secondary {
+  color: var(--cny-muted) !important;
+  border-color: var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-outline-secondary:hover,
+html body[data-season-theme="chinesenewyear"] .btn-outline-secondary:focus,
+html body[data-season-theme="chinesenewyear"] .btn-outline-secondary:active {
+  background-color: var(--cny-surface-3) !important;
+  border-color: var(--cny-border) !important;
+  color: var(--cny-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-outline-danger {
+  color: var(--cny-danger) !important;
+  border-color: var(--cny-danger) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .btn-outline-danger:hover,
+html body[data-season-theme="chinesenewyear"] .btn-outline-danger:focus,
+html body[data-season-theme="chinesenewyear"] .btn-outline-danger:active {
+  background-color: var(--cny-danger) !important;
+  border-color: var(--cny-danger) !important;
+  color: #fff5f7 !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .form-control,
+html body[data-season-theme="chinesenewyear"] .form-select,
+html body[data-season-theme="chinesenewyear"] textarea,
+html body[data-season-theme="chinesenewyear"] .input-group-text {
+  background-color: var(--cny-surface) !important;
+  color: var(--cny-text) !important;
+  border-color: var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .input-group-text {
+  background-color: var(--cny-surface-2) !important;
+  color: var(--cny-muted) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .form-control:focus,
+html body[data-season-theme="chinesenewyear"] .form-select:focus,
+html body[data-season-theme="chinesenewyear"] textarea:focus {
+  border-color: var(--cny-primary) !important;
+  box-shadow: 0 0 0 0.25rem var(--cny-focus) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] ::placeholder {
+  color: var(--cny-muted) !important;
+  opacity: 1;
+}
+
+html body[data-season-theme="chinesenewyear"] .form-control:disabled,
+html body[data-season-theme="chinesenewyear"] .form-select:disabled {
+  background-color: var(--cny-surface-2) !important;
+  color: var(--cny-muted) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .form-check-input {
+  border-color: var(--cny-border) !important;
+  background-color: var(--cny-surface) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .form-check-input:checked {
+  background-color: var(--cny-primary) !important;
+  border-color: var(--cny-primary) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .offcanvas {
+  background: var(--cny-surface) !important;
+  color: var(--cny-text) !important;
+  border-right: 1px solid var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .offcanvas-header {
+  border-bottom: 1px solid var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .offcanvas-title,
+html body[data-season-theme="chinesenewyear"] .offcanvas-body {
+  color: var(--cny-text) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="chinesenewyear"] .offcanvas-header .btn-close,
+html[data-theme="dark"] body[data-season-theme="chinesenewyear"] .btn-close {
+  filter: brightness(0) invert(1) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .list-group-item {
+  background: transparent !important;
+  color: var(--cny-text) !important;
+  border-color: var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .list-group-item:hover {
+  background: var(--cny-surface-2) !important;
+  color: var(--cny-link-hover) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .list-group-item.active {
+  background: var(--cny-surface-3) !important;
+  color: var(--cny-link) !important;
+  border-color: var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .sidebar-item .sub-item {
+  background: var(--cny-surface-2) !important;
+  border-left-color: transparent !important;
+  color: var(--cny-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .sidebar-item .sub-item:hover,
+html body[data-season-theme="chinesenewyear"] .sidebar-item .sub-item.active {
+  background: var(--cny-surface-3) !important;
+  border-left-color: var(--cny-primary) !important;
+  color: var(--cny-link-hover) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .pagination .page-link {
+  color: var(--cny-link) !important;
+  background: var(--cny-surface) !important;
+  border-color: var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .pagination .page-link:hover {
+  color: var(--cny-link-hover) !important;
+  background: var(--cny-surface-2) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .pagination .page-item.active .page-link {
+  background: var(--cny-primary) !important;
+  border-color: var(--cny-primary) !important;
+  color: var(--cny-primary-text) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .pagination .page-item.disabled .page-link {
+  background: var(--cny-surface-2) !important;
+  color: var(--cny-muted) !important;
+  border-color: var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .toast {
+  border: 1px solid var(--cny-border) !important;
+  box-shadow: 0 10px 22px var(--cny-shadow) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .toast.bg-success {
+  background-color: var(--cny-toast-success) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .toast.bg-danger {
+  background-color: var(--cny-toast-danger) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .toast.bg-warning {
+  background-color: var(--cny-toast-warning) !important;
+  color: #3f1a06 !important;
+}
+
+html body[data-season-theme="chinesenewyear"] .toast.bg-info {
+  background-color: var(--cny-toast-info) !important;
+  color: #04273c !important;
+}
+
+html body[data-season-theme="chinesenewyear"] #createLeaveModal .nav-tabs,
+html body[data-season-theme="chinesenewyear"] .leave-ewp-list-tabs {
+  border-bottom: 1px solid var(--cny-border) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] #createLeaveModal .nav-tabs .nav-link,
+html body[data-season-theme="chinesenewyear"] .leave-ewp-list-tabs .nav-link {
+  color: var(--cny-muted) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+}
+
+html body[data-season-theme="chinesenewyear"] #createLeaveModal .nav-tabs .nav-link:hover,
+html body[data-season-theme="chinesenewyear"] .leave-ewp-list-tabs .nav-link:hover {
+  color: var(--cny-link-hover) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] #createLeaveModal .nav-tabs .nav-link.active,
+html body[data-season-theme="chinesenewyear"] .leave-ewp-list-tabs .nav-link.active {
+  color: var(--cny-link) !important;
+  background: var(--cny-surface) !important;
+  border-color: var(--cny-border) var(--cny-border) var(--cny-surface) !important;
+}
+
+html body[data-season-theme="chinesenewyear"] #createLeaveModal .nav-tabs .nav-link:focus-visible,
+html body[data-season-theme="chinesenewyear"] .leave-ewp-list-tabs .nav-link:focus-visible {
+  outline: 2px solid var(--cny-primary);
+  outline-offset: 2px;
+}
+
+@keyframes cny-lantern-sway {
+  0% { transform: rotate(-8deg) translateY(0) scale(var(--lantern-scale, 1)); }
+  50% { transform: rotate(8deg) translateY(1px) scale(var(--lantern-scale, 1)); }
+  100% { transform: rotate(-8deg) translateY(0) scale(var(--lantern-scale, 1)); }
+}
+
+@keyframes cny-lantern-glow {
+  0%, 100% {
+    filter: brightness(1);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 245, 215, 0.35),
+      0 5px 10px rgba(99, 18, 18, 0.5),
+      0 0 12px rgba(250, 204, 21, 0.22),
+      0 0 0 rgba(250, 204, 21, 0.18);
+  }
+  50% {
+    filter: brightness(1.16);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 245, 215, 0.45),
+      0 5px 10px rgba(99, 18, 18, 0.48),
+      0 0 16px rgba(250, 204, 21, 0.42),
+      0 0 24px rgba(250, 204, 21, 0.25);
+  }
+}
+
+@keyframes cny-lantern-halo {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scale(0.96);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translateX(-50%) scale(1.09);
+  }
+}
+
+@keyframes cny-emblem-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(120, 53, 15, 0.24),
+      0 0 6px rgba(253, 224, 71, 0.36);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(120, 53, 15, 0.24),
+      0 0 12px rgba(253, 224, 71, 0.64);
+  }
+}
+
+@keyframes cny-confetti-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--cny-rot-start, 0deg));
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--cny-opacity, 0.65);
+  }
+  90% {
+    opacity: var(--cny-opacity, 0.65);
+  }
+  100% {
+    transform: translate3d(var(--cny-drift, 0px), var(--cny-drop, 96px), 0) rotate(var(--cny-rot-end, 90deg));
+    opacity: 0;
+  }
+}
+
+@keyframes cny-sprite-drift {
+  0%   { transform: translate3d(-4%, 4%, 0); }
+  33%  { transform: translate3d(3%, -4%, 0); }
+  66%  { transform: translate3d(6%, 2%, 0); }
+  100% { transform: translate3d(-4%, 4%, 0); }
+}
+
+@keyframes cny-spark-pulse {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+@media (max-width: 768px) {
+  body[data-season-theme="chinesenewyear"] #cny-greeting-banner {
+    display: none;
+  }
+
+  body[data-season-theme="chinesenewyear"] #cny-floaters {
+    display: none;
+  }
+
+  body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern:nth-child(n+9) {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern:nth-child(n+7) {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  body[data-season-theme="chinesenewyear"] #cny-greeting-banner {
+    width: min(880px, calc(100% - 260px));
+  }
+
+  body[data-season-theme="chinesenewyear"] #cny-greeting-banner .cny-greeting-inner {
+    grid-template-columns: 1fr minmax(200px, 300px) 1fr;
+  }
+
+  body[data-season-theme="chinesenewyear"] #cny-greeting-banner .cny-greeting-text {
+    font-size: clamp(0.9rem, 1.35vw, 1.2rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-season-theme="chinesenewyear"] #cny-lanterns .cny-lantern {
+    animation: none !important;
+  }
+
+  body[data-season-theme="chinesenewyear"] #cny-confetti .cny-confetti-piece {
+    animation-duration: 22s !important;
+  }
+
+  body[data-season-theme="chinesenewyear"] #cny-floaters .cny-sprite {
+    animation-duration: 44s !important;
+  }
+}

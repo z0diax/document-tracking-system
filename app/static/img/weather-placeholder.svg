@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 96" role="img" aria-label="Weather Unavailable">
+  <rect width="128" height="96" fill="#f3f4f6" rx="8" />
+  <g fill="#cbd5e1" transform="translate(20 28)">
+    <circle cx="28" cy="26" r="18" />
+    <rect x="28" y="14" width="42" height="32" rx="16" />
+    <rect x="0" y="32" width="88" height="24" rx="12" />
+  </g>
+  <g fill="none" stroke="#9ca3af" stroke-width="4" stroke-linecap="round" transform="translate(36 42)">
+    <line x1="0" y1="30" x2="16" y2="30" />
+    <line x1="24" y1="30" x2="40" y2="30" />
+    <line x1="48" y1="30" x2="64" y2="30" />
+  </g>
+</svg>

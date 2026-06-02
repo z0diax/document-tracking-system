@@ -30,39 +30,41 @@
                 <section class="result">
                     <figure class="name">
                         <figcaption>Tacloban City</figcaption>
-                        <img src="https://flagsapi.com/PH/shiny/32.png">
+                        <img src="{{ url_for('static', filename='img/ph-flag.svg') }}" alt="Philippines flag">
                     </figure>
                     <figure class="temperature">
-                        <img src="https://openweathermap.org/img/wn/10d@4x.png">
+                        <img src="{{ url_for('static', filename='img/weather-placeholder.svg') }}" alt="Weather icon">
                         <figcaption>
-                            <span>31</span>
+                            <span>--</span>
                             <sup>o</sup>
                         </figcaption>
                     </figure>
-                    <p class="description">overcast clouds</p>
+                    <p class="description">Loading weather...</p>
                     <ul>
                         <li>
                             <span>Clouds</span>
                             <i class="fa-solid fa-cloud"></i>
-                            <span id="clouds">98</span>%
+                            <span id="clouds">--</span>%
                         </li>
                         <li>
                             <span>Humidity</span>
                             <i class="fa-solid fa-droplet"></i>
-                            <span id="humidity">98</span>%
+                            <span id="humidity">--</span>%
                         </li>
                         <li>
                             <span>Pressure</span>
                             <i class="fa-solid fa-gauge"></i>
-                            <span id="pressure">1011</span>hPa
+                            <span id="pressure">--</span>hPa
                         </li>
                     </ul>
                 </section>
+                <div id="weather-offline" class="offline-status" aria-live="polite" style="display:none;">No internet connection — this feature is not available.</div>
             </div>
         </div>
 
         <div class="trivia-section">
             <h2>Did you know?</h2> 
+            <div id="trivia-offline" class="offline-status" aria-live="polite" style="display:none;">No internet connection — this feature is not available.</div>
             <div class="trivia-content">
                 <p id="trivia-question" class="did-you-know-question"></p>
                 <p id="trivia-answer" class="did-you-know-answer"></p> 
@@ -199,6 +201,13 @@
 
         .overview-page #trivia-image.show {
             opacity: 1;
+        }
+
+        .offline-status {
+            margin-top: 8px;
+            font-size: 0.95em;
+            color: #b91c1c;
+            font-weight: 600;
         }
 
         .overview-page .trivia-section h2 {
@@ -398,32 +407,95 @@
     </style>
     <script src="{{ url_for('static', filename='js/overview-daily-content.js') }}"></script>
     <script>
-        let id = '9505fd1df737e20152fbd78cdb289b6a';
-        let url = 'https://api.openweathermap.org/data/2.5/weather?units=metric&appid=' + id;
-        let city = document.querySelector('.overview-page .name');
-        let temperature = document.querySelector('.overview-page .temperature');
-        let description = document.querySelector('.overview-page .description');
-        let clouds = document.getElementById('clouds');
-        let humidity = document.getElementById('humidity');
-        let pressure = document.getElementById('pressure');
+        const id = '9505fd1df737e20152fbd78cdb289b6a';
+        const url = 'https://api.openweathermap.org/data/2.5/weather?units=metric&appid=' + id;
+        const city = document.querySelector('.overview-page .name');
+        const temperature = document.querySelector('.overview-page .temperature');
+        const description = document.querySelector('.overview-page .description');
+        const clouds = document.getElementById('clouds');
+        const humidity = document.getElementById('humidity');
+        const pressure = document.getElementById('pressure');
+        const flagImg = document.querySelector('.overview-page .name img');
+        const tempIcon = temperature ? temperature.querySelector('img') : null;
+        const tempValue = temperature ? temperature.querySelector('span') : null;
+        const weatherOfflineStatus = document.getElementById('weather-offline');
+        const triviaOfflineStatus = document.getElementById('trivia-offline');
+        const offlineIcon = "{{ url_for('static', filename='img/weather-placeholder.svg') }}";
+        const offlineFlag = "{{ url_for('static', filename='img/ph-flag.svg') }}";
+        const OFFLINE_MSG = 'No internet connection — this feature is not available.';
+
+        function setStatus(el, show, message) {
+            if (!el) return;
+            el.style.display = show ? 'block' : 'none';
+            if (message) el.textContent = message;
+        }
+
+        function renderWeatherFallback(message) {
+            if (tempIcon) tempIcon.src = offlineIcon;
+            if (tempValue) tempValue.innerText = '--';
+            if (description) description.innerText = message || 'Weather unavailable';
+            if (clouds) clouds.innerText = '--';
+            if (humidity) humidity.innerText = '--';
+            if (pressure) pressure.innerText = '--';
+            if (flagImg) flagImg.src = offlineFlag;
+        }
+
+        function updateTriviaStatus() {
+            const isOffline = !navigator.onLine;
+            setStatus(triviaOfflineStatus, isOffline, OFFLINE_MSG);
+        }
+
         const getWeather = () => {
+            if (!city || !temperature || !description) {
+                return;
+            }
+            if (!navigator.onLine) {
+                renderWeatherFallback(OFFLINE_MSG);
+                setStatus(weatherOfflineStatus, true, OFFLINE_MSG);
+                updateTriviaStatus();
+                return;
+            }
             fetch(url + '&q=Tacloban')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Network error');
+                    return response.json();
+                })
                 .then(data => {
-                    if(data.cod == 200){
-                        temperature.querySelector('img').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`;
-                        temperature.querySelector('span').innerText = data.main.temp;
+                    if (data && data.cod == 200) {
+                        if (tempIcon) tempIcon.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`;
+                        if (tempValue) tempValue.innerText = Math.round(data.main.temp);
                         description.innerText = data.weather[0].description;
-                        clouds.innerText = data.clouds.all;
-                        humidity.innerText = data.main.humidity;
-                        pressure.innerText = data.main.pressure;
+                        if (clouds) clouds.innerText = data.clouds.all;
+                        if (humidity) humidity.innerText = data.main.humidity;
+                        if (pressure) pressure.innerText = data.main.pressure;
+                        setStatus(weatherOfflineStatus, false);
+                    } else {
+                        renderWeatherFallback('Weather unavailable');
+                        setStatus(weatherOfflineStatus, true, OFFLINE_MSG);
                     }
                 })
+                .catch(error => {
+                    console.warn('Weather fetch failed', error);
+                    renderWeatherFallback('Weather unavailable');
+                    setStatus(weatherOfflineStatus, true, OFFLINE_MSG);
+                });
         }
 
         getWeather();
+        updateTriviaStatus();
         // Update weather every 5 minutes
         setInterval(getWeather, 300000);
+
+        window.addEventListener('offline', function() {
+            renderWeatherFallback(OFFLINE_MSG);
+            setStatus(weatherOfflineStatus, true, OFFLINE_MSG);
+            updateTriviaStatus();
+        });
+
+        window.addEventListener('online', function() {
+            updateTriviaStatus();
+            getWeather();
+        });
 
         // Updated Greeting functionality
         function setGreeting() {

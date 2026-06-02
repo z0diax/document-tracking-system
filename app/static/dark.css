@@ -12,6 +12,36 @@ html[data-theme="dark"] body {
   color: #e5e7eb !important;
 }
 
+/* Amihan petals: keep subtle in dark mode */
+html[data-theme="dark"] body[data-season-theme="amihan"] {
+  --amihan-petal: rgba(255, 143, 183, 0.35);
+  --amihan-petal-edge: rgba(94, 219, 184, 0.2);
+  --amihan-petal-shadow: rgba(0, 0, 0, 0.35);
+  --amihan-kite-line: rgba(170, 187, 204, 0.35);
+  --amihan-kite-shadow: rgba(0, 0, 0, 0.45);
+  --amihan-kite-rose: #d27a9e;
+  --amihan-kite-rose-tail: rgba(210, 122, 158, 0.6);
+  --amihan-kite-sun: #d6b25b;
+  --amihan-kite-sun-tail: rgba(214, 178, 91, 0.65);
+  --amihan-kite-mint: #6abf8a;
+  --amihan-kite-mint-tail: rgba(106, 191, 138, 0.62);
+  --amihan-kite-sky: #63b5e8;
+  --amihan-kite-sky-tail: rgba(99, 181, 232, 0.6);
+  --amihan-kite-lilac: #9a7ad8;
+  --amihan-kite-lilac-tail: rgba(154, 122, 216, 0.6);
+  background: #0b0f14 !important;
+  background-image: radial-gradient(60% 40% at 85% -10%, rgba(255, 139, 177, 0.12), transparent 65%),
+    radial-gradient(55% 40% at 15% 10%, rgba(126, 232, 163, 0.12), transparent 60%),
+    radial-gradient(40% 30% at 50% 20%, rgba(90, 200, 250, 0.1), transparent 55%) !important;
+  background-attachment: fixed;
+}
+html[data-theme="dark"] #amihan-petals {
+  opacity: 0.45;
+}
+html[data-theme="dark"] #amihan-garland {
+  opacity: 0.65;
+}
+
 /* Links */
 html[data-theme="dark"] a {
   color: #60a5fa;
@@ -39,6 +69,7 @@ html[data-theme="dark"] .nav-item .btn-link {
 html[data-theme="dark"] .nav-item .btn-link:hover {
   background: rgba(255,255,255,0.16) !important;
 }
+
 html[data-theme="dark"] .badge.bg-danger {
   background: #ef4444 !important;
   border: 1px solid rgba(255,255,255,0.12) !important;

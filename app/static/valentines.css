@@ -1,0 +1,1017 @@
+/* Valentine's theme: red/pink navbar, hanging lanterns, and floating decor */
+:root {
+  --valentine-red-1: #d90429;
+  --valentine-red-2: #ef233c;
+  --valentine-pink-1: #ff4d8d;
+  --valentine-pink-2: #ff87b2;
+  --valentine-heart-main: #ef233c;
+  --valentine-heart-deep: #b00020;
+  --valentine-heart-highlight: #ff8fab;
+  --valentine-flower-petal: #ff6fa1;
+  --valentine-flower-petal-deep: #d63384;
+  --valentine-flower-center: #ffd166;
+}
+
+body[data-season-theme="valentines"] nav.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  overflow: visible;
+  background: linear-gradient(135deg, var(--valentine-red-1) 0%, var(--valentine-red-2) 45%, var(--valentine-pink-1) 78%, var(--valentine-pink-2) 100%) !important;
+  border-bottom: 1px solid rgba(255, 230, 236, 0.42);
+  box-shadow: 0 8px 24px rgba(176, 0, 32, 0.32);
+}
+
+body[data-season-theme="valentines"] nav.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.32), transparent 58%),
+    radial-gradient(circle at 82% 0%, rgba(255, 255, 255, 0.24), transparent 62%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="valentines"] .navbar .container,
+body[data-season-theme="valentines"] .navbar > img {
+  position: relative;
+  z-index: 2;
+}
+
+body[data-season-theme="valentines"] .navbar-brand,
+body[data-season-theme="valentines"] .nav-link,
+body[data-season-theme="valentines"] .btn-link {
+  color: #fff6fa !important;
+}
+
+body[data-season-theme="valentines"] .nav-item .btn-link {
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+body[data-season-theme="valentines"] .nav-item .btn-link:hover {
+  background: rgba(255, 255, 255, 0.28) !important;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  height: 78px;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-lantern-track {
+  display: flex;
+  gap: 13px;
+  padding: 4px 18px 0;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-lantern {
+  position: relative;
+  width: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: top center;
+  animation: valentine-lantern-sway var(--sway-duration, 5.5s) ease-in-out var(--sway-delay, 0s) infinite;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-cord {
+  width: 2px;
+  height: 14px;
+  background: linear-gradient(180deg, rgba(255, 245, 248, 0.92), rgba(255, 217, 229, 0.5));
+  border-radius: 999px;
+  margin-bottom: 1px;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-cap {
+  width: 12px;
+  height: 4px;
+  margin-bottom: 1px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #a70022 0%, #7f0019 100%);
+  box-shadow: 0 1px 0 rgba(255, 196, 212, 0.26) inset;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-lantern-body {
+  position: relative;
+  width: 22px;
+  height: 24px;
+  border-radius: 10px 10px 12px 12px;
+  background: linear-gradient(180deg, #ff4d73 0%, #ef233c 48%, #b00020 100%);
+  border: 1px solid rgba(255, 214, 226, 0.34);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 239, 0.4),
+    0 5px 10px rgba(125, 0, 22, 0.44),
+    0 0 12px rgba(239, 35, 60, 0.24);
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-lantern-body::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  width: 7px;
+  height: 15px;
+  border-radius: 8px;
+  background: rgba(255, 223, 233, 0.35);
+  filter: blur(0.3px);
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-lantern-body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 190, 206, 0.02) 0 3px,
+    rgba(255, 190, 206, 0.22) 3px 4px
+  );
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-heart-emblem {
+  position: absolute;
+  left: 50%;
+  top: 9px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  transform: rotate(45deg);
+  border-radius: 1px;
+  background: linear-gradient(180deg, #ffd2e2 0%, #ffb9cf 100%);
+  box-shadow: 0 0 0 1px rgba(158, 9, 45, 0.18);
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-heart-emblem::before,
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-heart-emblem::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: inherit;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-heart-emblem::before {
+  left: -4px;
+  top: 0;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-heart-emblem::after {
+  left: 0;
+  top: -4px;
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-tassel {
+  position: relative;
+  width: 2px;
+  height: 9px;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 224, 233, 0.72), rgba(255, 184, 205, 0.36));
+}
+
+body[data-season-theme="valentines"] #valentine-lanterns .valentine-tassel::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  bottom: 0;
+  width: 8px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 208, 223, 0.65);
+}
+
+body[data-season-theme="valentines"] #valentine-greeting-banner {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  height: 100%;
+  width: min(1020px, calc(100% - 300px));
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+}
+
+body[data-season-theme="valentines"] #valentine-greeting-banner .valentine-greeting-inner {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 320px) 1fr;
+  align-items: center;
+}
+
+body[data-season-theme="valentines"] #valentine-greeting-banner .valentine-greeting-text {
+  justify-self: center;
+  white-space: nowrap;
+  font-family: "Palatino Linotype", "Book Antiqua", "Noto Serif", "Times New Roman", serif;
+  font-size: clamp(0.98rem, 1.55vw, 1.10rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #ffe6f2;
+  text-shadow:
+    0 1px 0 rgba(122, 15, 46, 0.58),
+    0 0 10px rgba(255, 153, 190, 0.34),
+    0 0 16px rgba(255, 153, 190, 0.24);
+}
+
+body[data-season-theme="valentines"] #valentine-greeting-banner .valentine-greeting-spacer {
+  display: block;
+  height: 1px;
+}
+
+html[data-theme="dark"] body[data-season-theme="valentines"] #valentine-greeting-banner .valentine-greeting-text {
+  color: #ffd9ea;
+  text-shadow:
+    0 1px 0 rgba(58, 12, 34, 0.72),
+    0 0 10px rgba(255, 121, 178, 0.35),
+    0 0 16px rgba(255, 121, 178, 0.26);
+}
+
+body[data-season-theme="valentines"] #valentine-heartfall {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body[data-season-theme="valentines"] #valentine-heartfall .valentine-falling-heart {
+  position: absolute;
+  left: var(--heart-left, 50%);
+  top: -24px;
+  width: var(--heart-size, 13px);
+  height: var(--heart-size, 13px);
+  opacity: var(--heart-opacity, 0.65);
+  transform: translate3d(0, 0, 0) rotate(var(--heart-rot-start, 0deg));
+  animation: valentine-heart-fall var(--heart-duration, 14s) linear var(--heart-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+body[data-season-theme="valentines"] #valentine-heartfall .vf-heart-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 1px 2px rgba(125, 0, 22, 0.45));
+}
+
+body[data-season-theme="valentines"] #valentine-heartfall .vf-heart-core {
+  fill: rgba(239, 35, 60, 0.96);
+}
+
+body[data-season-theme="valentines"] #valentine-heartfall .vf-heart-gloss {
+  fill: rgba(255, 214, 228, 0.58);
+}
+
+body[data-season-theme="valentines"] #valentine-heartfall .vf-heart-outline {
+  fill: none;
+  stroke: rgba(145, 0, 28, 0.65);
+  stroke-width: 0.85;
+  stroke-linejoin: round;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 150;
+  overflow: visible;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite {
+  position: absolute;
+  display: block;
+  width: var(--sprite-size, 80px);
+  height: auto;
+  left: var(--sprite-left, 10%);
+  top: var(--sprite-top, 40%);
+  opacity: min(var(--sprite-opacity, 0.58), 0.34);
+  transform: translate3d(0, 0, 0);
+  animation: valentine-sprite-drift var(--sprite-duration, 24s) linear infinite;
+  animation-delay: var(--sprite-delay, 0s);
+  filter: drop-shadow(0 12px 24px rgba(93, 14, 37, 0.22));
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-heart {
+  --sprite-size: 86px;
+  --sprite-opacity: 0.56;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-heart .vf-heart-shape {
+  filter: drop-shadow(0 2px 5px rgba(125, 0, 22, 0.48));
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-heart .vf-heart-core {
+  fill: rgba(239, 35, 60, 0.84);
+  animation: valentine-heart-glow 4.2s ease-in-out infinite;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-heart .vf-heart-gloss {
+  fill: rgba(255, 219, 231, 0.62);
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-heart .vf-heart-outline {
+  fill: none;
+  stroke: rgba(145, 0, 28, 0.58);
+  stroke-width: 0.85;
+  stroke-linejoin: round;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-flower {
+  --sprite-size: 80px;
+  --sprite-opacity: 0.5;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-flower svg {
+  animation: valentine-flower-turn 9s ease-in-out infinite;
+  transform-origin: center;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-flower .vfloat-flower-petal {
+  stroke: rgba(109, 18, 53, 0.38);
+  stroke-width: 0.85;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-flower .vfloat-flower-petal-outer {
+  fill: var(--valentine-flower-petal);
+  fill-opacity: 0.86;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-flower .vfloat-flower-petal-inner {
+  fill: var(--valentine-flower-petal-deep);
+  fill-opacity: 0.88;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-flower .vfloat-flower-center {
+  fill: var(--valentine-flower-center);
+  fill-opacity: 0.95;
+  stroke: rgba(153, 96, 17, 0.58);
+  stroke-width: 1;
+  animation: valentine-flower-center-pulse 3s ease-in-out infinite;
+}
+
+body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite-flower .vfloat-flower-center-dot {
+  fill: rgba(255, 245, 214, 0.9);
+}
+
+body[data-season-theme="valentines"] .offcanvas-header {
+  background: linear-gradient(135deg, rgba(255, 115, 152, 0.24), rgba(255, 196, 216, 0.45)) !important;
+}
+
+body[data-season-theme="valentines"] .offcanvas-title {
+  color: #7a0f2e !important;
+}
+
+/* Full app Valentine skin (light + dark), scoped so Classic remains unchanged */
+html body[data-season-theme="valentines"] {
+  --v-bg-1: #fff7fb;
+  --v-bg-2: #ffeaf3;
+  --v-bg-3: #fff2f7;
+  --v-surface: #ffffff;
+  --v-surface-2: #fff3f8;
+  --v-surface-3: #ffe5ef;
+  --v-text: #5f1734;
+  --v-muted: #8f3d5d;
+  --v-border: rgba(190, 24, 93, 0.22);
+  --v-shadow: rgba(176, 0, 56, 0.16);
+  --v-link: #be185d;
+  --v-link-hover: #9d174d;
+  --v-primary: #e11d6b;
+  --v-primary-hover: #be185d;
+  --v-primary-text: #fff7fb;
+  --v-secondary: #f472b6;
+  --v-secondary-hover: #ec4899;
+  --v-secondary-text: #5f1734;
+  --v-success: #16a34a;
+  --v-danger: #dc2626;
+  --v-warning: #f59e0b;
+  --v-info: #0ea5e9;
+  --v-focus: rgba(225, 29, 107, 0.28);
+  --v-table-head: #ffe7f1;
+  --v-table-stripe: rgba(225, 29, 107, 0.055);
+  --v-table-hover: rgba(225, 29, 107, 0.11);
+  --v-success-soft: rgba(22, 163, 74, 0.1);
+  --v-success-border: rgba(22, 163, 74, 0.28);
+  --v-success-text: #14532d;
+  --v-danger-soft: rgba(220, 38, 38, 0.1);
+  --v-danger-border: rgba(220, 38, 38, 0.3);
+  --v-danger-text: #7f1d1d;
+  --v-warning-soft: rgba(245, 158, 11, 0.13);
+  --v-warning-border: rgba(245, 158, 11, 0.32);
+  --v-warning-text: #7c2d12;
+  --v-info-soft: rgba(14, 165, 233, 0.11);
+  --v-info-border: rgba(14, 165, 233, 0.3);
+  --v-info-text: #0c4a6e;
+  --v-toast-success: rgba(22, 163, 74, 0.9);
+  --v-toast-danger: rgba(220, 38, 38, 0.9);
+  --v-toast-warning: rgba(245, 158, 11, 0.9);
+  --v-toast-info: rgba(14, 165, 233, 0.9);
+  background:
+    radial-gradient(58% 42% at 88% -8%, rgba(244, 114, 182, 0.16), transparent 66%),
+    radial-gradient(52% 38% at 10% 10%, rgba(253, 164, 175, 0.16), transparent 62%),
+    linear-gradient(180deg, var(--v-bg-1) 0%, var(--v-bg-2) 52%, var(--v-bg-3) 100%) !important;
+  background-attachment: fixed;
+  color: var(--v-text);
+}
+
+html[data-theme="dark"] body[data-season-theme="valentines"] {
+  --v-bg-1: #220815;
+  --v-bg-2: #160611;
+  --v-bg-3: #2d0c1d;
+  --v-surface: #2b0d1c;
+  --v-surface-2: #351226;
+  --v-surface-3: #431531;
+  --v-text: #ffe7f0;
+  --v-muted: #ffb3cf;
+  --v-border: rgba(255, 135, 178, 0.3);
+  --v-shadow: rgba(0, 0, 0, 0.42);
+  --v-link: #ff9ccc;
+  --v-link-hover: #ffc2dc;
+  --v-primary: #ff4f9f;
+  --v-primary-hover: #ff2f8c;
+  --v-primary-text: #2b0d1c;
+  --v-secondary: #ff8fbf;
+  --v-secondary-hover: #ff79b2;
+  --v-secondary-text: #3a0c22;
+  --v-success: #34d399;
+  --v-danger: #fb7185;
+  --v-warning: #fbbf24;
+  --v-info: #38bdf8;
+  --v-focus: rgba(255, 79, 159, 0.34);
+  --v-table-head: #431531;
+  --v-table-stripe: rgba(255, 143, 191, 0.08);
+  --v-table-hover: rgba(255, 143, 191, 0.14);
+  --v-success-soft: rgba(52, 211, 153, 0.16);
+  --v-success-border: rgba(52, 211, 153, 0.32);
+  --v-success-text: #c7f9e8;
+  --v-danger-soft: rgba(251, 113, 133, 0.16);
+  --v-danger-border: rgba(251, 113, 133, 0.34);
+  --v-danger-text: #ffd3da;
+  --v-warning-soft: rgba(251, 191, 36, 0.16);
+  --v-warning-border: rgba(251, 191, 36, 0.36);
+  --v-warning-text: #ffefc2;
+  --v-info-soft: rgba(56, 189, 248, 0.16);
+  --v-info-border: rgba(56, 189, 248, 0.35);
+  --v-info-text: #d2f2ff;
+  --v-toast-success: rgba(16, 185, 129, 0.9);
+  --v-toast-danger: rgba(244, 63, 94, 0.9);
+  --v-toast-warning: rgba(245, 158, 11, 0.9);
+  --v-toast-info: rgba(14, 165, 233, 0.9);
+  background:
+    radial-gradient(60% 44% at 86% -6%, rgba(255, 102, 153, 0.16), transparent 68%),
+    radial-gradient(52% 38% at 10% 8%, rgba(255, 161, 197, 0.13), transparent 62%),
+    linear-gradient(180deg, var(--v-bg-1) 0%, var(--v-bg-2) 55%, var(--v-bg-3) 100%) !important;
+  background-attachment: fixed;
+  color: var(--v-text) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="valentines"] nav.navbar {
+  background: linear-gradient(135deg, #4f122e 0%, #7a1f4a 44%, #9f2e63 78%, #bc4b80 100%) !important;
+  border-bottom: 1px solid rgba(255, 189, 214, 0.22);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+html body[data-season-theme="valentines"] #page-content-wrapper,
+html body[data-season-theme="valentines"] .container-fluid,
+html body[data-season-theme="valentines"] .content-wrapper {
+  color: var(--v-text) !important;
+}
+
+html body[data-season-theme="valentines"] a {
+  color: var(--v-link);
+}
+
+html body[data-season-theme="valentines"] a:hover {
+  color: var(--v-link-hover);
+}
+
+html body[data-season-theme="valentines"] .card {
+  background: var(--v-surface) !important;
+  color: var(--v-text) !important;
+  border: 1px solid var(--v-border) !important;
+  box-shadow: 0 10px 24px var(--v-shadow) !important;
+}
+
+html body[data-season-theme="valentines"] .card-header {
+  background: linear-gradient(180deg, var(--v-surface-2), var(--v-surface-3)) !important;
+  border-bottom: 1px solid var(--v-border) !important;
+  color: var(--v-text) !important;
+}
+
+html body[data-season-theme="valentines"] .table {
+  color: var(--v-text) !important;
+  background-color: transparent !important;
+}
+
+html body[data-season-theme="valentines"] .table thead th {
+  background: var(--v-table-head) !important;
+  color: var(--v-text) !important;
+  border-top: none !important;
+  border-bottom: 1px solid var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .table td,
+html body[data-season-theme="valentines"] .table th,
+html body[data-season-theme="valentines"] .table > :not(caption) > * > * {
+  border-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: var(--v-table-stripe) !important;
+}
+
+html body[data-season-theme="valentines"] .table-hover tbody tr:hover > * {
+  background-color: var(--v-table-hover) !important;
+}
+
+html body[data-season-theme="valentines"] .table a {
+  color: var(--v-link);
+}
+
+html body[data-season-theme="valentines"] .table a:hover {
+  color: var(--v-link-hover);
+}
+
+html body[data-season-theme="valentines"] .modal-content {
+  background: var(--v-surface) !important;
+  color: var(--v-text) !important;
+  border: 1px solid var(--v-border) !important;
+  box-shadow: 0 16px 36px var(--v-shadow) !important;
+}
+
+html body[data-season-theme="valentines"] .modal-header,
+html body[data-season-theme="valentines"] .modal-footer {
+  border-color: var(--v-border) !important;
+  background: var(--v-surface-2) !important;
+  color: var(--v-text) !important;
+}
+
+html body[data-season-theme="valentines"] .modal-header.bg-primary,
+html body[data-season-theme="valentines"] .modal-header.bg-primary.text-white {
+  background: linear-gradient(135deg, var(--v-primary), var(--v-secondary)) !important;
+  color: #fff7fb !important;
+}
+
+html body[data-season-theme="valentines"] .dropdown-menu {
+  background: var(--v-surface) !important;
+  color: var(--v-text) !important;
+  border: 1px solid var(--v-border) !important;
+  box-shadow: 0 14px 30px var(--v-shadow) !important;
+}
+
+html body[data-season-theme="valentines"] .dropdown-item {
+  color: var(--v-text) !important;
+}
+
+html body[data-season-theme="valentines"] .dropdown-item:hover,
+html body[data-season-theme="valentines"] .dropdown-item:focus {
+  background: var(--v-surface-2) !important;
+  color: var(--v-link-hover) !important;
+}
+
+html body[data-season-theme="valentines"] .dropdown-divider {
+  border-top-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .alert {
+  background: var(--v-surface-2) !important;
+  color: var(--v-text) !important;
+  border: 1px solid var(--v-border) !important;
+  box-shadow: 0 8px 20px var(--v-shadow) !important;
+}
+
+html body[data-season-theme="valentines"] .alert-success {
+  background: var(--v-success-soft) !important;
+  border-color: var(--v-success-border) !important;
+  color: var(--v-success-text) !important;
+}
+
+html body[data-season-theme="valentines"] .alert-danger {
+  background: var(--v-danger-soft) !important;
+  border-color: var(--v-danger-border) !important;
+  color: var(--v-danger-text) !important;
+}
+
+html body[data-season-theme="valentines"] .alert-warning {
+  background: var(--v-warning-soft) !important;
+  border-color: var(--v-warning-border) !important;
+  color: var(--v-warning-text) !important;
+}
+
+html body[data-season-theme="valentines"] .alert-info {
+  background: var(--v-info-soft) !important;
+  border-color: var(--v-info-border) !important;
+  color: var(--v-info-text) !important;
+}
+
+html body[data-season-theme="valentines"] .badge {
+  background: var(--v-surface-3) !important;
+  color: var(--v-text) !important;
+  border: 1px solid var(--v-border);
+}
+
+html body[data-season-theme="valentines"] .badge.bg-primary {
+  background: var(--v-primary) !important;
+  color: var(--v-primary-text) !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="valentines"] .badge.bg-success {
+  background: var(--v-success) !important;
+  color: #f8fff8 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="valentines"] .badge.bg-danger {
+  background: var(--v-danger) !important;
+  color: #fff5f7 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="valentines"] .badge.bg-warning {
+  background: var(--v-warning) !important;
+  color: #3f1a06 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="valentines"] .badge.bg-info {
+  background: var(--v-info) !important;
+  color: #04273c !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="valentines"] .badge.bg-secondary {
+  background: var(--v-surface-3) !important;
+  color: var(--v-text) !important;
+  border-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-primary {
+  background-color: var(--v-primary) !important;
+  border-color: var(--v-primary) !important;
+  color: var(--v-primary-text) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-primary:hover,
+html body[data-season-theme="valentines"] .btn-primary:focus,
+html body[data-season-theme="valentines"] .btn-primary:active {
+  background-color: var(--v-primary-hover) !important;
+  border-color: var(--v-primary-hover) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-secondary {
+  background-color: var(--v-secondary) !important;
+  border-color: var(--v-secondary) !important;
+  color: var(--v-secondary-text) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-secondary:hover,
+html body[data-season-theme="valentines"] .btn-secondary:focus,
+html body[data-season-theme="valentines"] .btn-secondary:active {
+  background-color: var(--v-secondary-hover) !important;
+  border-color: var(--v-secondary-hover) !important;
+  color: var(--v-secondary-text) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-success {
+  background-color: var(--v-success) !important;
+  border-color: var(--v-success) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-danger {
+  background-color: var(--v-danger) !important;
+  border-color: var(--v-danger) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-warning {
+  background-color: var(--v-warning) !important;
+  border-color: var(--v-warning) !important;
+  color: #3f1a06 !important;
+}
+
+html body[data-season-theme="valentines"] .btn-info {
+  background-color: var(--v-info) !important;
+  border-color: var(--v-info) !important;
+  color: #04273c !important;
+}
+
+html body[data-season-theme="valentines"] .btn-outline-primary {
+  color: var(--v-primary) !important;
+  border-color: var(--v-primary) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-outline-primary:hover,
+html body[data-season-theme="valentines"] .btn-outline-primary:focus,
+html body[data-season-theme="valentines"] .btn-outline-primary:active {
+  background-color: var(--v-primary) !important;
+  border-color: var(--v-primary) !important;
+  color: var(--v-primary-text) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-outline-secondary {
+  color: var(--v-muted) !important;
+  border-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-outline-secondary:hover,
+html body[data-season-theme="valentines"] .btn-outline-secondary:focus,
+html body[data-season-theme="valentines"] .btn-outline-secondary:active {
+  background-color: var(--v-surface-3) !important;
+  border-color: var(--v-border) !important;
+  color: var(--v-text) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-outline-danger {
+  color: var(--v-danger) !important;
+  border-color: var(--v-danger) !important;
+}
+
+html body[data-season-theme="valentines"] .btn-outline-danger:hover,
+html body[data-season-theme="valentines"] .btn-outline-danger:focus,
+html body[data-season-theme="valentines"] .btn-outline-danger:active {
+  background-color: var(--v-danger) !important;
+  border-color: var(--v-danger) !important;
+  color: #fff5f7 !important;
+}
+
+html body[data-season-theme="valentines"] .form-control,
+html body[data-season-theme="valentines"] .form-select,
+html body[data-season-theme="valentines"] textarea,
+html body[data-season-theme="valentines"] .input-group-text {
+  background-color: var(--v-surface) !important;
+  color: var(--v-text) !important;
+  border-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .input-group-text {
+  background-color: var(--v-surface-2) !important;
+  color: var(--v-muted) !important;
+}
+
+html body[data-season-theme="valentines"] .form-control:focus,
+html body[data-season-theme="valentines"] .form-select:focus,
+html body[data-season-theme="valentines"] textarea:focus {
+  border-color: var(--v-primary) !important;
+  box-shadow: 0 0 0 0.25rem var(--v-focus) !important;
+}
+
+html body[data-season-theme="valentines"] ::placeholder {
+  color: var(--v-muted) !important;
+  opacity: 1;
+}
+
+html body[data-season-theme="valentines"] .form-control:disabled,
+html body[data-season-theme="valentines"] .form-select:disabled {
+  background-color: var(--v-surface-2) !important;
+  color: var(--v-muted) !important;
+}
+
+html body[data-season-theme="valentines"] .form-check-input {
+  border-color: var(--v-border) !important;
+  background-color: var(--v-surface) !important;
+}
+
+html body[data-season-theme="valentines"] .form-check-input:checked {
+  background-color: var(--v-primary) !important;
+  border-color: var(--v-primary) !important;
+}
+
+html body[data-season-theme="valentines"] .offcanvas {
+  background: var(--v-surface) !important;
+  color: var(--v-text) !important;
+  border-right: 1px solid var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .offcanvas-header {
+  border-bottom: 1px solid var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .offcanvas-body {
+  color: var(--v-text) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="valentines"] .offcanvas-header .btn-close,
+html[data-theme="dark"] body[data-season-theme="valentines"] .btn-close {
+  filter: brightness(0) invert(1) !important;
+}
+
+html body[data-season-theme="valentines"] .list-group-item {
+  background: transparent !important;
+  color: var(--v-text) !important;
+  border-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .list-group-item:hover {
+  background: var(--v-surface-2) !important;
+  color: var(--v-link-hover) !important;
+}
+
+html body[data-season-theme="valentines"] .list-group-item.active {
+  background: var(--v-surface-3) !important;
+  color: var(--v-link) !important;
+  border-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .sidebar-item .sub-item {
+  background: var(--v-surface-2) !important;
+  border-left-color: transparent !important;
+  color: var(--v-text) !important;
+}
+
+html body[data-season-theme="valentines"] .sidebar-item .sub-item:hover,
+html body[data-season-theme="valentines"] .sidebar-item .sub-item.active {
+  background: var(--v-surface-3) !important;
+  border-left-color: var(--v-primary) !important;
+  color: var(--v-link-hover) !important;
+}
+
+html body[data-season-theme="valentines"] .pagination .page-link {
+  color: var(--v-link) !important;
+  background: var(--v-surface) !important;
+  border-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .pagination .page-link:hover {
+  color: var(--v-link-hover) !important;
+  background: var(--v-surface-2) !important;
+}
+
+html body[data-season-theme="valentines"] .pagination .page-item.active .page-link {
+  background: var(--v-primary) !important;
+  border-color: var(--v-primary) !important;
+  color: var(--v-primary-text) !important;
+}
+
+html body[data-season-theme="valentines"] .pagination .page-item.disabled .page-link {
+  background: var(--v-surface-2) !important;
+  color: var(--v-muted) !important;
+  border-color: var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] .toast {
+  border: 1px solid var(--v-border) !important;
+  box-shadow: 0 10px 22px var(--v-shadow) !important;
+}
+
+html body[data-season-theme="valentines"] .toast.bg-success {
+  background-color: var(--v-toast-success) !important;
+}
+
+html body[data-season-theme="valentines"] .toast.bg-danger {
+  background-color: var(--v-toast-danger) !important;
+}
+
+html body[data-season-theme="valentines"] .toast.bg-warning {
+  background-color: var(--v-toast-warning) !important;
+  color: #3f1a06 !important;
+}
+
+html body[data-season-theme="valentines"] .toast.bg-info {
+  background-color: var(--v-toast-info) !important;
+  color: #04273c !important;
+}
+
+html body[data-season-theme="valentines"] #createLeaveModal .nav-tabs,
+html body[data-season-theme="valentines"] .leave-ewp-list-tabs {
+  border-bottom: 1px solid var(--v-border) !important;
+}
+
+html body[data-season-theme="valentines"] #createLeaveModal .nav-tabs .nav-link,
+html body[data-season-theme="valentines"] .leave-ewp-list-tabs .nav-link {
+  color: var(--v-muted) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+}
+
+html body[data-season-theme="valentines"] #createLeaveModal .nav-tabs .nav-link:hover,
+html body[data-season-theme="valentines"] .leave-ewp-list-tabs .nav-link:hover {
+  color: var(--v-link-hover) !important;
+}
+
+html body[data-season-theme="valentines"] #createLeaveModal .nav-tabs .nav-link.active,
+html body[data-season-theme="valentines"] .leave-ewp-list-tabs .nav-link.active {
+  color: var(--v-link) !important;
+  background: var(--v-surface) !important;
+  border-color: var(--v-border) var(--v-border) var(--v-surface) !important;
+}
+
+html body[data-season-theme="valentines"] #createLeaveModal .nav-tabs .nav-link:focus-visible,
+html body[data-season-theme="valentines"] .leave-ewp-list-tabs .nav-link:focus-visible {
+  outline: 2px solid var(--v-primary);
+  outline-offset: 2px;
+}
+
+@keyframes valentine-lantern-sway {
+  0% { transform: rotate(-8deg) translateY(0) scale(var(--lantern-scale, 1)); }
+  50% { transform: rotate(8deg) translateY(1px) scale(var(--lantern-scale, 1)); }
+  100% { transform: rotate(-8deg) translateY(0) scale(var(--lantern-scale, 1)); }
+}
+
+@keyframes valentine-heart-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--heart-rot-start, 0deg));
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--heart-opacity, 0.65);
+  }
+  90% {
+    opacity: var(--heart-opacity, 0.65);
+  }
+  100% {
+    transform: translate3d(var(--heart-drift, 0px), var(--heart-drop, 96px), 0) rotate(var(--heart-rot-end, 90deg));
+    opacity: 0;
+  }
+}
+
+@keyframes valentine-sprite-drift {
+  0%   { transform: translate3d(-4%, 4%, 0); }
+  33%  { transform: translate3d(3%, -4%, 0); }
+  66%  { transform: translate3d(6%, 2%, 0); }
+  100% { transform: translate3d(-4%, 4%, 0); }
+}
+
+@keyframes valentine-heart-glow {
+  0%, 100% { fill: rgba(239, 35, 60, 0.84); }
+  50%      { fill: rgba(255, 83, 138, 0.72); }
+}
+
+@keyframes valentine-flower-turn {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(5deg); }
+}
+
+@keyframes valentine-flower-center-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.14); }
+}
+
+@media (max-width: 768px) {
+  body[data-season-theme="valentines"] #valentine-greeting-banner {
+    display: none;
+  }
+
+  body[data-season-theme="valentines"] #valentine-floating-sprites {
+    display: none;
+  }
+
+  body[data-season-theme="valentines"] #valentine-lanterns .valentine-lantern:nth-child(n+9) {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  body[data-season-theme="valentines"] #valentine-lanterns .valentine-lantern:nth-child(n+7) {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  body[data-season-theme="valentines"] #valentine-greeting-banner {
+    width: min(860px, calc(100% - 250px));
+  }
+
+  body[data-season-theme="valentines"] #valentine-greeting-banner .valentine-greeting-inner {
+    grid-template-columns: 1fr minmax(180px, 270px) 1fr;
+  }
+
+  body[data-season-theme="valentines"] #valentine-greeting-banner .valentine-greeting-text {
+    font-size: clamp(0.9rem, 1.28vw, 1.2rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-season-theme="valentines"] #valentine-lanterns .valentine-lantern {
+    animation: none !important;
+  }
+
+  body[data-season-theme="valentines"] #valentine-heartfall .valentine-falling-heart {
+    animation-duration: 22s !important;
+  }
+
+  body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite {
+    animation-duration: 45s !important;
+  }
+
+  body[data-season-theme="valentines"] #valentine-floating-sprites .valentine-sprite svg {
+    animation: none !important;
+  }
+}

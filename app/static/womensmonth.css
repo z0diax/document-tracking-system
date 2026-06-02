@@ -1,0 +1,958 @@
+/* National Women's Month theme: plum, rose, sage, and champagne styling. */
+:root {
+  --wm-plum-1: #5d245f;
+  --wm-plum-2: #7c3a78;
+  --wm-rose-1: #c85c8e;
+  --wm-rose-2: #ef7ba8;
+  --wm-gold-1: #f0c96a;
+  --wm-gold-2: #f6df9a;
+  --wm-sage-1: #6ea48b;
+}
+
+body[data-season-theme="womensmonth"] {
+  background:
+    radial-gradient(58% 42% at 86% -10%, rgba(240, 201, 106, 0.16), transparent 66%),
+    radial-gradient(44% 34% at 12% 12%, rgba(239, 123, 168, 0.14), transparent 62%),
+    radial-gradient(36% 32% at 26% 100%, rgba(110, 164, 139, 0.12), transparent 64%),
+    linear-gradient(180deg, #fff8fc 0%, #fff1f7 50%, #f7fbf8 100%) !important;
+  background-attachment: fixed;
+}
+
+body[data-season-theme="womensmonth"] nav.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  overflow: visible;
+  background: linear-gradient(135deg, #5b255f 0%, #7b3069 45%, #b44977 100%) !important;
+  border-bottom: 1px solid rgba(246, 223, 154, 0.24);
+  box-shadow: 0 8px 24px rgba(77, 30, 69, 0.34);
+}
+
+body[data-season-theme="womensmonth"] nav.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(246, 223, 154, 0.16), transparent 58%),
+    radial-gradient(circle at 84% 0%, rgba(239, 123, 168, 0.18), transparent 62%),
+    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 48%, transparent 100%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="womensmonth"] nav.navbar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  width: 86%;
+  height: 54px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(200, 92, 142, 0.24) 0%, rgba(123, 48, 105, 0.22) 48%, transparent 100%);
+  filter: blur(16px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+body[data-season-theme="womensmonth"] .navbar .container,
+body[data-season-theme="womensmonth"] .navbar > img {
+  position: relative;
+  z-index: 2;
+}
+
+body[data-season-theme="womensmonth"] .navbar-brand,
+body[data-season-theme="womensmonth"] .nav-link,
+body[data-season-theme="womensmonth"] .btn-link {
+  color: #fff4fb !important;
+}
+
+body[data-season-theme="womensmonth"] .nav-item .btn-link {
+  background: rgba(255, 244, 251, 0.11) !important;
+}
+
+body[data-season-theme="womensmonth"] .nav-item .btn-link:hover {
+  background: rgba(255, 244, 251, 0.2) !important;
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  height: 78px;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-track {
+  display: flex;
+  gap: 12px;
+  padding: 4px 16px 0;
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom {
+  position: relative;
+  width: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  isolation: isolate;
+  transform-origin: top center;
+  animation: wm-bloom-sway var(--wm-sway-duration, 5.8s) ease-in-out var(--wm-sway-delay, 0s) infinite;
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-cord {
+  width: 2px;
+  height: 14px;
+  border-radius: 999px;
+  margin-bottom: 2px;
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.92), rgba(246, 223, 154, 0.5));
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-cap {
+  width: 13px;
+  height: 4px;
+  border-radius: 999px;
+  margin-bottom: 2px;
+  background: linear-gradient(180deg, #f6df9a 0%, #d6a84b 100%);
+  box-shadow: 0 1px 0 rgba(255, 253, 246, 0.4) inset;
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-body {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, rgba(255, 249, 252, 0.34), rgba(255, 249, 252, 0) 54%);
+  box-shadow:
+    0 6px 12px rgba(77, 30, 69, 0.32),
+    0 0 14px rgba(239, 123, 168, 0.2);
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-body::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: #f6b2cd;
+  box-shadow:
+    0 -8px 0 0 #ef7ba8,
+    7px -4px 0 0 #d676b3,
+    7px 4px 0 0 #f2a0bf,
+    0 8px 0 0 #f0c96a,
+    -7px 4px 0 0 #8f5fa5,
+    -7px -4px 0 0 #6ea48b;
+  filter: drop-shadow(0 1px 1px rgba(93, 36, 95, 0.14));
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-body::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 46%);
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff8e8 0%, #f6df9a 54%, #d7a84a 100%);
+  box-shadow:
+    0 0 0 1px rgba(105, 60, 22, 0.14),
+    0 0 7px rgba(246, 223, 154, 0.42);
+  animation: wm-bloom-core-pulse 2.8s ease-in-out infinite;
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-tail {
+  position: relative;
+  width: 12px;
+  height: 10px;
+  margin-top: 2px;
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-tail::before,
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-tail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 10px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.9) 0%, #c85c8e 100%);
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-tail::before {
+  left: 1px;
+  transform: skewX(10deg);
+}
+
+body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom-tail::after {
+  right: 1px;
+  transform: skewX(-10deg);
+}
+
+body[data-season-theme="womensmonth"] #wm-greeting-banner {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  height: 100%;
+  width: min(1040px, calc(100% - 300px));
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+}
+
+body[data-season-theme="womensmonth"] #wm-greeting-banner .wm-greeting-inner {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr minmax(240px, 340px) 1fr;
+  align-items: center;
+}
+
+body[data-season-theme="womensmonth"] #wm-greeting-banner .wm-greeting-text {
+  justify-self: center;
+  white-space: nowrap;
+  font-family: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+  font-size: clamp(0.98rem, 1.58vw, 1.26rem);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff1f7;
+  text-shadow:
+    0 1px 0 rgba(74, 25, 63, 0.66),
+    0 0 12px rgba(239, 123, 168, 0.24),
+    0 0 18px rgba(246, 223, 154, 0.18);
+}
+
+body[data-season-theme="womensmonth"] #wm-greeting-banner .wm-greeting-spacer {
+  display: block;
+  height: 1px;
+}
+
+html[data-theme="dark"] body[data-season-theme="womensmonth"] #wm-greeting-banner .wm-greeting-text {
+  color: #ffe9f2;
+  text-shadow:
+    0 1px 0 rgba(37, 12, 32, 0.74),
+    0 0 12px rgba(240, 111, 159, 0.28),
+    0 0 20px rgba(246, 223, 154, 0.18);
+}
+
+body[data-season-theme="womensmonth"] #wm-petals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+body[data-season-theme="womensmonth"] #wm-petals .wm-petal {
+  position: absolute;
+  top: -18px;
+  left: var(--wm-left, 50%);
+  width: var(--wm-size, 10px);
+  height: calc(var(--wm-size, 10px) * 0.8);
+  opacity: var(--wm-opacity, 0.65);
+  background: var(--wm-color, var(--wm-rose-1));
+  transform: translate3d(0, 0, 0) rotate(var(--wm-rot-start, 0deg));
+  animation: wm-petal-fall var(--wm-duration, 12s) linear var(--wm-delay, 0s) infinite;
+  filter: drop-shadow(0 1px 2px rgba(93, 36, 95, 0.24));
+}
+
+body[data-season-theme="womensmonth"] #wm-petals .wm-petal.is-petal {
+  border-radius: 70% 16% 70% 16% / 70% 16% 70% 16%;
+}
+
+body[data-season-theme="womensmonth"] #wm-petals .wm-petal.is-dot {
+  width: calc(var(--wm-size, 10px) * 0.62);
+  height: calc(var(--wm-size, 10px) * 0.62);
+  border-radius: 50%;
+}
+
+body[data-season-theme="womensmonth"] #wm-petals .wm-petal.is-leaf {
+  border-radius: 16% 70% 16% 70% / 16% 70% 16% 70%;
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 150;
+  overflow: visible;
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite {
+  position: absolute;
+  display: block;
+  width: var(--wm-sprite-size, 82px);
+  height: auto;
+  left: var(--wm-sprite-left, 12%);
+  top: var(--wm-sprite-top, 54%);
+  opacity: min(var(--wm-sprite-opacity, 0.5), 0.34);
+  transform: translate3d(0, 0, 0);
+  animation: wm-sprite-drift var(--wm-sprite-duration, 27s) linear infinite;
+  animation-delay: var(--wm-sprite-delay, 0s);
+  filter: drop-shadow(0 12px 24px rgba(93, 36, 95, 0.22));
+  mix-blend-mode: screen;
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-flower .wm-flower-petal-a {
+  fill: rgba(239, 123, 168, 0.86);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-flower .wm-flower-petal-b {
+  fill: rgba(214, 118, 179, 0.82);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-flower .wm-flower-petal-c {
+  fill: rgba(240, 201, 106, 0.82);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-flower .wm-flower-petal-d {
+  fill: rgba(143, 95, 165, 0.82);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-flower .wm-flower-petal-e {
+  fill: rgba(110, 164, 139, 0.82);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-flower .wm-flower-core {
+  fill: rgba(246, 223, 154, 0.9);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-flower .wm-flower-core-dot {
+  fill: rgba(255, 249, 234, 0.9);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-venus .wm-venus-ring,
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-venus .wm-venus-stem,
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-venus .wm-venus-cross {
+  fill: none;
+  stroke: rgba(239, 190, 214, 0.86);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-venus .wm-venus-core {
+  fill: rgba(239, 123, 168, 0.72);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-spark .wm-spark-shape {
+  fill: rgba(246, 223, 154, 0.84);
+}
+
+body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite-spark .wm-spark-core {
+  fill: rgba(255, 249, 234, 0.92);
+  animation: wm-spark-twinkle 2.2s ease-in-out infinite;
+}
+
+html body[data-season-theme="womensmonth"] {
+  --wm-bg-1: #fff8fc;
+  --wm-bg-2: #fff0f6;
+  --wm-bg-3: #f7fbf8;
+  --wm-surface: #fffafd;
+  --wm-surface-2: #fff2f9;
+  --wm-surface-3: #f3e8f4;
+  --wm-text: #542a47;
+  --wm-muted: #7d5a74;
+  --wm-border: rgba(110, 63, 94, 0.22);
+  --wm-shadow: rgba(94, 54, 82, 0.15);
+  --wm-link: #9a356f;
+  --wm-link-hover: #74224f;
+  --wm-primary: #cf5d8f;
+  --wm-primary-hover: #b84779;
+  --wm-primary-text: #fff7fb;
+  --wm-secondary: #5b8c7a;
+  --wm-secondary-hover: #497262;
+  --wm-secondary-text: #f7fffb;
+  --wm-success: #2f855a;
+  --wm-danger: #cf4f79;
+  --wm-warning: #c89222;
+  --wm-info: #377ea7;
+  --wm-focus: rgba(207, 93, 143, 0.24);
+  --wm-table-head: #f8e5f0;
+  --wm-table-stripe: rgba(207, 93, 143, 0.05);
+  --wm-table-hover: rgba(207, 93, 143, 0.1);
+  --wm-success-soft: rgba(47, 133, 90, 0.1);
+  --wm-success-border: rgba(47, 133, 90, 0.28);
+  --wm-success-text: #14532d;
+  --wm-danger-soft: rgba(207, 79, 121, 0.1);
+  --wm-danger-border: rgba(207, 79, 121, 0.28);
+  --wm-danger-text: #7d1f42;
+  --wm-warning-soft: rgba(200, 146, 34, 0.14);
+  --wm-warning-border: rgba(200, 146, 34, 0.3);
+  --wm-warning-text: #6d4a0f;
+  --wm-info-soft: rgba(55, 126, 167, 0.12);
+  --wm-info-border: rgba(55, 126, 167, 0.28);
+  --wm-info-text: #114562;
+  --wm-toast-success: rgba(47, 133, 90, 0.9);
+  --wm-toast-danger: rgba(207, 79, 121, 0.9);
+  --wm-toast-warning: rgba(200, 146, 34, 0.9);
+  --wm-toast-info: rgba(55, 126, 167, 0.9);
+  color: var(--wm-text);
+}
+
+html[data-theme="dark"] body[data-season-theme="womensmonth"] {
+  --wm-bg-1: #180d19;
+  --wm-bg-2: #100912;
+  --wm-bg-3: #231526;
+  --wm-surface: #221224;
+  --wm-surface-2: #2d1830;
+  --wm-surface-3: #3c2141;
+  --wm-text: #f6dfee;
+  --wm-muted: #ddb3cf;
+  --wm-border: rgba(229, 151, 190, 0.24);
+  --wm-shadow: rgba(0, 0, 0, 0.44);
+  --wm-link: #f08bb5;
+  --wm-link-hover: #ffd5e7;
+  --wm-primary: #f06f9f;
+  --wm-primary-hover: #ff85af;
+  --wm-primary-text: #2b1020;
+  --wm-secondary: #7dc2a7;
+  --wm-secondary-hover: #94d2bb;
+  --wm-secondary-text: #0d2e25;
+  --wm-success: #4ade80;
+  --wm-danger: #fb8ab0;
+  --wm-warning: #f6c965;
+  --wm-info: #7dd3fc;
+  --wm-focus: rgba(240, 111, 159, 0.28);
+  --wm-table-head: #3c2141;
+  --wm-table-stripe: rgba(240, 111, 159, 0.08);
+  --wm-table-hover: rgba(240, 111, 159, 0.14);
+  --wm-success-soft: rgba(74, 222, 128, 0.16);
+  --wm-success-border: rgba(74, 222, 128, 0.3);
+  --wm-success-text: #d9ffe8;
+  --wm-danger-soft: rgba(251, 138, 176, 0.16);
+  --wm-danger-border: rgba(251, 138, 176, 0.32);
+  --wm-danger-text: #ffe0eb;
+  --wm-warning-soft: rgba(246, 201, 101, 0.16);
+  --wm-warning-border: rgba(246, 201, 101, 0.32);
+  --wm-warning-text: #fff0bf;
+  --wm-info-soft: rgba(125, 211, 252, 0.16);
+  --wm-info-border: rgba(125, 211, 252, 0.32);
+  --wm-info-text: #dff6ff;
+  --wm-toast-success: rgba(34, 197, 94, 0.9);
+  --wm-toast-danger: rgba(244, 114, 182, 0.9);
+  --wm-toast-warning: rgba(245, 158, 11, 0.9);
+  --wm-toast-info: rgba(14, 165, 233, 0.9);
+  background:
+    radial-gradient(58% 42% at 86% -10%, rgba(240, 201, 106, 0.12), transparent 68%),
+    radial-gradient(44% 34% at 12% 12%, rgba(240, 111, 159, 0.12), transparent 62%),
+    radial-gradient(36% 32% at 26% 100%, rgba(125, 194, 167, 0.12), transparent 64%),
+    linear-gradient(180deg, var(--wm-bg-1) 0%, var(--wm-bg-2) 54%, var(--wm-bg-3) 100%) !important;
+  background-attachment: fixed;
+  color: var(--wm-text) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="womensmonth"] nav.navbar {
+  background: linear-gradient(135deg, #341739 0%, #542248 46%, #87365f 100%) !important;
+  border-bottom: 1px solid rgba(246, 223, 154, 0.18);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.46);
+}
+
+html body[data-season-theme="womensmonth"] #page-content-wrapper,
+html body[data-season-theme="womensmonth"] .container-fluid,
+html body[data-season-theme="womensmonth"] .content-wrapper {
+  color: var(--wm-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] a {
+  color: var(--wm-link);
+}
+
+html body[data-season-theme="womensmonth"] a:hover {
+  color: var(--wm-link-hover);
+}
+
+html body[data-season-theme="womensmonth"] .card {
+  background: var(--wm-surface) !important;
+  color: var(--wm-text) !important;
+  border: 1px solid var(--wm-border) !important;
+  box-shadow: 0 10px 24px var(--wm-shadow) !important;
+}
+
+html body[data-season-theme="womensmonth"] .card-header {
+  background: linear-gradient(180deg, var(--wm-surface-2), var(--wm-surface-3)) !important;
+  border-bottom: 1px solid var(--wm-border) !important;
+  color: var(--wm-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .table {
+  color: var(--wm-text) !important;
+  background-color: transparent !important;
+}
+
+html body[data-season-theme="womensmonth"] .table thead th {
+  background: var(--wm-table-head) !important;
+  color: var(--wm-text) !important;
+  border-top: none !important;
+  border-bottom: 1px solid var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .table td,
+html body[data-season-theme="womensmonth"] .table th,
+html body[data-season-theme="womensmonth"] .table > :not(caption) > * > * {
+  border-color: var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: var(--wm-table-stripe) !important;
+}
+
+html body[data-season-theme="womensmonth"] .table-hover tbody tr:hover > * {
+  background-color: var(--wm-table-hover) !important;
+}
+
+html body[data-season-theme="womensmonth"] .modal-content {
+  background: var(--wm-surface) !important;
+  color: var(--wm-text) !important;
+  border: 1px solid var(--wm-border) !important;
+  box-shadow: 0 16px 36px var(--wm-shadow) !important;
+}
+
+html body[data-season-theme="womensmonth"] .modal-header,
+html body[data-season-theme="womensmonth"] .modal-footer {
+  border-color: var(--wm-border) !important;
+  background: var(--wm-surface-2) !important;
+  color: var(--wm-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .modal-header.bg-primary,
+html body[data-season-theme="womensmonth"] .modal-header.bg-primary.text-white {
+  background: linear-gradient(135deg, var(--wm-primary), var(--wm-secondary)) !important;
+  color: #fff7fb !important;
+}
+
+html body[data-season-theme="womensmonth"] .dropdown-menu {
+  background: var(--wm-surface) !important;
+  color: var(--wm-text) !important;
+  border: 1px solid var(--wm-border) !important;
+  box-shadow: 0 14px 30px var(--wm-shadow) !important;
+}
+
+html body[data-season-theme="womensmonth"] .dropdown-item {
+  color: var(--wm-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .dropdown-item:hover,
+html body[data-season-theme="womensmonth"] .dropdown-item:focus {
+  background: var(--wm-surface-2) !important;
+  color: var(--wm-link-hover) !important;
+}
+
+html body[data-season-theme="womensmonth"] .dropdown-divider {
+  border-top-color: var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .alert {
+  background: var(--wm-surface-2) !important;
+  color: var(--wm-text) !important;
+  border: 1px solid var(--wm-border) !important;
+  box-shadow: 0 8px 20px var(--wm-shadow) !important;
+}
+
+html body[data-season-theme="womensmonth"] .alert-success {
+  background: var(--wm-success-soft) !important;
+  border-color: var(--wm-success-border) !important;
+  color: var(--wm-success-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .alert-danger {
+  background: var(--wm-danger-soft) !important;
+  border-color: var(--wm-danger-border) !important;
+  color: var(--wm-danger-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .alert-warning {
+  background: var(--wm-warning-soft) !important;
+  border-color: var(--wm-warning-border) !important;
+  color: var(--wm-warning-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .alert-info {
+  background: var(--wm-info-soft) !important;
+  border-color: var(--wm-info-border) !important;
+  color: var(--wm-info-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .badge {
+  background: var(--wm-surface-3) !important;
+  color: var(--wm-text) !important;
+  border: 1px solid var(--wm-border);
+}
+
+html body[data-season-theme="womensmonth"] .badge.bg-primary {
+  background: var(--wm-primary) !important;
+  color: var(--wm-primary-text) !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="womensmonth"] .badge.bg-success {
+  background: var(--wm-success) !important;
+  color: #f7fff8 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="womensmonth"] .badge.bg-danger {
+  background: var(--wm-danger) !important;
+  color: #fff5f8 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="womensmonth"] .badge.bg-warning {
+  background: var(--wm-warning) !important;
+  color: #422a07 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="womensmonth"] .badge.bg-info {
+  background: var(--wm-info) !important;
+  color: #082d42 !important;
+  border-color: transparent !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-primary {
+  background-color: var(--wm-primary) !important;
+  border-color: var(--wm-primary) !important;
+  color: var(--wm-primary-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-primary:hover,
+html body[data-season-theme="womensmonth"] .btn-primary:focus,
+html body[data-season-theme="womensmonth"] .btn-primary:active {
+  background-color: var(--wm-primary-hover) !important;
+  border-color: var(--wm-primary-hover) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-secondary {
+  background-color: var(--wm-secondary) !important;
+  border-color: var(--wm-secondary) !important;
+  color: var(--wm-secondary-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-secondary:hover,
+html body[data-season-theme="womensmonth"] .btn-secondary:focus,
+html body[data-season-theme="womensmonth"] .btn-secondary:active {
+  background-color: var(--wm-secondary-hover) !important;
+  border-color: var(--wm-secondary-hover) !important;
+  color: var(--wm-secondary-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-outline-primary {
+  color: var(--wm-primary) !important;
+  border-color: var(--wm-primary) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-outline-primary:hover,
+html body[data-season-theme="womensmonth"] .btn-outline-primary:focus,
+html body[data-season-theme="womensmonth"] .btn-outline-primary:active {
+  background-color: var(--wm-primary) !important;
+  border-color: var(--wm-primary) !important;
+  color: var(--wm-primary-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-outline-secondary {
+  color: var(--wm-muted) !important;
+  border-color: var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-outline-secondary:hover,
+html body[data-season-theme="womensmonth"] .btn-outline-secondary:focus,
+html body[data-season-theme="womensmonth"] .btn-outline-secondary:active {
+  background-color: var(--wm-surface-3) !important;
+  border-color: var(--wm-border) !important;
+  color: var(--wm-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-outline-danger {
+  color: var(--wm-danger) !important;
+  border-color: var(--wm-danger) !important;
+}
+
+html body[data-season-theme="womensmonth"] .btn-outline-danger:hover,
+html body[data-season-theme="womensmonth"] .btn-outline-danger:focus,
+html body[data-season-theme="womensmonth"] .btn-outline-danger:active {
+  background-color: var(--wm-danger) !important;
+  border-color: var(--wm-danger) !important;
+  color: #fff5f8 !important;
+}
+
+html body[data-season-theme="womensmonth"] .form-control,
+html body[data-season-theme="womensmonth"] .form-select,
+html body[data-season-theme="womensmonth"] textarea,
+html body[data-season-theme="womensmonth"] .input-group-text {
+  background-color: var(--wm-surface) !important;
+  color: var(--wm-text) !important;
+  border-color: var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .input-group-text {
+  background-color: var(--wm-surface-2) !important;
+  color: var(--wm-muted) !important;
+}
+
+html body[data-season-theme="womensmonth"] .form-control:focus,
+html body[data-season-theme="womensmonth"] .form-select:focus,
+html body[data-season-theme="womensmonth"] textarea:focus {
+  border-color: var(--wm-primary) !important;
+  box-shadow: 0 0 0 0.25rem var(--wm-focus) !important;
+}
+
+html body[data-season-theme="womensmonth"] ::placeholder {
+  color: var(--wm-muted) !important;
+  opacity: 1;
+}
+
+html body[data-season-theme="womensmonth"] .form-control:disabled,
+html body[data-season-theme="womensmonth"] .form-select:disabled {
+  background-color: var(--wm-surface-2) !important;
+  color: var(--wm-muted) !important;
+}
+
+html body[data-season-theme="womensmonth"] .form-check-input {
+  border-color: var(--wm-border) !important;
+  background-color: var(--wm-surface) !important;
+}
+
+html body[data-season-theme="womensmonth"] .form-check-input:checked {
+  background-color: var(--wm-primary) !important;
+  border-color: var(--wm-primary) !important;
+}
+
+html body[data-season-theme="womensmonth"] .offcanvas {
+  background: var(--wm-surface) !important;
+  color: var(--wm-text) !important;
+  border-right: 1px solid var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .offcanvas-header {
+  border-bottom: 1px solid var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .offcanvas-title,
+html body[data-season-theme="womensmonth"] .offcanvas-body {
+  color: var(--wm-text) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="womensmonth"] .offcanvas-header .btn-close,
+html[data-theme="dark"] body[data-season-theme="womensmonth"] .btn-close {
+  filter: brightness(0) invert(1) !important;
+}
+
+html body[data-season-theme="womensmonth"] .list-group-item {
+  background: transparent !important;
+  color: var(--wm-text) !important;
+  border-color: var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .list-group-item:hover {
+  background: var(--wm-surface-2) !important;
+  color: var(--wm-link-hover) !important;
+}
+
+html body[data-season-theme="womensmonth"] .list-group-item.active {
+  background: var(--wm-surface-3) !important;
+  color: var(--wm-link) !important;
+  border-color: var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .sidebar-item .sub-item {
+  background: var(--wm-surface-2) !important;
+  border-left-color: transparent !important;
+  color: var(--wm-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .sidebar-item .sub-item:hover,
+html body[data-season-theme="womensmonth"] .sidebar-item .sub-item.active {
+  background: var(--wm-surface-3) !important;
+  border-left-color: var(--wm-primary) !important;
+  color: var(--wm-link-hover) !important;
+}
+
+html body[data-season-theme="womensmonth"] .pagination .page-link {
+  color: var(--wm-link) !important;
+  background: var(--wm-surface) !important;
+  border-color: var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .pagination .page-link:hover {
+  color: var(--wm-link-hover) !important;
+  background: var(--wm-surface-2) !important;
+}
+
+html body[data-season-theme="womensmonth"] .pagination .page-item.active .page-link {
+  background: var(--wm-primary) !important;
+  border-color: var(--wm-primary) !important;
+  color: var(--wm-primary-text) !important;
+}
+
+html body[data-season-theme="womensmonth"] .pagination .page-item.disabled .page-link {
+  background: var(--wm-surface-2) !important;
+  color: var(--wm-muted) !important;
+  border-color: var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] .toast {
+  border: 1px solid var(--wm-border) !important;
+  box-shadow: 0 10px 22px var(--wm-shadow) !important;
+}
+
+html body[data-season-theme="womensmonth"] .toast.bg-success {
+  background-color: var(--wm-toast-success) !important;
+}
+
+html body[data-season-theme="womensmonth"] .toast.bg-danger {
+  background-color: var(--wm-toast-danger) !important;
+}
+
+html body[data-season-theme="womensmonth"] .toast.bg-warning {
+  background-color: var(--wm-toast-warning) !important;
+  color: #422a07 !important;
+}
+
+html body[data-season-theme="womensmonth"] .toast.bg-info {
+  background-color: var(--wm-toast-info) !important;
+  color: #082d42 !important;
+}
+
+html body[data-season-theme="womensmonth"] #createLeaveModal .nav-tabs,
+html body[data-season-theme="womensmonth"] .leave-ewp-list-tabs {
+  border-bottom: 1px solid var(--wm-border) !important;
+}
+
+html body[data-season-theme="womensmonth"] #createLeaveModal .nav-tabs .nav-link,
+html body[data-season-theme="womensmonth"] .leave-ewp-list-tabs .nav-link {
+  color: var(--wm-muted) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+}
+
+html body[data-season-theme="womensmonth"] #createLeaveModal .nav-tabs .nav-link:hover,
+html body[data-season-theme="womensmonth"] .leave-ewp-list-tabs .nav-link:hover {
+  color: var(--wm-link-hover) !important;
+}
+
+html body[data-season-theme="womensmonth"] #createLeaveModal .nav-tabs .nav-link.active,
+html body[data-season-theme="womensmonth"] .leave-ewp-list-tabs .nav-link.active {
+  color: var(--wm-link) !important;
+  background: var(--wm-surface) !important;
+  border-color: var(--wm-border) var(--wm-border) var(--wm-surface) !important;
+}
+
+html body[data-season-theme="womensmonth"] #createLeaveModal .nav-tabs .nav-link:focus-visible,
+html body[data-season-theme="womensmonth"] .leave-ewp-list-tabs .nav-link:focus-visible {
+  outline: 2px solid var(--wm-primary);
+  outline-offset: 2px;
+}
+
+@keyframes wm-bloom-sway {
+  0% { transform: rotate(-8deg) translateY(0) scale(var(--wm-bloom-scale, 1)); }
+  50% { transform: rotate(8deg) translateY(1px) scale(var(--wm-bloom-scale, 1)); }
+  100% { transform: rotate(-8deg) translateY(0) scale(var(--wm-bloom-scale, 1)); }
+}
+
+@keyframes wm-bloom-core-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(105, 60, 22, 0.14),
+      0 0 7px rgba(246, 223, 154, 0.32);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(105, 60, 22, 0.14),
+      0 0 12px rgba(246, 223, 154, 0.58);
+  }
+}
+
+@keyframes wm-petal-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--wm-rot-start, 0deg));
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--wm-opacity, 0.65);
+  }
+  90% {
+    opacity: var(--wm-opacity, 0.65);
+  }
+  100% {
+    transform: translate3d(var(--wm-drift, 0px), var(--wm-drop, 96px), 0) rotate(var(--wm-rot-end, 90deg));
+    opacity: 0;
+  }
+}
+
+@keyframes wm-sprite-drift {
+  0% { transform: translate3d(-4%, 4%, 0); }
+  33% { transform: translate3d(3%, -4%, 0); }
+  66% { transform: translate3d(6%, 2%, 0); }
+  100% { transform: translate3d(-4%, 4%, 0); }
+}
+
+@keyframes wm-spark-twinkle {
+  0%, 100% { opacity: 0.72; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.22); }
+}
+
+@media (max-width: 768px) {
+  body[data-season-theme="womensmonth"] #wm-greeting-banner {
+    display: none;
+  }
+
+  body[data-season-theme="womensmonth"] #wm-floaters {
+    display: none;
+  }
+
+  body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom:nth-child(n+9) {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom:nth-child(n+7) {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  body[data-season-theme="womensmonth"] #wm-greeting-banner {
+    width: min(880px, calc(100% - 260px));
+  }
+
+  body[data-season-theme="womensmonth"] #wm-greeting-banner .wm-greeting-inner {
+    grid-template-columns: 1fr minmax(210px, 300px) 1fr;
+  }
+
+  body[data-season-theme="womensmonth"] #wm-greeting-banner .wm-greeting-text {
+    font-size: clamp(0.9rem, 1.36vw, 1.16rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-season-theme="womensmonth"] #wm-blooms .wm-bloom {
+    animation: none !important;
+  }
+
+  body[data-season-theme="womensmonth"] #wm-petals .wm-petal {
+    animation-duration: 22s !important;
+  }
+
+  body[data-season-theme="womensmonth"] #wm-floaters .wm-sprite {
+    animation-duration: 44s !important;
+  }
+}

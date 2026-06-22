@@ -783,6 +783,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='winter.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='chinesenewyear.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dark.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='gov.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='festive.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='vendor/flatpickr/flatpickr.min.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
@@ -910,6 +912,24 @@
                                     <i class="fas fa-hat-wizard"></i>
                                     Hallo-Christmas
                                 </button>
+                                <button type="button"
+                                        class="theme-option-btn theme-option-inactive theme-option-wide"
+                                        data-base-class="theme-option-btn theme-option-wide"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
+                                        data-season-option="gov">
+                                    <i class="fas fa-university"></i>
+                                    Government
+                                </button>
+                                <button type="button"
+                                        class="theme-option-btn theme-option-inactive theme-option-wide"
+                                        data-base-class="theme-option-btn theme-option-wide"
+                                        data-active-class="theme-option-active"
+                                        data-inactive-class="theme-option-inactive"
+                                        data-season-option="festive">
+                                    <i class="fas fa-drum"></i>
+                                    Festive
+                                </button>
                             </div>
                             {% set _theme_label = 'Classic' %}
                             {% if system_theme == 'hallochristmas' %}
@@ -924,6 +944,10 @@
                                 {% set _theme_label = 'Winter' %}
                             {% elif system_theme == 'chinesenewyear' %}
                                 {% set _theme_label = 'Chinese New Year' %}
+                            {% elif system_theme == 'gov' %}
+                                {% set _theme_label = 'Government' %}
+                            {% elif system_theme == 'festive' %}
+                                {% set _theme_label = 'Festive' %}
                             {% endif %}
                             <small class="season-theme-status" id="seasonThemeStatus">
                                 Current: {{ _theme_label }}
@@ -2028,7 +2052,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var statusEl = document.getElementById('seasonThemeStatus');
     var state = {{ system_theme_state|tojson|safe }} || {};
-    var THEMES = ['classic', 'valentines', 'womensmonth', 'amihan', 'winter', 'hallochristmas', 'chinesenewyear'];
+    var THEMES = ['classic', 'valentines', 'womensmonth', 'amihan', 'winter', 'hallochristmas', 'chinesenewyear', 'gov', 'festive'];
     var isLoading = false;
     var currentTheme = null;
 
@@ -2046,6 +2070,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (current === 'amihan') return 'Amihan Bloom';
         if (current === 'winter') return 'Winter';
         if (current === 'chinesenewyear') return 'Chinese New Year';
+        if (current === 'gov') return 'Government';
+        if (current === 'festive') return 'Festive';
         return 'Classic';
     }
 
@@ -2296,5 +2322,6 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="{{ url_for('static', filename='womensmonth.js') }}" defer></script>
 <script src="{{ url_for('static', filename='chinesenewyear.js') }}" defer></script>
 <script src="{{ url_for('static', filename='winter.js') }}" defer></script>
+<script src="{{ url_for('static', filename='festive.js') }}" defer></script>
 </body>
 </html>

@@ -1,0 +1,427 @@
+/* 
+ * Government Official Theme (gov)
+ * Designed for trust, security, and administrative authority.
+ * Colors: Deep Navy Blue (#0c2340) & Prestige Gold (#c5a880 / #d4af37)
+ * Font: Google Font 'Inter' (sans-serif)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Color and Layout Variables */
+body[data-season-theme="gov"] {
+  --gov-primary: #0c2340;
+  --gov-primary-light: #18365d;
+  --gov-primary-dark: #081a30;
+  --gov-accent: #c5a880;
+  --gov-accent-bright: #d4af37;
+  --gov-accent-hover: #b8986c;
+  --gov-bg: #f4f6f9;
+  --gov-surface: #ffffff;
+  --gov-text-main: #1e293b;
+  --gov-text-muted: #64748b;
+  --gov-border: #cbd5e1;
+  --gov-border-light: #e2e8f0;
+  --gov-shadow: 0 4px 6px -1px rgba(12, 35, 64, 0.05), 0 2px 4px -1px rgba(12, 35, 64, 0.03);
+  --gov-shadow-lg: 0 10px 15px -3px rgba(12, 35, 64, 0.08), 0 4px 6px -2px rgba(12, 35, 64, 0.04);
+  --gov-success: #1b4d3e;
+  --gov-success-bg: #e6f4ea;
+  --gov-warning: #855b00;
+  --gov-warning-bg: #fff7e6;
+  --gov-danger: #7f1d1d;
+  --gov-danger-bg: #fef2f2;
+
+  /* Global Fonts Override */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  background-color: var(--gov-bg) !important;
+  color: var(--gov-text-main) !important;
+  
+  /* Premium clean modern gradient mesh (no busy repeating SVG seals) */
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(197, 168, 128, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(12, 35, 64, 0.03) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(12, 35, 64, 0.02) 0px, transparent 50%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Headings */
+body[data-season-theme="gov"] h1,
+body[data-season-theme="gov"] h2,
+body[data-season-theme="gov"] h3,
+body[data-season-theme="gov"] h4,
+body[data-season-theme="gov"] h5,
+body[data-season-theme="gov"] h6 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: var(--gov-primary) !important;
+  font-weight: 700 !important;
+}
+
+/* Navbar overrides */
+body[data-season-theme="gov"] .navbar {
+  background: linear-gradient(135deg, var(--gov-primary) 0%, var(--gov-primary-dark) 100%) !important;
+  border-bottom: 3px solid var(--gov-accent) !important;
+  box-shadow: 0 4px 20px rgba(12, 35, 64, 0.15) !important;
+  position: relative;
+}
+
+body[data-season-theme="gov"] .navbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--gov-accent) 0%, #0d6efd 50%, var(--gov-accent) 100%) !important;
+  z-index: 1000;
+}
+
+body[data-season-theme="gov"] .navbar-brand {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  font-size: 1.15rem;
+}
+
+
+body[data-season-theme="gov"] .navbar .nav-link,
+body[data-season-theme="gov"] .navbar .btn-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+}
+
+body[data-season-theme="gov"] .navbar .nav-link:hover,
+body[data-season-theme="gov"] .navbar .btn-link:hover {
+  color: var(--gov-accent) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Sidebar Styling */
+body[data-season-theme="gov"] #sidebar-wrapper {
+  background-color: var(--gov-primary-dark) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+body[data-season-theme="gov"] #sidebar-wrapper .list-group-item {
+  background-color: transparent !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  padding: 0.85rem 1.5rem;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+body[data-season-theme="gov"] #sidebar-wrapper .list-group-item i {
+  color: var(--gov-accent);
+  margin-right: 12px;
+  width: 1.25rem;
+  text-align: center;
+  font-size: 1.05rem;
+}
+
+body[data-season-theme="gov"] #sidebar-wrapper .list-group-item:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #ffffff !important;
+  border-left-color: rgba(197, 168, 128, 0.4);
+  padding-left: 1.65rem;
+}
+
+body[data-season-theme="gov"] #sidebar-wrapper .list-group-item.active {
+  background-color: rgba(197, 168, 128, 0.08) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-left-color: var(--gov-accent) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+body[data-season-theme="gov"] #sidebar-wrapper .sidebar-item .sub-item {
+  padding-left: 3.25rem !important;
+  background-color: rgba(0, 0, 0, 0.15) !important;
+  font-size: 0.85rem;
+  opacity: 0.88;
+}
+
+body[data-season-theme="gov"] #sidebar-wrapper .sidebar-item .sub-item:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Cards customization */
+body[data-season-theme="gov"] .card {
+  background-color: var(--gov-surface);
+  border: 1px solid var(--gov-border-light);
+  border-radius: 8px;
+  box-shadow: var(--gov-shadow) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+/* Header line accents on executive cards */
+body[data-season-theme="gov"] .card.executive-card,
+body[data-season-theme="gov"] .card.card-accent-gov,
+body[data-season-theme="gov"] .dashboard-container .card {
+  border-top: 4px solid var(--gov-accent) !important;
+}
+
+body[data-season-theme="gov"] .card-header {
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid var(--gov-border-light) !important;
+  padding: 1rem 1.25rem;
+}
+
+body[data-season-theme="gov"] .card-header h5,
+body[data-season-theme="gov"] .card-header h6,
+body[data-season-theme="gov"] .card-header .h5 {
+  color: var(--gov-primary) !important;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* Tables styling */
+body[data-season-theme="gov"] .table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body[data-season-theme="gov"] .table thead th {
+  background-color: #f1f5f9 !important;
+  color: var(--gov-primary) !important;
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--gov-border) !important;
+  padding: 0.85rem 1rem;
+}
+
+body[data-season-theme="gov"] .table tbody td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--gov-border-light) !important;
+  font-size: 0.88rem;
+  vertical-align: middle;
+}
+
+body[data-season-theme="gov"] .table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Form controls */
+body[data-season-theme="gov"] .form-control,
+body[data-season-theme="gov"] .form-select {
+  border: 1px solid var(--gov-border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.75rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body[data-season-theme="gov"] .form-control:focus,
+body[data-season-theme="gov"] .form-select:focus {
+  border-color: var(--gov-primary-light) !important;
+  box-shadow: 0 0 0 3px rgba(12, 35, 64, 0.12) !important;
+  outline: 0;
+}
+
+/* Buttons overrides */
+body[data-season-theme="gov"] .btn-primary {
+  background-color: var(--gov-primary) !important;
+  border-color: var(--gov-primary) !important;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(12, 35, 64, 0.1) !important;
+  transition: all 0.2s ease;
+}
+
+body[data-season-theme="gov"] .btn-primary:hover,
+body[data-season-theme="gov"] .btn-primary:focus {
+  background-color: var(--gov-primary-light) !important;
+  border-color: var(--gov-primary-light) !important;
+  box-shadow: 0 4px 8px rgba(12, 35, 64, 0.18) !important;
+  transform: translateY(-1px);
+}
+
+body[data-season-theme="gov"] .btn-outline-primary {
+  color: var(--gov-primary) !important;
+  border-color: var(--gov-primary) !important;
+  font-weight: 600;
+}
+
+body[data-season-theme="gov"] .btn-outline-primary:hover {
+  background-color: var(--gov-primary) !important;
+  color: #ffffff !important;
+}
+
+/* Badge highlights */
+body[data-season-theme="gov"] .badge {
+  font-weight: 600;
+  padding: 0.4em 0.7em;
+  border-radius: 4px;
+}
+
+body[data-season-theme="gov"] .bg-success {
+  background-color: var(--gov-success-bg) !important;
+  color: var(--gov-success) !important;
+  border: 1px solid rgba(27, 77, 62, 0.2);
+}
+
+body[data-season-theme="gov"] .bg-warning {
+  background-color: var(--gov-warning-bg) !important;
+  color: var(--gov-warning) !important;
+  border: 1px solid rgba(133, 91, 0, 0.2);
+}
+
+body[data-season-theme="gov"] .bg-danger {
+  background-color: var(--gov-danger-bg) !important;
+  color: var(--gov-danger) !important;
+  border: 1px solid rgba(127, 29, 29, 0.2);
+}
+
+body[data-season-theme="gov"] .bg-info {
+  background-color: #eff6ff !important;
+  color: #1e3a8a !important;
+  border: 1px solid rgba(30, 58, 138, 0.15);
+}
+
+/* Custom Watermark Banner */
+body[data-season-theme="gov"] .gov-header-banner {
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 4px 16px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #475569;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+}
+
+body[data-season-theme="gov"] .gov-header-banner span i {
+  color: var(--gov-accent);
+  margin-right: 6px;
+}
+
+body[data-season-theme="gov"] .gov-clock {
+  font-variant-numeric: tabular-nums;
+  color: #64748b;
+  font-weight: 600;
+}
+
+
+/* ==========================================================================
+   DARK MODE OVERRIDES (html[data-theme="dark"] body[data-season-theme="gov"])
+   ========================================================================== */
+
+html[data-theme="dark"] body[data-season-theme="gov"] {
+  --gov-primary: #1e3a8a;
+  --gov-primary-light: #2563eb;
+  --gov-primary-dark: #0f172a;
+  --gov-accent: #c5a880;
+  --gov-accent-bright: #d4af37;
+  --gov-bg: #0b0f19;
+  --gov-surface: #1e293b;
+  --gov-text-main: #f8fafc;
+  --gov-text-muted: #94a3b8;
+  --gov-border: #334155;
+  --gov-border-light: #334155;
+  --gov-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --gov-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  
+  --gov-success: #6ee7b7;
+  --gov-success-bg: rgba(6, 95, 70, 0.25);
+  --gov-warning: #fde047;
+  --gov-warning-bg: rgba(146, 64, 14, 0.25);
+  --gov-danger: #fca5a5;
+  --gov-danger-bg: rgba(153, 27, 27, 0.25);
+
+  /* Premium clean modern gradient mesh for dark mode */
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(197, 168, 128, 0.02) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(30, 58, 138, 0.06) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.5) 0px, transparent 50%) !important;
+}
+
+/* Dark mode elements customization */
+html[data-theme="dark"] body[data-season-theme="gov"] h1,
+html[data-theme="dark"] body[data-season-theme="gov"] h2,
+html[data-theme="dark"] body[data-season-theme="gov"] h3,
+html[data-theme="dark"] body[data-season-theme="gov"] h4,
+html[data-theme="dark"] body[data-season-theme="gov"] h5,
+html[data-theme="dark"] body[data-season-theme="gov"] h6 {
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .navbar {
+  background: var(--gov-primary-dark) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .card-header {
+  background-color: #1e293b !important;
+  border-bottom: 1px solid var(--gov-border) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .card-header h5 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .table thead th {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid var(--gov-border) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .table tbody td {
+  border-bottom: 1px solid var(--gov-border) !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .table tbody tr:hover {
+  background-color: #1e293b !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .form-control,
+html[data-theme="dark"] body[data-season-theme="gov"] .form-select {
+  background-color: #0f172a !important;
+  border-color: var(--gov-border) !important;
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .form-control:focus,
+html[data-theme="dark"] body[data-season-theme="gov"] .form-select:focus {
+  border-color: var(--gov-primary-light) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .gov-header-banner {
+  background-color: #0f172a !important;
+  border-bottom-color: var(--gov-border) !important;
+  color: #94a3b8;
+}
+
+/* Settings drop-downs and menus */
+html[data-theme="dark"] body[data-season-theme="gov"] .dropdown-menu {
+  background-color: #1e293b !important;
+  border: 1px solid var(--gov-border) !important;
+  box-shadow: var(--gov-shadow-lg) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .dropdown-item {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .dropdown-item:hover {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="gov"] .season-theme-panel {
+  background: linear-gradient(180deg, #0f172a, #0b0f19) !important;
+  border-color: var(--gov-border) !important;
+}

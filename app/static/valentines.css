@@ -23,6 +23,27 @@ body[data-season-theme="valentines"] nav.navbar {
   box-shadow: 0 8px 24px rgba(176, 0, 32, 0.32);
 }
 
+body[data-season-theme="valentines"] nav.navbar::after {
+  content: "♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥   ♥";
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #ff4d6d;
+  font-size: 9px;
+  letter-spacing: 1.5vw;
+  text-shadow: 0 0 6px rgba(255, 77, 109, 0.9);
+  pointer-events: none;
+  opacity: 0.95;
+  animation: valentines-heart-pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes valentines-heart-pulse {
+  0% { transform: scaleY(1); opacity: 0.7; }
+  100% { transform: scaleY(1.25) scaleX(1.05); opacity: 1; }
+}
+
 body[data-season-theme="valentines"] nav.navbar::before {
   content: "";
   position: absolute;

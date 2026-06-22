@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 DEFAULT_THEME = "classic"
-ALLOWED_THEMES = {"classic", "valentines", "womensmonth", "amihan", "winter", "hallochristmas", "chinesenewyear"}
-THEME_SEQUENCE = ["classic", "valentines", "womensmonth", "amihan", "winter", "hallochristmas", "chinesenewyear"]
+ALLOWED_THEMES = {"classic", "valentines", "womensmonth", "amihan", "winter", "hallochristmas", "chinesenewyear", "gov", "festive"}
+THEME_SEQUENCE = ["classic", "valentines", "womensmonth", "amihan", "winter", "hallochristmas", "chinesenewyear", "gov", "festive"]
 STATE_FILENAME = "season_theme.json"
 
 

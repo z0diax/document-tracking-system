@@ -1,0 +1,601 @@
+/* 
+ * Festive Theme (festive)
+ * Inspired by Philippine Festivals (Sinulog, Pahiyas, Panagbenga)
+ * Colors: Vibrant Magenta (#d81b60), Fiesta Orange (#ff6d00), Mango Gold (#ffb300), Cyan (#00e5ff)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+body[data-season-theme="festive"] {
+  --festive-primary: #d81b60;
+  --festive-primary-light: #ff007f;
+  --festive-secondary: #ff6d00;
+  --festive-accent: #ffb300;
+  --festive-cyan: #00b0ff;
+  --festive-purple: #4a148c;
+  --festive-bg: #fffdf0;
+  --festive-surface: #ffffff;
+  --festive-text-main: #2b183a;
+  --festive-text-muted: #7d648f;
+  --festive-border: #f3e5f5;
+  --festive-border-light: #fbe9e7;
+  --festive-shadow: 0 4px 15px rgba(216, 27, 96, 0.06), 0 2px 5px rgba(255, 109, 0, 0.04);
+  --festive-shadow-lg: 0 10px 25px rgba(216, 27, 96, 0.12);
+
+  font-family: 'Outfit', -apple-system, sans-serif !important;
+  background-color: var(--festive-bg) !important;
+  color: var(--festive-text-main) !important;
+
+  /* Modern soft tropical floral/sunburst ambient background with texture */
+  background-image: 
+    radial-gradient(rgba(216, 27, 96, 0.015) 1.5px, transparent 1.5px),
+    radial-gradient(at 0% 0%, rgba(255, 179, 0, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(216, 27, 96, 0.07) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(0, 176, 255, 0.05) 0px, transparent 50%) !important;
+  background-size: 24px 24px, 100% 100%, 100% 100%, 100% 100% !important;
+  background-attachment: fixed !important;
+}
+
+/* Headings */
+body[data-season-theme="festive"] h1,
+body[data-season-theme="festive"] h2,
+body[data-season-theme="festive"] h3,
+body[data-season-theme="festive"] h4,
+body[data-season-theme="festive"] h5,
+body[data-season-theme="festive"] h6 {
+  font-family: 'Outfit', -apple-system, sans-serif !important;
+  color: var(--festive-primary) !important;
+  font-weight: 800 !important;
+}
+
+body[data-season-theme="festive"] .navbar {
+  background: linear-gradient(135deg, var(--festive-primary) 0%, var(--festive-secondary) 50%, var(--festive-accent) 100%) !important;
+  background-size: 200% 200% !important;
+  animation: festive-navbar-bg 8s ease infinite !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(216, 27, 96, 0.25) !important;
+  overflow: visible !important;
+}
+
+@keyframes festive-navbar-bg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+body[data-season-theme="festive"] .navbar-brand {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.01em;
+  font-size: 1.25rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+body[data-season-theme="festive"] .navbar-brand::before {
+  content: "\f56c"; /* Drum icon */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-right: 8px;
+  color: var(--festive-accent);
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body[data-season-theme="festive"] .navbar-brand:hover::before {
+  animation: drum-beat 0.6s ease-in-out;
+}
+
+@keyframes drum-beat {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.2) rotate(-8deg); }
+  40% { transform: scale(0.9) rotate(8deg); }
+  60% { transform: scale(1.15) rotate(-4deg); }
+  80% { transform: scale(0.95) rotate(4deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+body[data-season-theme="festive"] .navbar .nav-link,
+body[data-season-theme="festive"] .navbar .btn-link {
+  color: #ffffff !important;
+  font-weight: 600;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body[data-season-theme="festive"] .navbar .nav-link::after {
+  content: "✨";
+  position: absolute;
+  top: -5px;
+  right: -2px;
+  font-size: 9px;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: scale(0.4);
+  pointer-events: none;
+}
+
+body[data-season-theme="festive"] .navbar .nav-link:hover::after {
+  opacity: 1;
+  transform: scale(1) rotate(15deg);
+}
+
+body[data-season-theme="festive"] .navbar .nav-link:hover,
+body[data-season-theme="festive"] .navbar .btn-link:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  transform: scale(1.03);
+}
+
+body[data-season-theme="festive"] .navbar .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* Banderitas (Triangular & Swallow-tail flags) hanging container */
+#festive-banderitas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  display: flex;
+  justify-content: space-around;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+/* Connecting wire for banderitas */
+#festive-banderitas::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  z-index: 0;
+}
+
+.banderitas-flag {
+  transform-origin: top center;
+  animation: festive-sway 2.5s ease-in-out infinite alternate;
+}
+
+/* Triangular shape for odd flags */
+.banderitas-flag:nth-child(odd) {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 15px solid #fff;
+  background-color: transparent !important;
+}
+
+/* Swallow-tail shape for even flags */
+.banderitas-flag:nth-child(even) {
+  width: 14px;
+  height: 16px;
+  border: none;
+  background-color: #fff;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%);
+}
+
+/* Colorful distribution of flags */
+.banderitas-flag:nth-child(5n+1) { border-top-color: #ffd700; background-color: #ffd700; animation-delay: 0s; } /* Yellow */
+.banderitas-flag:nth-child(5n+2) { border-top-color: #00e5ff; background-color: #00e5ff; animation-delay: 0.3s; } /* Cyan */
+.banderitas-flag:nth-child(5n+3) { border-top-color: #ff3d00; background-color: #ff3d00; animation-delay: 0.15s; } /* Red-Orange */
+.banderitas-flag:nth-child(5n+4) { border-top-color: #ff007f; background-color: #ff007f; animation-delay: 0.45s; } /* Pink */
+.banderitas-flag:nth-child(5n+5) { border-top-color: #00e676; background-color: #00e676; animation-delay: 0.25s; } /* Green */
+
+@keyframes festive-sway {
+  0% { transform: rotate(-12deg); }
+  100% { transform: rotate(12deg); }
+}
+
+/* Festive Bottom Decoration Container */
+#festive-bottom-deco {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  display: flex;
+  justify-content: space-around;
+  pointer-events: none;
+  z-index: 10;
+  overflow: visible;
+  padding: 0 10px;
+}
+
+/* Festive Twinkling Light Bulb */
+.festive-light-bulb {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #fff;
+  transform-origin: top center;
+  position: relative;
+  top: 4px;
+  animation: festive-light-twinkle 1s ease-in-out infinite alternate;
+}
+
+/* Light wire holder */
+.festive-light-bulb::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 3px;
+  width: 2px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Kiping Leaf Ornament (translucent, colorful leaf shapes) */
+.festive-kiping-leaf {
+  width: 10px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 0px 100% 0px 100%; /* leaf shape */
+  transform: rotate(15deg);
+  transform-origin: top center;
+  position: relative;
+  top: 2px;
+  opacity: 0.95;
+  animation: festive-kiping-sway 2s ease-in-out infinite alternate;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Kiping string attachment */
+.festive-kiping-leaf::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 5px;
+  width: 1px;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Lights colors and glows */
+.festive-light-bulb:nth-child(4n+1) { background-color: #ffd700; box-shadow: 0 0 8px #ffd700, 0 0 15px #ffd700; animation-delay: 0s; }
+.festive-light-bulb:nth-child(4n+2) { background-color: #00e5ff; box-shadow: 0 0 8px #00e5ff, 0 0 15px #00e5ff; animation-delay: 0.25s; }
+.festive-light-bulb:nth-child(4n+3) { background-color: #ff3d00; box-shadow: 0 0 8px #ff3d00, 0 0 15px #ff3d00; animation-delay: 0.5s; }
+.festive-light-bulb:nth-child(4n+4) { background-color: #ff007f; box-shadow: 0 0 8px #ff007f, 0 0 15px #ff007f; animation-delay: 0.75s; }
+
+/* Kiping leaves vibrant translucent colors */
+.festive-kiping-leaf:nth-child(4n+1) { background-color: rgba(255, 109, 0, 0.85); animation-delay: 0.1s; }  /* Pahiyas Orange */
+.festive-kiping-leaf:nth-child(4n+2) { background-color: rgba(216, 27, 96, 0.85); animation-delay: 0.6s; }  /* Sinulog Magenta */
+.festive-kiping-leaf:nth-child(4n+3) { background-color: rgba(0, 229, 255, 0.85); animation-delay: 1.1s; }  /* Tropical Cyan */
+.festive-kiping-leaf:nth-child(4n+4) { background-color: rgba(0, 230, 118, 0.85); animation-delay: 1.6s; }  /* Green */
+
+@keyframes festive-light-twinkle {
+  0% { opacity: 0.4; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes festive-kiping-sway {
+  0% { transform: rotate(-10deg) translateY(0); }
+  100% { transform: rotate(20deg) translateY(1px); }
+}
+
+/* Sidebar styling */
+body[data-season-theme="festive"] #sidebar-wrapper {
+  background-color: var(--festive-purple) !important;
+  background-image: linear-gradient(180deg, var(--festive-purple) 0%, #2a085c 100%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+body[data-season-theme="festive"] #sidebar-wrapper .list-group-item {
+  background-color: transparent !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500;
+  border: none;
+  padding: 0.9rem 1.5rem;
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+}
+
+body[data-season-theme="festive"] #sidebar-wrapper .list-group-item i {
+  color: var(--festive-accent);
+  margin-right: 12px;
+  width: 1.25rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+body[data-season-theme="festive"] #sidebar-wrapper .list-group-item:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+  border-left-color: rgba(255, 179, 0, 0.4);
+  padding-left: 1.65rem;
+}
+
+body[data-season-theme="festive"] #sidebar-wrapper .list-group-item.active {
+  background: linear-gradient(90deg, rgba(216, 27, 96, 0.15) 0%, transparent 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  border-left: 4px solid var(--festive-accent) !important;
+  box-shadow: inset 4px 0 0 var(--festive-accent);
+}
+
+body[data-season-theme="festive"] #sidebar-wrapper .sidebar-item .sub-item {
+  padding-left: 3.25rem !important;
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  font-size: 0.85rem;
+  opacity: 0.88;
+}
+
+/* Cards styling */
+body[data-season-theme="festive"] .card {
+  background-color: var(--festive-surface);
+  border: 1px solid var(--festive-border);
+  border-radius: 12px;
+  box-shadow: var(--festive-shadow) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+body[data-season-theme="festive"] .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(216, 27, 96, 0.1) !important;
+}
+
+body[data-season-theme="festive"] .card-accent-gov,
+body[data-season-theme="festive"] .dashboard-container .card {
+  border-top: none !important;
+}
+
+body[data-season-theme="festive"] .card-accent-gov::before,
+body[data-season-theme="festive"] .dashboard-container .card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--festive-primary), var(--festive-secondary), var(--festive-accent), var(--festive-cyan));
+  z-index: 10;
+}
+
+body[data-season-theme="festive"] .card-header {
+  background-color: #fffbf5 !important;
+  border-bottom: 1px solid var(--festive-border) !important;
+  padding: 1rem 1.25rem;
+  position: relative;
+}
+
+body[data-season-theme="festive"] .card-header h5 {
+  color: var(--festive-purple) !important;
+  font-weight: 800;
+}
+
+/* Tables styling */
+body[data-season-theme="festive"] .table thead th {
+  background-color: #fff8eb !important;
+  color: var(--festive-primary) !important;
+  font-weight: 800 !important;
+  font-size: 0.82rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--festive-border) !important;
+}
+
+body[data-season-theme="festive"] .table tbody td {
+  border-bottom: 1px solid var(--festive-border) !important;
+}
+
+body[data-season-theme="festive"] .table tbody tr:hover {
+  background-color: #fffdf5 !important;
+}
+
+/* Form controls */
+body[data-season-theme="festive"] .form-control:focus,
+body[data-season-theme="festive"] .form-select:focus {
+  border-color: var(--festive-primary) !important;
+  box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.15) !important;
+}
+
+/* Buttons */
+body[data-season-theme="festive"] .btn-primary {
+  background: linear-gradient(135deg, var(--festive-primary) 0%, var(--festive-secondary) 100%) !important;
+  border: none !important;
+  font-weight: 700;
+  padding: 0.55rem 1.35rem;
+  border-radius: 6px;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(216, 27, 96, 0.2) !important;
+  transition: all 0.2s ease;
+}
+
+body[data-season-theme="festive"] .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(216, 27, 96, 0.35) !important;
+  opacity: 0.95;
+}
+
+/* Badges */
+body[data-season-theme="festive"] .badge {
+  font-weight: 700;
+  padding: 0.45em 0.75em;
+  border-radius: 6px;
+}
+
+body[data-season-theme="festive"] .bg-success {
+  background-color: #e8f5e9 !important;
+  color: #2e7d32 !important;
+  border: 1px solid rgba(46, 125, 50, 0.2);
+}
+
+body[data-season-theme="festive"] .bg-warning {
+  background-color: #fff3e0 !important;
+  color: #ef6c00 !important;
+  border: 1px solid rgba(239, 108, 0, 0.2);
+}
+
+body[data-season-theme="festive"] .bg-danger {
+  background-color: #ffebee !important;
+  color: #c62828 !important;
+  border: 1px solid rgba(198, 40, 40, 0.2);
+}
+
+
+/* ==========================================================================
+   DARK MODE OVERRIDES (html[data-theme="dark"] body[data-season-theme="festive"])
+   ========================================================================== */
+
+html[data-theme="dark"] body[data-season-theme="festive"] {
+  --festive-bg: #12091d;
+  --festive-surface: #1e112d;
+  --festive-text-main: #f5f0f9;
+  --festive-text-muted: #ab9cbd;
+  --festive-border: #38244c;
+  --festive-border-light: #38244c;
+  --festive-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --festive-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+
+  /* Modern soft tropical floral/sunburst ambient background with texture in dark mode */
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.01) 1.5px, transparent 1.5px),
+    radial-gradient(at 0% 0%, rgba(255, 179, 0, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(216, 27, 96, 0.05) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(0, 176, 255, 0.03) 0px, transparent 50%) !important;
+  background-size: 24px 24px, 100% 100%, 100% 100%, 100% 100% !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] h1,
+html[data-theme="dark"] body[data-season-theme="festive"] h2,
+html[data-theme="dark"] body[data-season-theme="festive"] h3,
+html[data-theme="dark"] body[data-season-theme="festive"] h4,
+html[data-theme="dark"] body[data-season-theme="festive"] h5,
+html[data-theme="dark"] body[data-season-theme="festive"] h6 {
+  color: #f5f0f9 !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .card-header {
+  background-color: #27173a !important;
+  border-bottom: 1px solid var(--festive-border) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .card-header h5 {
+  color: #ffd700 !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .table thead th {
+  background: linear-gradient(180deg, #27173a 0%, #1e112d 100%) !important;
+  color: #ffd700 !important;
+  border-bottom: 2px solid var(--festive-accent) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .table tbody td {
+  border-bottom: 1px solid var(--festive-border) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .table tbody tr:hover {
+  background-color: #27173a !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .form-control,
+html[data-theme="dark"] body[data-season-theme="festive"] .form-select {
+  background-color: #12091d !important;
+  border-color: var(--festive-border) !important;
+  color: #f5f0f9 !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .form-control:focus,
+html[data-theme="dark"] body[data-season-theme="festive"] .form-select:focus {
+  border-color: var(--festive-primary) !important;
+  box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.3) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .dropdown-menu {
+  background-color: #1e112d !important;
+  border: 1px solid var(--festive-border) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .dropdown-item {
+  color: #f5f0f9 !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .dropdown-item:hover {
+  background-color: #38244c !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="festive"] .season-theme-panel {
+  background: linear-gradient(180deg, #1e112d, #12091d) !important;
+  border-color: var(--festive-border) !important;
+}
+
+/* Falling Confetti Animation (Restricted to Navbar only) */
+body[data-season-theme="festive"] #festive-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+body[data-season-theme="festive"] .festive-confetti-piece {
+  position: absolute;
+  top: -15px;
+  will-change: transform;
+  animation: festive-fall linear infinite;
+  border-radius: 2px;
+}
+
+body[data-season-theme="festive"] .festive-confetti-piece.is-circle {
+  border-radius: 50%;
+}
+
+body[data-season-theme="festive"] .festive-confetti-piece.is-diamond {
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+body[data-season-theme="festive"] .festive-confetti-piece.is-star {
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  border-radius: 0;
+}
+
+@keyframes festive-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) translateX(0);
+  }
+  50% {
+    transform: translateY(35px) rotate(180deg) translateX(15px);
+  }
+  100% {
+    transform: translateY(70px) rotate(360deg) translateX(-15px);
+  }
+}
+
+/* Toast Notification Customization for Festive Theme */
+body[data-season-theme="festive"] .toast {
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: var(--festive-shadow-lg) !important;
+  color: #ffffff !important;
+}
+
+body[data-season-theme="festive"] .toast.bg-success {
+  background-color: #2e7d32 !important;
+  color: #ffffff !important;
+}
+
+body[data-season-theme="festive"] .toast.bg-danger {
+  background-color: #c62828 !important;
+  color: #ffffff !important;
+}
+
+body[data-season-theme="festive"] .toast.bg-warning {
+  background-color: #ef6c00 !important;
+  color: #ffffff !important;
+}
+
+body[data-season-theme="festive"] .toast.bg-info {
+  background-color: #00b0ff !important;
+  color: #ffffff !important;
+}

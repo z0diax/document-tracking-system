@@ -956,3 +956,25 @@ html body[data-season-theme="womensmonth"] .leave-ewp-list-tabs .nav-link:focus-
     animation-duration: 44s !important;
   }
 }
+
+body[data-season-theme="womensmonth"] .navbar .container::after {
+  content: "✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿   ✿";
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #ef7ba8;
+  font-size: 9px;
+  letter-spacing: 2.5vw;
+  text-shadow: 0 0 4px rgba(239, 123, 168, 0.8);
+  pointer-events: none;
+  opacity: 0.9;
+  z-index: 10;
+  animation: womens-flower-sway 3s ease-in-out infinite alternate;
+}
+
+@keyframes womens-flower-sway {
+  0% { transform: translateY(0) rotate(-2deg); }
+  100% { transform: translateY(1px) rotate(2deg); }
+}

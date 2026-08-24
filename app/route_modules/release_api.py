@@ -17,7 +17,16 @@ from app.models import (
     to_local_time,
 )
 from app.route_modules.shared import main
-from app.theme_state import ALLOWED_THEMES, DEFAULT_THEME, THEME_SEQUENCE, read_theme_state, write_theme_state
+from app.theme_state import (
+    ALLOWED_THEMES,
+    DEFAULT_THEME,
+    THEME_SEQUENCE,
+    WEATHER_AUTO_THEME,
+    enable_weather_theme,
+    read_theme_state,
+    resolve_theme_state,
+    write_theme_state,
+)
 
 
 @main.route('/api/users/search', methods=['GET'])
@@ -493,12 +502,17 @@ def create_release_batch():
 @main.route('/system-theme', methods=['GET'])
 @login_required
 def get_system_theme_state():
-    state = read_theme_state(current_app)
+    state = resolve_theme_state(current_app)
     return jsonify({
         'theme': state.get('theme', DEFAULT_THEME),
+        'effective_theme': state.get('effective_theme', state.get('theme', DEFAULT_THEME)),
         'updated_at': state.get('updated_at'),
         'updated_by': state.get('updated_by'),
         'updated_by_id': state.get('updated_by_id'),
+        'location_query': state.get('location_query'),
+        'location_name': state.get('location_name'),
+        'weather_label': state.get('weather_label'),
+        'weather_updated_at': state.get('weather_updated_at'),
     })
 
 
@@ -510,6 +524,7 @@ def set_system_theme():
 
     payload = request.get_json(silent=True) or {}
     requested_theme = (payload.get('theme') or '').strip().lower()
+    requested_location = (payload.get('location') or '').strip()
 
     current_state = read_theme_state(current_app)
     current_theme = current_state.get('theme', DEFAULT_THEME)
@@ -525,14 +540,26 @@ def set_system_theme():
         return jsonify({'error': 'Invalid theme selection'}), 400
 
     try:
-        state = write_theme_state(current_app, requested_theme, current_user)
+        if requested_theme == WEATHER_AUTO_THEME:
+            if not requested_location:
+                requested_location = (current_state.get('location_query') or current_state.get('location_name') or '').strip()
+            if not requested_location:
+                return jsonify({'error': 'Location is required for Weather Sync.'}), 400
+            state = enable_weather_theme(current_app, requested_location, current_user)
+        else:
+            state = write_theme_state(current_app, requested_theme, current_user)
     except Exception as exc:
         current_app.logger.error('Failed to persist system theme: %s', exc)
-        return jsonify({'error': 'Unable to save theme'}), 500
+        return jsonify({'error': str(exc) if isinstance(exc, ValueError) else 'Unable to save theme'}), 400 if isinstance(exc, ValueError) else 500
 
     return jsonify({
         'theme': state.get('theme', DEFAULT_THEME),
+        'effective_theme': state.get('effective_theme', state.get('theme', DEFAULT_THEME)),
         'updated_at': state.get('updated_at'),
         'updated_by': state.get('updated_by'),
         'updated_by_id': state.get('updated_by_id'),
+        'location_query': state.get('location_query'),
+        'location_name': state.get('location_name'),
+        'weather_label': state.get('weather_label'),
+        'weather_updated_at': state.get('weather_updated_at'),
     })

@@ -8,7 +8,7 @@ import pytz
 from datetime import datetime
 import os
 from decimal import Decimal
-from app.theme_state import read_theme_state, DEFAULT_THEME
+from app.theme_state import DEFAULT_THEME, resolve_theme_state, refresh_weather_theme_state
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -91,8 +91,8 @@ def create_app(config_class=Config):
 
     @app.context_processor
     def inject_system_theme():
-        state = read_theme_state(app)
-        theme = state.get('theme', DEFAULT_THEME)
+        state = resolve_theme_state(app)
+        theme = state.get('effective_theme') or state.get('theme', DEFAULT_THEME)
         return {
             'system_theme': theme,
             'system_theme_state': state
@@ -157,8 +157,9 @@ def create_app(config_class=Config):
             return base.rstrip()
         return message
 
-    # Initialize the scheduler
-    init_scheduler(app)
+    # Initialize the scheduler if enabled
+    if os.environ.get('START_SCHEDULER', 'true').lower() == 'true':
+        init_scheduler(app)
 
     return app
 
@@ -175,8 +176,16 @@ def init_scheduler(app):
     from app.auto_archive import archive_old_documents
     from app.sla_monitor import run_sla_checks
     from functools import wraps
+    import pytz
 
-    scheduler = BackgroundScheduler()
+    # Pass the application's configured timezone to the scheduler
+    tz = app.config.get('TIMEZONE')
+    if isinstance(tz, str):
+        tz = pytz.timezone(tz)
+    elif tz is None:
+        tz = pytz.timezone('Asia/Manila')
+    scheduler = BackgroundScheduler(timezone=tz)
+
     def _with_app_context(func):
         @wraps(func)
         def _wrapper(*args, **kwargs):
@@ -190,6 +199,7 @@ def init_scheduler(app):
         hour=0,
         minute=0,
         id='auto_archive_documents',
+        misfire_grace_time=3600,
         replace_existing=True
     )
     scheduler.add_job(
@@ -197,6 +207,15 @@ def init_scheduler(app):
         'interval',
         minutes=30,
         id='sla_monitor',
+        misfire_grace_time=600,
+        replace_existing=True
+    )
+    scheduler.add_job(
+        _with_app_context(lambda: refresh_weather_theme_state(app, force=True)),
+        'interval',
+        minutes=30,
+        id='weather_theme_sync',
+        misfire_grace_time=600,
         replace_existing=True
     )
     scheduler.start()

@@ -99,13 +99,11 @@
         container.id = 'festive-banderitas';
         container.setAttribute('aria-hidden', 'true');
 
-        var width = window.innerWidth;
-        var flagCount = Math.floor(width / 16) + 2;
-
-        var flagsHTML = '';
-        for (var i = 0; i < flagCount; i++) {
+        var flagsHTML = '<div class="festive-banderitas-track">';
+        for (var i = 0; i < 10; i++) {
           flagsHTML += '<span class="banderitas-flag"></span>';
         }
+        flagsHTML += '</div>';
         container.innerHTML = flagsHTML;
         nav.appendChild(container);
       }
@@ -119,18 +117,15 @@
         container.id = 'festive-bottom-deco';
         container.setAttribute('aria-hidden', 'true');
 
-        var width = window.innerWidth;
-        // Place an element every 24px
-        var elementCount = Math.floor(width / 24) + 2;
-
-        var decoHTML = '';
-        for (var i = 0; i < elementCount; i++) {
+        var decoHTML = '<div class="festive-bottom-deco-track">';
+        for (var i = 0; i < 10; i++) {
           if (i % 2 === 0) {
             decoHTML += '<span class="festive-light-bulb"></span>';
           } else {
             decoHTML += '<span class="festive-kiping-leaf"></span>';
           }
         }
+        decoHTML += '</div>';
         container.innerHTML = decoHTML;
         nav.appendChild(container);
       }

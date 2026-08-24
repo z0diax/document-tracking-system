@@ -1,18 +1,36 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from app.auto_archive import archive_old_documents
+import os
+import time
 
-def start_scheduler():
-    scheduler = BackgroundScheduler()
-    # Schedule job to run daily at midnight
-    scheduler.add_job(archive_old_documents, 'cron', hour=0, minute=0)
-    scheduler.start()
+# Load environment variables from .env manually to ensure correctness in standalone mode
+if os.path.exists('.env'):
+    with open('.env') as f:
+        for line in f:
+            line_str = line.strip()
+            if line_str and not line_str.startswith('#'):
+                if line_str.startswith('export '):
+                    line_str = line_str[7:]
+                if '=' in line_str:
+                    key, val = line_str.split('=', 1)
+                    val = val.strip('"\'')
+                    os.environ[key] = val
+
+# Force the scheduler to start even if deactivated elsewhere (e.g. in multi-worker configurations)
+os.environ['START_SCHEDULER'] = 'true'
+
+from app import create_app
 
 if __name__ == '__main__':
-    start_scheduler()
-    # Keep the script running so the scheduler can work independently
-    import time
+    print("Initializing Flask Application context...")
+    app = create_app()
+    print("Background scheduler initialized and started successfully.")
+    print("All tasks (auto-archive, SLA checks, weather sync) are scheduled in local timezone.")
+    print("Press Ctrl+C to exit.")
+    
     try:
         while True:
             time.sleep(2)
     except (KeyboardInterrupt, SystemExit):
-        pass
+        print("Shutting down background scheduler...")
+        if hasattr(app, 'scheduler'):
+            app.scheduler.shutdown()
+        print("Scheduler stopped.")

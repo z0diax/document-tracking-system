@@ -41,12 +41,32 @@ from app.route_modules.shared import (
 from app.utils import calculate_business_hours
 
 
+def _parse_date_filter(date_str):
+    if not date_str:
+        return None, None
+    try:
+        parts = date_str.split(' to ')
+        start_str = parts[0].strip() if parts else ''
+        end_str = parts[1].strip() if len(parts) > 1 else ''
+        fmt = '%Y-%m-%d'
+        start = datetime.strptime(start_str, fmt).date() if start_str else None
+        end = datetime.strptime(end_str, fmt).date() if end_str else None
+        if start and not end:
+            end = start
+        if start and end and end < start:
+            start, end = end, start
+        return start, end
+    except Exception:
+        return None, None
+
+
 @main.route('/dashboard')
 @login_required
 def dashboard():
     page = request.args.get('page', 1, type=int)
     view = request.args.get('view', 'created')
     search_query = request.args.get('search', '').strip()
+    date_filter = request.args.get('date_filter', '').strip()
     per_page = 10
 
     # Restrict RSP view to users explicitly granted access (admins always allowed).
@@ -214,6 +234,8 @@ def dashboard():
         ewp_form = EWPForm()
         ewp_form.office.choices = OFFICE_CHOICES
 
+        start_date, end_date = _parse_date_filter(date_filter)
+
         try:
             leave_query = LeaveRequest.query
             if search_query:
@@ -227,6 +249,14 @@ def dashboard():
                             LeaveRequest.barcode.ilike(f'%{search_query}%'),
                             LeaveRequest.barcode == search_query
                         )
+                    )
+                )
+            if start_date and end_date:
+                from sqlalchemy import func
+                leave_query = leave_query.filter(
+                    and_(
+                        func.date(LeaveRequest.created_timestamp) >= start_date,
+                        func.date(LeaveRequest.created_timestamp) <= end_date
                     )
                 )
             leave_query = leave_query.order_by(LeaveRequest.created_timestamp.desc())
@@ -251,7 +281,7 @@ def dashboard():
             flash('Leave module is not initialized in the database. Please run migrations.', 'warning')
             leave_pagination = None
             leave_requests = []
-
+ 
         # EWP listing for Leave view tabbed table
         active_tab = request.args.get('tab', 'leave')
         try:
@@ -266,6 +296,14 @@ def dashboard():
                             EWPRecord.barcode.ilike(f'%{search_query}%'),
                             EWPRecord.barcode == search_query
                         )
+                    )
+                )
+            if start_date and end_date:
+                from sqlalchemy import func
+                ewp_query = ewp_query.filter(
+                    and_(
+                        func.date(EWPRecord.created_timestamp) >= start_date,
+                        func.date(EWPRecord.created_timestamp) <= end_date
                     )
                 )
             ewp_query = ewp_query.order_by(EWPRecord.created_timestamp.desc())
@@ -381,8 +419,8 @@ def dashboard():
                          ewp_records=(ewp_records if view == 'leave' else []),
                          ewp_pagination=(ewp_pagination if view == 'leave' else None),
                          active_tab=(active_tab if view == 'leave' else None),
+                         date_filter=date_filter,
                          release_batches=release_batches,
                          release_batches_today=release_batches_today,
                          release_batches_history=release_batches_history,
                          release_batches_history_groups=release_batches_history_groups)
-

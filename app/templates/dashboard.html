@@ -2100,20 +2100,22 @@ document.addEventListener('shown.bs.tab', function(event) {
     {% set _active_tab = active_tab|default('leave') %}
     <ul class="nav nav-tabs mb-3 leave-ewp-list-tabs">
       <li class="nav-item">
-        <a class="nav-link {% if _active_tab == 'leave' %}active{% endif %}" href="{{ url_for('main.dashboard', view='leave', tab='leave', search=search_query) }}">Leave Records</a>
+        <a class="nav-link {% if _active_tab == 'leave' %}active{% endif %}" href="{{ url_for('main.dashboard', view='leave', tab='leave', search=search_query, date_filter=date_filter) }}">Leave Records</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link {% if _active_tab == 'ewp' %}active{% endif %}" href="{{ url_for('main.dashboard', view='leave', tab='ewp', search=search_query) }}">EWP Records</a>
+        <a class="nav-link {% if _active_tab == 'ewp' %}active{% endif %}" href="{{ url_for('main.dashboard', view='leave', tab='ewp', search=search_query, date_filter=date_filter) }}">EWP Records</a>
       </li>
     </ul>
     <div class="mb-3">
-        <form method="GET" action="{{ url_for('main.dashboard') }}" class="d-flex">
+        <form method="GET" action="{{ url_for('main.dashboard') }}" class="d-flex align-items-center gap-2">
             <input type="hidden" name="view" value="leave">
             <input type="hidden" name="tab" value="{{ _active_tab }}">
-            <input type="text" name="search" class="form-control me-2" placeholder="{{ 'Search by name, office, status, or barcode...' if _active_tab == 'ewp' else 'Search by employee name, office, type, status, or barcode...' }}" 
+            <input type="text" name="search" class="form-control" placeholder="{{ 'Search by name, office, status, or barcode...' if _active_tab == 'ewp' else 'Search by employee name, office, type, status, or barcode...' }}" 
                    value="{{ search_query if request.args.get('view') == 'leave' }}">
-            <button type="submit" class="btn btn-primary me-2">Search</button>
-            {% if search_query and request.args.get('view') == 'leave' %}
+            <input type="text" name="date_filter" id="leave-date-filter" class="form-control" placeholder="Filter by date range..." 
+                   value="{{ date_filter or '' }}" autocomplete="off" style="max-width: 250px;">
+            <button type="submit" class="btn btn-primary">Search</button>
+            {% if (search_query or date_filter) and request.args.get('view') == 'leave' %}
                 <a href="{{ url_for('main.dashboard', view='leave', tab=_active_tab) }}" class="btn btn-secondary">Reset</a>
             {% endif %}
         </form>
@@ -2357,7 +2359,7 @@ document.addEventListener('shown.bs.tab', function(event) {
         <ul class="pagination justify-content-center">
             {% if ewp_pagination.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=ewp_pagination.prev_num, search=request.args.get('search', '')) }}">Previous</a>
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=ewp_pagination.prev_num, search=request.args.get('search', ''), date_filter=request.args.get('date_filter', '')) }}">Previous</a>
                 </li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Previous</span></li>
@@ -2366,7 +2368,7 @@ document.addEventListener('shown.bs.tab', function(event) {
             {% for page_num in ewp_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
                 {% if page_num %}
                     <li class="page-item {% if page_num == ewp_pagination.page %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
+                        <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=page_num, search=request.args.get('search', ''), date_filter=request.args.get('date_filter', '')) }}">{{ page_num }}</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -2375,7 +2377,7 @@ document.addEventListener('shown.bs.tab', function(event) {
 
             {% if ewp_pagination.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=ewp_pagination.next_num, search=request.args.get('search', '')) }}">Next</a>
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab='ewp', page=ewp_pagination.next_num, search=request.args.get('search', ''), date_filter=request.args.get('date_filter', '')) }}">Next</a>
                 </li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Next</span></li>
@@ -2930,7 +2932,7 @@ document.addEventListener('shown.bs.tab', function(event) {
         <ul class="pagination justify-content-center">
             {% if leave_pagination.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=leave_pagination.prev_num, search=request.args.get('search', '')) }}">Previous</a>
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=leave_pagination.prev_num, search=request.args.get('search', ''), date_filter=request.args.get('date_filter', '')) }}">Previous</a>
                 </li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Previous</span></li>
@@ -2939,7 +2941,7 @@ document.addEventListener('shown.bs.tab', function(event) {
             {% for page_num in leave_pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
                 {% if page_num %}
                     <li class="page-item {% if page_num == leave_pagination.page %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
+                        <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=page_num, search=request.args.get('search', ''), date_filter=request.args.get('date_filter', '')) }}">{{ page_num }}</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -2948,7 +2950,7 @@ document.addEventListener('shown.bs.tab', function(event) {
 
             {% if leave_pagination.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=leave_pagination.next_num, search=request.args.get('search', '')) }}">Next</a>
+                    <a class="page-link" href="{{ url_for('main.dashboard', view='leave', tab=_active_tab, page=leave_pagination.next_num, search=request.args.get('search', ''), date_filter=request.args.get('date_filter', '')) }}">Next</a>
                 </li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Next</span></li>
@@ -4209,6 +4211,14 @@ function setArchiveDocumentId(documentId) {
 
         // Initialize Leave Date Range pickers (Flatpickr range mode) and dynamic add/remove
         (function() {
+            const leaveDateFilter = document.getElementById('leave-date-filter');
+            if (leaveDateFilter && window.flatpickr) {
+                window.flatpickr(leaveDateFilter, {
+                    mode: 'range',
+                    dateFormat: 'Y-m-d'
+                });
+            }
+
             const dateRangeList = document.getElementById('date-range-list');
             const addBtn = document.getElementById('add-date-range-btn');
             const createLeaveForm = document.querySelector('#createLeaveModal form');

@@ -5,7 +5,7 @@ def auto_archive_documents():
     Archives documents created in previous months.
     """
     from app import db  # Delayed import to avoid circular dependency
-    from app.models import Document
+    from app.models import Document, ActivityLog
 
     # Get the current month and year
     current_date = datetime.utcnow()
@@ -15,12 +15,19 @@ def auto_archive_documents():
     # Find documents created in previous months
     documents_to_archive = Document.query.filter(
         (Document.timestamp < datetime(current_year, current_month, 1)) & 
-        (Document.status != 'archived')  # Avoid re-archiving already archived documents
+        (Document.status != 'Archived')  # Avoid re-archiving already archived documents
     ).all()
 
     # Archive the documents
     for document in documents_to_archive:
-        document.status = 'archived'
-        db.session.commit()
-
+        document.status = 'Archived'
+        log = ActivityLog(
+            user=document.creator,
+            document_id=document.id,
+            action="Auto Archived",
+            remarks="Automatically archived after one month."
+        )
+        db.session.add(log)
+    
+    db.session.commit()
     print(f"Archived {len(documents_to_archive)} documents.")

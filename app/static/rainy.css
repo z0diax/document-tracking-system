@@ -1,0 +1,539 @@
+/* 
+ * Rainy Season Theme (rainy)
+ * Designed for a cozy, refreshed administrative workspace.
+ * Color Palette: Cozy Slate-Blue, Cloud Gray, and Splash Cyan
+ * Font: Google Font 'Inter' (sans-serif)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Color and Layout Variables */
+body[data-season-theme="rainy"] {
+  --rainy-primary: #4b6584;
+  --rainy-primary-light: #778ca3;
+  --rainy-primary-dark: #2f3640;
+  --rainy-accent: #0fbcf9;
+  --rainy-accent-glow: rgba(15, 188, 249, 0.2);
+  --rainy-accent-hover: #00d2d3;
+  --rainy-bg: #f1f2f6;
+  --rainy-surface: #ffffff;
+  --rainy-text-main: #2f3542;
+  --rainy-text-muted: #747d8c;
+  --rainy-border: #ced6e0;
+  --rainy-border-light: #f1f2f6;
+  --rainy-shadow: 0 8px 30px -6px rgba(47, 54, 64, 0.06), 0 4px 10px -4px rgba(47, 54, 64, 0.04);
+  --rainy-shadow-lg: 0 20px 40px -10px rgba(47, 54, 64, 0.1);
+  --rainy-success: #20bf6b;
+  --rainy-success-bg: #e3fcf0;
+  --rainy-warning: #f7b731;
+  --rainy-warning-bg: #fef8eb;
+  --rainy-danger: #eb3b5a;
+  --rainy-danger-bg: #ffebee;
+
+  /* Global Fonts Override */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  background-color: var(--rainy-bg) !important;
+  color: var(--rainy-text-main) !important;
+  
+  /* Cozy misty atmosphere backdrop */
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(15, 188, 249, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(75, 101, 132, 0.05) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(47, 54, 64, 0.03) 0px, transparent 50%) !important;
+  background-attachment: fixed !important;
+  transition: background-color 0.3s ease;
+}
+
+/* Headings */
+body[data-season-theme="rainy"] h1,
+body[data-season-theme="rainy"] h2,
+body[data-season-theme="rainy"] h3,
+body[data-season-theme="rainy"] h4,
+body[data-season-theme="rainy"] h5,
+body[data-season-theme="rainy"] h6 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: var(--rainy-primary-dark) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.015em;
+}
+
+/* Navbar container */
+body[data-season-theme="rainy"] .navbar {
+  background: linear-gradient(135deg, var(--rainy-primary-dark) 0%, var(--rainy-primary) 100%) !important;
+  border-bottom: 3px solid var(--rainy-accent) !important;
+  box-shadow: 0 4px 20px rgba(47, 54, 64, 0.15) !important;
+  overflow: visible !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+}
+
+body[data-season-theme="rainy"] .navbar-brand {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  font-size: 1.15rem;
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+}
+
+body[data-season-theme="rainy"] .navbar .nav-link,
+body[data-season-theme="rainy"] .navbar .btn-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  padding: 6px 12px !important;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 5;
+}
+
+body[data-season-theme="rainy"] .navbar .nav-link:hover,
+body[data-season-theme="rainy"] .navbar .btn-link:hover {
+  color: var(--rainy-accent) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Navbar Interactive Mascot */
+.rainy-mascot {
+  font-size: 1.3rem;
+  display: inline-block;
+  cursor: default;
+  transition: transform 0.15s ease;
+}
+
+.rainy-mascot:hover {
+  animation: rainy-wiggle 0.5s ease infinite alternate;
+}
+
+@keyframes rainy-wiggle {
+  0% { transform: rotate(-10deg) scale(1.1); }
+  100% { transform: rotate(10deg) scale(1.1); }
+}
+
+/* Drifting clouds and rain overlay inside navbar */
+#rainy-navbar-deco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.rainy-navbar-cloud {
+  position: absolute;
+  top: 4px;
+  width: 70px;
+  height: 44px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08));
+  animation: rainy-drift 40s linear infinite;
+  transition: filter 0.15s ease-out;
+}
+
+.rainy-navbar-cloud-svg path {
+  transition: fill 0.8s ease;
+}
+
+/* Stormy cloud state */
+.rainy-navbar-cloud.stormy .rainy-navbar-cloud-svg path {
+  fill: url(#stormCloudGrad) !important;
+}
+
+/* Lightning strike effect - uses transition on filter to avoid animation conflicts */
+.rainy-navbar-cloud.lightning-strike {
+  filter: drop-shadow(0 0 16px #fbc531) drop-shadow(0 0 24px #00d2d3) !important;
+}
+
+/* Cloud Rumbling Shake - applied to inner SVG to avoid resetting drift position */
+@keyframes cloud-rumble {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  20% { transform: translate(-1px, 0.5px) scale(1.02); }
+  40% { transform: translate(1px, -0.5px) scale(0.98); }
+  60% { transform: translate(-0.5px, 0.5px) scale(1.01); }
+  80% { transform: translate(0.5px, -0.5px) scale(0.99); }
+}
+
+.rainy-navbar-cloud.rumble .rainy-navbar-cloud-svg {
+  animation: cloud-rumble 0.18s ease-in-out infinite;
+}
+
+/* Atmospheric Sheet Lightning Flash Overlay */
+.rainy-lightning-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 12% 50%, rgba(255, 255, 255, 0.55) 0%, rgba(15, 188, 249, 0.25) 50%, transparent 100%);
+  z-index: 3;
+  transition: opacity 0.05s ease-out;
+}
+
+.rainy-lightning-flash.active {
+  opacity: 1;
+}
+
+/* Navbar Shimmer border effect (replaces layout shake) */
+@keyframes border-shimmer {
+  0%, 100% { 
+    border-bottom-color: var(--rainy-accent) !important;
+    box-shadow: 0 4px 20px rgba(47, 54, 64, 0.15) !important;
+  }
+  50% { 
+    border-bottom-color: #ffffff !important;
+    box-shadow: 0 0 15px rgba(15, 188, 249, 0.6), 0 0 30px rgba(15, 188, 249, 0.3) !important;
+  }
+}
+
+.navbar.navbar-rumbling {
+  animation: border-shimmer 0.3s ease-in-out infinite;
+}
+
+@keyframes rainy-drift {
+  0% { left: -12%; }
+  100% { left: 112%; }
+}
+
+/* Canvas overlay inside navbar for raindrop animation */
+.rainy-navbar-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Falling raindrop animations for dropdowns or containers */
+.rainy-drip {
+  position: absolute;
+  width: 1.5px;
+  height: 10px;
+  background: linear-gradient(to bottom, rgba(15, 188, 249, 0) 0%, var(--rainy-accent) 100%);
+  animation: rainy-fall 0.8s linear infinite;
+  pointer-events: none;
+  z-index: 100;
+}
+
+@keyframes rainy-fall {
+  0% { transform: translateY(-10px); opacity: 0; }
+  20% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(60px); opacity: 0; }
+}
+
+/* Sidebar styling */
+body[data-season-theme="rainy"] #sidebar-wrapper {
+  background-color: var(--rainy-primary-dark) !important;
+  border-right: 1px solid var(--rainy-border) !important;
+}
+
+body[data-season-theme="rainy"] #sidebar-wrapper .list-group-item {
+  background-color: transparent !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+  font-size: 0.88rem;
+  font-weight: 500;
+  border: none;
+  padding: 0.85rem 1.5rem;
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+}
+
+body[data-season-theme="rainy"] #sidebar-wrapper .list-group-item i {
+  color: var(--rainy-accent);
+  margin-right: 12px;
+  width: 1.25rem;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+body[data-season-theme="rainy"] #sidebar-wrapper .list-group-item:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+  border-left-color: rgba(15, 188, 249, 0.4);
+  padding-left: 1.65rem;
+}
+
+body[data-season-theme="rainy"] #sidebar-wrapper .list-group-item:hover i {
+  transform: scale(1.15) translateY(-1px);
+}
+
+body[data-season-theme="rainy"] #sidebar-wrapper .list-group-item.active {
+  background: linear-gradient(90deg, rgba(15, 188, 249, 0.1) 0%, transparent 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-left-color: var(--rainy-accent) !important;
+}
+
+body[data-season-theme="rainy"] #sidebar-wrapper .sidebar-item .sub-item {
+  padding-left: 3.25rem !important;
+  background-color: rgba(0, 0, 0, 0.12) !important;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+body[data-season-theme="rainy"] #sidebar-wrapper .sidebar-item .sub-item:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Premium cozy card layout */
+body[data-season-theme="rainy"] .card {
+  background-color: var(--rainy-surface);
+  border: 1px solid var(--rainy-border);
+  border-radius: 8px;
+  box-shadow: var(--rainy-shadow) !important;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+body[data-season-theme="rainy"] .card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--rainy-shadow-lg) !important;
+}
+
+body[data-season-theme="rainy"] .card-header {
+  background-color: var(--rainy-border-light) !important;
+  border-bottom: 1px solid var(--rainy-border) !important;
+  padding: 1rem 1.25rem;
+}
+
+body[data-season-theme="rainy"] .card-header h5,
+body[data-season-theme="rainy"] .card-header h6,
+body[data-season-theme="rainy"] .card-header .h5 {
+  color: var(--rainy-primary-dark) !important;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* Executive left borders on cards */
+body[data-season-theme="rainy"] .card.executive-card,
+body[data-season-theme="rainy"] .card.card-accent-rainy,
+body[data-season-theme="rainy"] .dashboard-container .card {
+  border-left: 4px solid var(--rainy-accent) !important;
+}
+
+/* Soft clean table design */
+body[data-season-theme="rainy"] .table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body[data-season-theme="rainy"] .table thead th {
+  background-color: var(--rainy-border-light) !important;
+  color: var(--rainy-primary-dark) !important;
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--rainy-border) !important;
+  padding: 0.85rem 1rem;
+}
+
+body[data-season-theme="rainy"] .table tbody td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--rainy-border-light) !important;
+  font-size: 0.88rem;
+  vertical-align: middle;
+}
+
+body[data-season-theme="rainy"] .table tbody tr:hover {
+  background-color: rgba(15, 188, 249, 0.02) !important;
+}
+
+/* Form controls */
+body[data-season-theme="rainy"] .form-control,
+body[data-season-theme="rainy"] .form-select {
+  border: 1px solid var(--rainy-border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+body[data-season-theme="rainy"] .form-control:focus,
+body[data-season-theme="rainy"] .form-select:focus {
+  border-color: var(--rainy-accent) !important;
+  box-shadow: 0 0 0 3px var(--rainy-accent-glow) !important;
+  outline: 0;
+}
+
+/* Primary Button with dynamic splash hover */
+body[data-season-theme="rainy"] .btn-primary {
+  background: linear-gradient(135deg, var(--rainy-primary) 0%, var(--rainy-primary-light) 100%) !important;
+  border: 1px solid var(--rainy-primary) !important;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(47, 54, 64, 0.1) !important;
+  transition: all 0.2s ease;
+}
+
+body[data-season-theme="rainy"] .btn-primary:hover {
+  background: linear-gradient(135deg, var(--rainy-primary-light) 0%, var(--rainy-primary) 100%) !important;
+  border-color: var(--rainy-accent) !important;
+  box-shadow: 0 4px 8px rgba(15, 188, 249, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+body[data-season-theme="rainy"] .btn-primary:active {
+  transform: scale(0.98);
+}
+
+body[data-season-theme="rainy"] .btn-outline-primary {
+  color: var(--rainy-primary) !important;
+  border: 1.5px solid var(--rainy-primary) !important;
+  font-weight: 600;
+}
+
+body[data-season-theme="rainy"] .btn-outline-primary:hover {
+  background-color: var(--rainy-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--rainy-primary) !important;
+}
+
+/* Badge highlights */
+body[data-season-theme="rainy"] .badge {
+  font-weight: 600;
+  padding: 0.4em 0.7em;
+  border-radius: 4px;
+}
+
+body[data-season-theme="rainy"] .bg-success {
+  background-color: var(--rainy-success-bg) !important;
+  color: var(--rainy-success) !important;
+  border: 1px solid rgba(32, 191, 107, 0.2);
+}
+
+body[data-season-theme="rainy"] .bg-warning {
+  background-color: var(--rainy-warning-bg) !important;
+  color: var(--rainy-warning) !important;
+  border: 1px solid rgba(247, 183, 49, 0.2);
+}
+
+body[data-season-theme="rainy"] .bg-danger {
+  background-color: var(--rainy-danger-bg) !important;
+  color: var(--rainy-danger) !important;
+  border: 1px solid rgba(235, 59, 90, 0.2);
+}
+
+body[data-season-theme="rainy"] .bg-info {
+  background-color: #e0f7fa !important;
+  color: #0097a7 !important;
+  border: 1px solid rgba(0, 151, 167, 0.2);
+}
+
+
+/* ==========================================================================
+   DARK MODE OVERRIDES (html[data-theme="dark"] body[data-season-theme="rainy"])
+   ========================================================================== */
+
+html[data-theme="dark"] body[data-season-theme="rainy"] {
+  --rainy-primary: #2c3e50;
+  --rainy-primary-light: #34495e;
+  --rainy-primary-dark: #0f171e;
+  --rainy-accent: #00d2d3;
+  --rainy-accent-glow: rgba(0, 210, 211, 0.15);
+  --rainy-bg: #090d11;
+  --rainy-surface: #131c26;
+  --rainy-text-main: #f1f2f6;
+  --rainy-text-muted: #8395a7;
+  --rainy-border: #2c3e50;
+  --rainy-border-light: #18222f;
+  --rainy-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --rainy-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+
+  --rainy-success: #55efc4;
+  --rainy-success-bg: rgba(85, 239, 196, 0.15);
+  --rainy-warning: #ffeaa7;
+  --rainy-warning-bg: rgba(255, 234, 167, 0.15);
+  --rainy-danger: #ff7675;
+  --rainy-danger-bg: rgba(255, 118, 117, 0.15);
+
+  /* Cyber dark stormy night atmosphere */
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 210, 211, 0.02) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(52, 73, 94, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(15, 23, 30, 0.8) 0px, transparent 50%) !important;
+}
+
+/* Dark mode elements customization */
+html[data-theme="dark"] body[data-season-theme="rainy"] h1,
+html[data-theme="dark"] body[data-season-theme="rainy"] h2,
+html[data-theme="dark"] body[data-season-theme="rainy"] h3,
+html[data-theme="dark"] body[data-season-theme="rainy"] h4,
+html[data-theme="dark"] body[data-season-theme="rainy"] h5,
+html[data-theme="dark"] body[data-season-theme="rainy"] h6 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .navbar {
+  background: rgba(15, 23, 30, 0.95) !important;
+  border-bottom: 2px solid var(--rainy-border) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .card-header {
+  background-color: rgba(24, 34, 47, 0.5) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .table thead th {
+  background-color: rgba(24, 34, 47, 0.5) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .table tbody td {
+  border-bottom: 1px solid var(--rainy-border) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.015) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .form-control,
+html[data-theme="dark"] body[data-season-theme="rainy"] .form-select {
+  background-color: #0f171e !important;
+  border-color: var(--rainy-border) !important;
+  color: #f1f2f6 !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .form-control:focus,
+html[data-theme="dark"] body[data-season-theme="rainy"] .form-select:focus {
+  border-color: var(--rainy-accent) !important;
+  box-shadow: 0 0 0 3px var(--rainy-accent-glow) !important;
+}
+
+/* Settings drop-downs and menus */
+html[data-theme="dark"] body[data-season-theme="rainy"] .dropdown-menu {
+  background-color: rgba(19, 28, 38, 0.9) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--rainy-border) !important;
+  box-shadow: var(--rainy-shadow-lg) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .dropdown-item {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--rainy-accent) !important;
+}
+
+html[data-theme="dark"] body[data-season-theme="rainy"] .season-theme-panel {
+  background: linear-gradient(180deg, #131c26, #090d11) !important;
+  border-color: var(--rainy-border) !important;
+}

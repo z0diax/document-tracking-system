@@ -51,7 +51,8 @@
   }
 
   function init() {
-    if (THEME_DISABLED || !IS_SEASONAL) {
+    const isWeatherAuto = document.body && document.body.dataset && document.body.dataset.themeMode === 'weather_auto';
+    if (THEME_DISABLED || !IS_SEASONAL || isWeatherAuto) {
       teardownSeasonalDecor();
       return;
     }

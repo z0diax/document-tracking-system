@@ -15,14 +15,15 @@ app = create_app()
 with app.app_context():
     # First check the database structure
     try:
-        result = db.session.execute("DESCRIBE user").fetchall()
+        from sqlalchemy import text
+        result = db.session.execute(text("DESCRIBE user")).fetchall()
         print("Database structure for user table:")
         for row in result:
             print(row)
             
         # Now directly update all users with SQL for absolute certainty
-        db.session.execute("UPDATE user SET status = 'Pending' WHERE status != 'Active' AND is_admin = 0")
-        db.session.execute("UPDATE user SET status = 'Active' WHERE is_admin = 1")
+        db.session.execute(text("UPDATE user SET status = 'Pending' WHERE status != 'Active' AND is_admin = 0"))
+        db.session.execute(text("UPDATE user SET status = 'Active' WHERE is_admin = 1"))
         db.session.commit()
         
         # Verify the updates

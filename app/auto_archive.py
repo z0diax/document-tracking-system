@@ -23,7 +23,7 @@ def archive_old_documents():
         )
         db.session.add(log)
     db.session.commit()
-    return f"Archived {len(old_docs)} documents."
+    return len(old_docs)
 
 if __name__ == '__main__':
-    print(archive_old_documents())
+    print(f"Archived {archive_old_documents()} documents.")

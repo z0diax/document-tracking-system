@@ -23,7 +23,7 @@ if __name__ == '__main__':
     print("Initializing Flask Application context...")
     app = create_app()
     print("Background scheduler initialized and started successfully.")
-    print("All tasks (auto-archive, SLA checks, weather sync) are scheduled in local timezone.")
+    print("All tasks (SLA checks, weather sync) are scheduled in local timezone.")
     print("Press Ctrl+C to exit.")
     
     try:

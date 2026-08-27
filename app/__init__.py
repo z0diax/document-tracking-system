@@ -173,7 +173,6 @@ def init_scheduler(app):
     Initializes and starts the background scheduler.
     """
     from apscheduler.schedulers.background import BackgroundScheduler
-    from app.auto_archive import archive_old_documents
     from app.sla_monitor import run_sla_checks
     from functools import wraps
     import pytz
@@ -193,15 +192,6 @@ def init_scheduler(app):
                 return func(*args, **kwargs)
         return _wrapper
 
-    scheduler.add_job(
-        _with_app_context(archive_old_documents),
-        'cron',
-        hour=0,
-        minute=0,
-        id='auto_archive_documents',
-        misfire_grace_time=3600,
-        replace_existing=True
-    )
     scheduler.add_job(
         _with_app_context(run_sla_checks),
         'interval',

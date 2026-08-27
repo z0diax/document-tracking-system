@@ -77,6 +77,7 @@ class RouteRegistrationTests(unittest.TestCase):
 
     def test_admin_module_routes_are_registered(self):
         self._assert_route('main.admin_dashboard', '/hrdoctrack/admin')
+        self._assert_route('main.admin_archive_last_month_documents', '/hrdoctrack/admin/archive-last-month-documents', methods={'POST'})
         self._assert_route('main.admin_leave_analytics_drilldown', '/hrdoctrack/admin/leave-analytics/drilldown')
         self._assert_route('main.admin_missing_offices', '/hrdoctrack/admin/missing-offices')
         self._assert_route('main.admin_missing_office_details', '/hrdoctrack/admin/missing-offices/details')

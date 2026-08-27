@@ -4,7 +4,7 @@ import shutil
 import sys
 import tempfile
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta
 
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -15,7 +15,7 @@ os.environ.setdefault('FLASK_ENV', 'development')
 
 import app as app_package  # noqa: E402
 from app import create_app, db  # noqa: E402
-from app.models import LeaveRequest, User  # noqa: E402
+from app.models import ActivityLog, Document, LeaveRequest, User  # noqa: E402
 
 
 class AuthAccessTestConfig:
@@ -82,6 +82,23 @@ class AuthAccessTests(unittest.TestCase):
             follow_redirects=follow_redirects,
         )
 
+    def _create_document(self, *, creator_id, recipient_id, title, timestamp, status='Pending'):
+        with self.app.app_context():
+            document = Document(
+                title=title,
+                office='HRMDO',
+                classification='Communications',
+                status=status,
+                action_taken='Noted',
+                remarks='Test document',
+                timestamp=timestamp,
+                creator_id=creator_id,
+                recipient_id=recipient_id,
+            )
+            db.session.add(document)
+            db.session.commit()
+            return document.id
+
     def test_unauthenticated_admin_route_redirects_to_login(self):
         response = self.client.get('/hrdoctrack/admin', follow_redirects=False)
 
@@ -129,6 +146,75 @@ class AuthAccessTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Admin Dashboard', response.data)
+
+    def test_admin_can_manually_archive_last_month_documents_from_admin_dashboard(self):
+        admin_id = self._create_user('admin', 'admin@example.com', is_admin=True, status='Active')
+        with self.app.app_context():
+            now = datetime.utcnow()
+            first_day_of_current_month = datetime(now.year, now.month, 1)
+            previous_month_timestamp = first_day_of_current_month - timedelta(days=1)
+            current_month_timestamp = first_day_of_current_month + timedelta(days=1)
+
+        old_document_id = self._create_document(
+            creator_id=admin_id,
+            recipient_id=admin_id,
+            title='Needs manual archive',
+            timestamp=previous_month_timestamp,
+        )
+        current_document_id = self._create_document(
+            creator_id=admin_id,
+            recipient_id=admin_id,
+            title='Should stay active',
+            timestamp=current_month_timestamp,
+        )
+
+        self._login('admin')
+        response = self.client.post('/hrdoctrack/admin/archive-last-month-documents', follow_redirects=False)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/hrdoctrack/admin', response.location)
+
+        with self.app.app_context():
+            old_document = db.session.get(Document, old_document_id)
+            current_document = db.session.get(Document, current_document_id)
+            auto_archive_logs = ActivityLog.query.filter_by(
+                document_id=old_document_id,
+                action='Auto Archived',
+            ).count()
+
+            self.assertEqual(old_document.status, 'Archived')
+            self.assertEqual(current_document.status, 'Pending')
+            self.assertEqual(auto_archive_logs, 1)
+
+    def test_non_admin_cannot_trigger_manual_archive_from_admin_dashboard(self):
+        staff_id = self._create_user('staff', 'staff@example.com', status='Active')
+        with self.app.app_context():
+            now = datetime.utcnow()
+            first_day_of_current_month = datetime(now.year, now.month, 1)
+            previous_month_timestamp = first_day_of_current_month - timedelta(days=1)
+
+        document_id = self._create_document(
+            creator_id=staff_id,
+            recipient_id=staff_id,
+            title='Should not be archived by non-admin',
+            timestamp=previous_month_timestamp,
+        )
+
+        self._login('staff')
+        response = self.client.post('/hrdoctrack/admin/archive-last-month-documents', follow_redirects=False)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith('/hrdoctrack/dashboard'))
+
+        with self.app.app_context():
+            document = db.session.get(Document, document_id)
+            auto_archive_logs = ActivityLog.query.filter_by(
+                document_id=document_id,
+                action='Auto Archived',
+            ).count()
+
+            self.assertEqual(document.status, 'Pending')
+            self.assertEqual(auto_archive_logs, 0)
 
     def test_admin_dashboard_shows_employee_leave_type_analytics(self):
         admin_id = self._create_user('admin', 'admin@example.com', is_admin=True, status='Active')

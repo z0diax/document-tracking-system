@@ -921,13 +921,15 @@
                                                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="openBatchModal({{ batch.id }}, false)">
                                                     View
                                                 </button>
+                                                {% if batch.can_edit_release %}
                                                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBatchModal({{ batch.id }}, true)">
                                                     Edit
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteBatch({{ batch.id }})">
                                                     Delete
                                                 </button>
-                                                <span class="badge bg-info text-dark align-self-center">{{ batch.documents|length }} doc(s)</span>
+                                                {% endif %}
+                                                <span class="badge bg-info text-dark align-self-center">{{ batch.visible_release_document_count }} doc(s)</span>
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -1076,11 +1078,13 @@
                                                             -
                                                         {% endif %}
                                                     </td>
-                                                    <td>{{ batch.documents|length }} doc(s)</td>
+                                                    <td>{{ batch.visible_release_document_count }} doc(s)</td>
                                                     <td class="d-flex gap-2">
                                                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="openBatchModal({{ batch.id }}, false, 'releaseDayDetails-{{ day.safe_id }}')">View</button>
+                                                        {% if batch.can_edit_release %}
                                                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBatchModal({{ batch.id }}, true, 'releaseDayDetails-{{ day.safe_id }}')">Edit</button>
                                                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteBatch({{ batch.id }})">Delete</button>
+                                                        {% endif %}
                                                     </td>
                                                 </tr>
                                                 {% endfor %}
@@ -1098,22 +1102,24 @@
                     {% endfor %}
                     {% endfor %}
                     {% for batch in release_batches %}
-                    <div class="modal fade" id="releaseBatchDetails-{{ batch.id }}" tabindex="-1" aria-labelledby="releaseBatchDetailsLabel-{{ batch.id }}" aria-hidden="true">
+                    <div class="modal fade" id="releaseBatchDetails-{{ batch.id }}" tabindex="-1" aria-labelledby="releaseBatchDetailsLabel-{{ batch.id }}" aria-hidden="true" data-can-edit="{{ '1' if batch.can_edit_release else '0' }}">
                         <div class="modal-dialog modal-lg modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title d-flex align-items-center gap-2" id="releaseBatchDetailsLabel-{{ batch.id }}">
                                         <span>Batch Details: {{ batch.name }} {% if batch.release_at %}({{ batch.release_at|local_time('%b %d, %Y - %I:%M %p') }}){% endif %}</span>
-                                        <span class="badge bg-info text-dark">{{ batch.documents|length }} doc(s)</span>
+                                        <span class="badge bg-info text-dark">{{ batch.visible_release_document_count }} doc(s)</span>
                                     </h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
+                                    {% if batch.can_edit_release %}
                                     <div class="mb-3 batch-edit-section">
                                         <label class="form-label">Add Document to Batch</label>
                                         <input type="text" class="form-control batch-doc-search-input" data-batch-id="{{ batch.id }}" id="batch-doc-search-{{ batch.id }}" placeholder="Search by barcode, title, or office...">
                                         <div class="list-group mt-2 batch-doc-search-results" id="batch-doc-results-{{ batch.id }}" role="listbox"></div>
                                     </div>
+                                    {% endif %}
                                     <div class="mb-2 text-muted small">
                                         Released on {% if batch.release_at %}{{ batch.release_at|local_time('%b %d, %Y - %I:%M %p') }}{% else %}-{% endif %}
                                     </div>
@@ -1128,8 +1134,8 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody class="batch-doc-table-body">
-                                                    {% if batch.documents %}
-                                                        {% for link in batch.documents %}
+                                                    {% if batch.visible_release_documents %}
+                                                        {% for link in batch.visible_release_documents %}
                                                             {% set doc = link.document %}
                                                             {% if doc %}
                                                             <tr data-doc-id="{{ doc.id }}">
@@ -1149,6 +1155,7 @@
                                                                             "action_taken": doc.action_taken,
                                                                             "remarks": doc.remarks|default(""),
                                                                             "attachment": doc.attachment|default(""),
+                                                                            "attachment_url": doc.attachment_url or "",
                                                                             "creator": doc.creator.username,
                                                                             "recipient": doc.recipient.username,
                                                                             "timestamp": doc.timestamp|local_time("%B-%d-%Y at %I:%M %p")|tojson,
@@ -1156,6 +1163,7 @@
                                                                         }|tojson|safe }})'>
                                                                         View
                                                                     </button>
+                                                                    {% if batch.can_edit_release %}
                                                                     <button type="button" class="btn btn-sm btn-outline-secondary batch-doc-edit-btn"
                                                                         onclick='openBatchDocEditModal({{ {
                                                                             "id": doc.id,
@@ -1167,6 +1175,7 @@
                                                                             "action_taken": doc.action_taken,
                                                                             "remarks": doc.remarks|default(""),
                                                                             "attachment": doc.attachment|default(""),
+                                                                            "attachment_url": doc.attachment_url or "",
                                                                             "creator": doc.creator.username,
                                                                             "recipient": doc.recipient.username,
                                                                             "timestamp": doc.timestamp|local_time("%B-%d-%Y at %I:%M %p")|tojson,
@@ -1178,6 +1187,7 @@
                                                                             data-batch-id="{{ batch.id }}" data-doc-id="{{ doc.id }}">
                                                                         Remove
                                                                     </button>
+                                                                    {% endif %}
                                                                 </td>
                                                             </tr>
                                                             {% endif %}
@@ -3045,6 +3055,7 @@ document.addEventListener('shown.bs.tab', function(event) {
                                 "action_taken": document.action_taken,
                                 "remarks": document.remarks|default(""),
                                 "attachment": document.attachment|default(""),
+                                "attachment_url": document.attachment_url or "",
                                 "creator": document.creator.username,
                                 "recipient": document.recipient.username,
                                 "timestamp": document.timestamp|local_time("%B-%d-%Y at %I:%M %p")|tojson,
@@ -3514,6 +3525,8 @@ const releaseBatchListUrl = "{{ url_for('main.list_release_batches') }}";
     const deleteBatchUrlTemplate = "{{ url_for('main.delete_release_batch', batch_id=0) }}";
     function setBatchModalEditState(modalEl, canEdit) {
         if (!modalEl) return;
+        const allowedToEdit = modalEl.dataset.canEdit === '1';
+        canEdit = Boolean(canEdit && allowedToEdit);
         modalEl.dataset.desiredMode = canEdit ? 'edit' : 'view';
         modalEl.querySelectorAll('.batch-edit-section').forEach(function(el) {
             el.style.display = canEdit ? '' : 'none';
@@ -3795,8 +3808,8 @@ function populateViewModal(data) {
     // Attachment
     var attachEl = document.getElementById('docAttachment');
     if (attachEl) {
-        if (data.attachment && data.attachment !== 'None') {
-            const attachmentUrl = "{{ url_for('main.serve_file', filename='') }}" + String(data.attachment).split('/').pop();
+        const attachmentUrl = data.attachment_url || '';
+        if (attachmentUrl) {
             attachEl.innerHTML = '<a href="' + attachmentUrl + '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-download"></i> View Attachment</a>';
         } else {
             attachEl.textContent = 'No attachment available';
@@ -5374,7 +5387,7 @@ function buildAutoBatchName(dtValue) {
     return `BATCH ${count} - ${formatted}`.trim();
 }
 
-function appendReleaseBatchRow(batchName, dtValue, batchId, documents, isToday) {
+function appendReleaseBatchRow(batchName, dtValue, batchId, documents, isToday, canEdit) {
     const tableBody = document.getElementById(isToday ? 'releasedTableBodyToday' : 'releasedTableBodyHistory');
     if (!tableBody) return;
     const nextIndex = tableBody.querySelectorAll('tr').length + 1;
@@ -5400,7 +5413,7 @@ function appendReleaseBatchRow(batchName, dtValue, batchId, documents, isToday) 
     viewBtn.className = 'btn btn-sm btn-outline-primary';
     if (batchId) {
         viewBtn.addEventListener('click', function() {
-            addReleaseBatchModal(batchId, batchName, dtValue, documents || []);
+            addReleaseBatchModal(batchId, batchName, dtValue, documents || [], canEdit);
             openBatchModal(batchId, false);
         });
     } else {
@@ -5408,34 +5421,41 @@ function appendReleaseBatchRow(batchName, dtValue, batchId, documents, isToday) 
     }
     viewBtn.textContent = 'View';
 
-    const editBtn = document.createElement('button');
-    editBtn.type = 'button';
-    editBtn.className = 'btn btn-sm btn-outline-secondary';
-    editBtn.textContent = 'Edit';
-    if (batchId) {
-        editBtn.addEventListener('click', function() {
-            addReleaseBatchModal(batchId, batchName, dtValue, documents || []);
-            openBatchModal(batchId, true);
-        });
-    } else {
-        editBtn.disabled = true;
-    }
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.type = 'button';
-    deleteBtn.className = 'btn btn-sm btn-outline-danger';
-    deleteBtn.textContent = 'Delete';
-    if (batchId) {
-        deleteBtn.addEventListener('click', function() {
-            confirmDeleteBatch(batchId);
-        });
-    } else {
-        deleteBtn.disabled = true;
-    }
-
     actionsCell.appendChild(viewBtn);
-    actionsCell.appendChild(editBtn);
-    actionsCell.appendChild(deleteBtn);
+    if (canEdit) {
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'btn btn-sm btn-outline-secondary';
+        editBtn.textContent = 'Edit';
+        if (batchId) {
+            editBtn.addEventListener('click', function() {
+                addReleaseBatchModal(batchId, batchName, dtValue, documents || [], canEdit);
+                openBatchModal(batchId, true);
+            });
+        } else {
+            editBtn.disabled = true;
+        }
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn btn-sm btn-outline-danger';
+        deleteBtn.textContent = 'Delete';
+        if (batchId) {
+            deleteBtn.addEventListener('click', function() {
+                confirmDeleteBatch(batchId);
+            });
+        } else {
+            deleteBtn.disabled = true;
+        }
+
+        actionsCell.appendChild(editBtn);
+        actionsCell.appendChild(deleteBtn);
+    }
+
+    const countBadge = document.createElement('span');
+    countBadge.className = 'badge bg-info text-dark align-self-center';
+    countBadge.textContent = `${(documents || []).length} doc(s)`;
+    actionsCell.appendChild(countBadge);
 
     row.appendChild(noCell);
     row.appendChild(batchCell);
@@ -5522,8 +5542,8 @@ function addReleaseDayModal(dayId, dayLabel, parentGroupId, batches) {
                 <td>${count} doc(s)</td>
                 <td class="d-flex gap-2">
                     <button type="button" class="btn btn-sm btn-outline-primary" onclick="openBatchModal(${batch.id}, false, 'releaseDayDetails-${dayId}')">View</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBatchModal(${batch.id}, true, 'releaseDayDetails-${dayId}')">Edit</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteBatch(${batch.id})">Delete</button>
+                    ${batch.can_edit ? `<button type="button" class="btn btn-sm btn-outline-secondary" onclick="openBatchModal(${batch.id}, true, 'releaseDayDetails-${dayId}')">Edit</button>` : ''}
+                    ${batch.can_edit ? `<button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteBatch(${batch.id})">Delete</button>` : ''}
                 </td>
             </tr>
         `;
@@ -5647,7 +5667,7 @@ function addReleaseGroupModal(groupId, groupLabel, batches) {
     releaseGroupModals[groupId] = modal;
 }
 
-function addReleaseBatchModal(batchId, batchName, dtValue, documents) {
+function addReleaseBatchModal(batchId, batchName, dtValue, documents, canEdit) {
     const container = releaseBatchPortal || document.getElementById('releaseBatchDetailsContainer');
     if (!container || document.getElementById(`releaseBatchDetails-${batchId}`)) return;
     const releaseAtFormatted = formatReleaseBatchDate(dtValue);
@@ -5667,6 +5687,7 @@ function addReleaseBatchModal(batchId, batchName, dtValue, documents) {
             action_taken: doc.action_taken || '',
             remarks: doc.remarks || '',
             attachment: doc.attachment || '',
+            attachment_url: doc.attachment_url || '',
             creator: doc.creator || '',
             recipient: doc.recipient || '',
             timestamp: doc.timestamp || ''
@@ -5682,14 +5703,8 @@ function addReleaseBatchModal(batchId, batchName, dtValue, documents) {
                         onclick='populateViewModal(${JSON.stringify(payload)})'>
                         View
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary"
-                        onclick='openBatchDocEditModal(${JSON.stringify(payload)})'>
-                        Edit
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger batch-doc-remove-btn"
-                        data-batch-id="${batchId}" data-doc-id="${doc.id}">
-                        Remove
-                    </button>
+                    ${canEdit ? `<button type="button" class="btn btn-sm btn-outline-secondary batch-doc-edit-btn" onclick='openBatchDocEditModal(${JSON.stringify(payload)})'>Edit</button>` : ''}
+                    ${canEdit ? `<button type="button" class="btn btn-sm btn-outline-danger batch-doc-remove-btn" data-batch-id="${batchId}" data-doc-id="${doc.id}">Remove</button>` : ''}
                 </td>                  
             </tr>
         `;
@@ -5742,6 +5757,7 @@ function addReleaseBatchModal(batchId, batchName, dtValue, documents) {
         </div>
     `;
     container.appendChild(modal);
+    modal.dataset.canEdit = canEdit ? '1' : '0';
     modal.dataset.desiredMode = modal.dataset.desiredMode || 'view';
     bindBatchModalControls(modal, batchId);
 }
@@ -5855,7 +5871,7 @@ function openBatchModal(batchId, canEdit, returnModalId) {
     if (!modalEl && Array.isArray(releaseBatchCache)) {
         const cached = releaseBatchCache.find(function(b) { return String(b.id) === String(batchId); });
         if (cached) {
-            addReleaseBatchModal(cached.id, cached.name, cached.release_at_local || cached.release_at, cached.documents || []);
+            addReleaseBatchModal(cached.id, cached.name, cached.release_at_local || cached.release_at, cached.documents || [], cached.can_edit);
             modalEl = document.getElementById(modalId);
         }
     }
@@ -5864,7 +5880,7 @@ function openBatchModal(batchId, canEdit, returnModalId) {
         return;
     }
     modalEl.dataset.returnModal = returnModalId || 'releasedDocumentsModal';
-    setBatchModalEditState(modalEl, !!canEdit);
+    setBatchModalEditState(modalEl, !!canEdit && modalEl.dataset.canEdit === '1');
     const sourceModal = returnModalId ? document.getElementById(returnModalId) : null;
     showReleaseModal(modalEl, sourceModal);
 }
@@ -5985,6 +6001,7 @@ function renderBatchDocs(modalEl, docs, batchId) {
         const barcode = doc.barcode || 'No barcode';
         const title = doc.title || 'Untitled';
         const office = doc.office || 'No office';
+        const canEdit = modalEl.dataset.canEdit === '1';
         const payload = {
             id: doc.id,
             title: doc.title,
@@ -5995,6 +6012,7 @@ function renderBatchDocs(modalEl, docs, batchId) {
             action_taken: doc.action_taken || '',
             remarks: doc.remarks || '',
             attachment: doc.attachment || '',
+            attachment_url: doc.attachment_url || '',
             creator: doc.creator || '',
             recipient: doc.recipient || '',
             timestamp: doc.timestamp || ''
@@ -6010,14 +6028,8 @@ function renderBatchDocs(modalEl, docs, batchId) {
                         onclick='populateViewModal(${JSON.stringify(payload)})'>
                         View
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary batch-doc-edit-btn"
-                        onclick='openBatchDocEditModal(${JSON.stringify(payload)})'>
-                        Edit
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger batch-doc-remove-btn"
-                        data-batch-id="${batchId}" data-doc-id="${doc.id}">
-                        Remove
-                    </button>
+                    ${canEdit ? `<button type="button" class="btn btn-sm btn-outline-secondary batch-doc-edit-btn" onclick='openBatchDocEditModal(${JSON.stringify(payload)})'>Edit</button>` : ''}
+                    ${canEdit ? `<button type="button" class="btn btn-sm btn-outline-danger batch-doc-remove-btn" data-batch-id="${batchId}" data-doc-id="${doc.id}">Remove</button>` : ''}
                 </td>
             </tr>
         `;
@@ -6436,7 +6448,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 const batch = result.data.batch || {};
                 const releaseAt = batch.release_at_local || batch.release_at || dtValue;
-                appendReleaseBatchRow(batch.name || batchValue, releaseAt, batch.id, result.data.documents, true);
+                appendReleaseBatchRow(batch.name || batchValue, releaseAt, batch.id, result.data.documents, true, true);
                 clearDocSelection();
                 if (releaseBatchForm) {
                     releaseBatchForm.reset();
@@ -6597,10 +6609,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 ? batch.is_today
                 : (dateKey ? dateKey === todayKey : isReleaseToday(releaseAt, todayKey));
 
-            addReleaseBatchModal(batch.id, batch.name, releaseAt, batch.documents || []);
+            addReleaseBatchModal(batch.id, batch.name, releaseAt, batch.documents || [], batch.can_edit);
 
             if (isToday) {
-                appendReleaseBatchRow(batch.name, releaseAt, batch.id, batch.documents, true);
+                appendReleaseBatchRow(batch.name, releaseAt, batch.id, batch.documents, true, batch.can_edit);
                 const modalEl = document.getElementById(`releaseBatchDetails-${batch.id}`);
                 if (modalEl) bindBatchModalControls(modalEl, batch.id);
             } else {

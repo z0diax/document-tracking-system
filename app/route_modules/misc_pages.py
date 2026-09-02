@@ -1,13 +1,15 @@
 import os
 from datetime import datetime
-from pathlib import Path
 
-from flask import abort, current_app, jsonify, render_template, request, send_file, send_from_directory, url_for
+from flask import abort, current_app, jsonify, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
+from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 
+from app.access import user_can_access_document
 from app.models import ActivityLog, Document, to_local_time
 from app.route_modules.shared import main
+from app.utils import get_stored_upload_name, resolve_upload_path
 
 
 @main.route('/overview')
@@ -88,10 +90,9 @@ def get_document_activities(document_id):
             'activities': activity_dicts,
         })
     except Exception as exc:
-        print(f'Error in get_document_activities: {str(exc)}')
+        current_app.logger.exception('Error in get_document_activities: %s', exc)
         return jsonify({
             'error': 'An error occurred while fetching activities',
-            'message': str(exc),
         }), 500
 
 
@@ -129,8 +130,35 @@ def check_barcode():
         'valid': False,
         'message': 'This barcode is already in use',
         'suggestions': suggestions,
-        'document': existing_document.to_dict() if existing_document else None,
     })
+
+
+def _send_document_attachment(document):
+    if not document or not document.attachment:
+        abort(404)
+    if not user_can_access_document(current_user, document):
+        abort(403)
+
+    absolute_path = resolve_upload_path(document.attachment)
+    if not absolute_path or not os.path.isfile(absolute_path):
+        current_app.logger.warning('Attachment missing for document %s', document.id)
+        abort(404)
+
+    download_name = get_stored_upload_name(document.attachment) or os.path.basename(absolute_path)
+    mime_type = 'application/pdf' if download_name.lower().endswith('.pdf') else 'application/octet-stream'
+    return send_file(
+        absolute_path,
+        mimetype=mime_type,
+        as_attachment=False,
+        download_name=download_name,
+    )
+
+
+@main.route('/documents/<int:document_id>/attachment')
+@login_required
+def download_document_attachment(document_id):
+    document = Document.query.get_or_404(document_id)
+    return _send_document_attachment(document)
 
 
 @main.route('/uploads/<filename>')
@@ -138,39 +166,33 @@ def check_barcode():
 def serve_file(filename):
     try:
         safe_filename = secure_filename(filename)
-        uploads_dir = os.path.join(current_app.root_path, 'uploads')
-        Path(uploads_dir).mkdir(parents=True, exist_ok=True)
-
-        file_path = os.path.join(uploads_dir, safe_filename)
-        absolute_path = os.path.abspath(file_path)
-
-        if not absolute_path.startswith(os.path.abspath(uploads_dir)):
-            current_app.logger.error(f'Directory traversal attempt: {filename}')
-            abort(403)
-
-        if not os.path.isfile(absolute_path):
-            current_app.logger.error(f'File not found: {absolute_path}')
+        if not safe_filename:
             abort(404)
 
-        mime_type = 'application/pdf' if filename.lower().endswith('.pdf') else 'application/octet-stream'
-        return send_from_directory(
-            directory=uploads_dir,
-            path=safe_filename,
-            mimetype=mime_type,
-            as_attachment=False,
-            download_name=safe_filename,
-        )
+        matches = []
+        for document in Document.query.filter(Document.attachment.isnot(None)).all():
+            if get_stored_upload_name(document.attachment) != safe_filename:
+                continue
+            if user_can_access_document(current_user, document):
+                matches.append(document)
+
+        if len(matches) != 1:
+            abort(404)
+
+        return _send_document_attachment(matches[0])
+    except HTTPException:
+        raise
     except Exception as exc:
-        current_app.logger.error(f'Error serving file {filename}: {str(exc)}')
+        current_app.logger.error('Error serving legacy file %s: %s', filename, exc)
         abort(500)
 
 
-def get_file_download_url(filename):
-    """Generate proper URL for file download."""
-    if not filename:
+def get_file_download_url(document_or_id):
+    """Generate a document-scoped attachment URL."""
+    if not document_or_id:
         return None
-    safe_filename = os.path.basename(secure_filename(filename))
-    return url_for('main.serve_file', filename=safe_filename)
+    document_id = getattr(document_or_id, 'id', document_or_id)
+    return url_for('main.download_document_attachment', document_id=document_id)
 
 
 @main.route('/favicon.ico')

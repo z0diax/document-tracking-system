@@ -757,6 +757,7 @@ html {
                                 "action_taken": document.action_taken,
                                 "remarks": document.remarks|default(""),
                                 "attachment": document.attachment|default(""),
+                                "attachment_url": url_for('main.download_document_attachment', document_id=document.id) if document.attachment else "",
                                 "creator": document.creator.username,
                                 "recipient": document.recipient.username,
                                 "timestamp": document.timestamp|local_time("%B %d, %Y at %I:%M %p"),
@@ -3426,9 +3427,8 @@ function printUserMetrics() {
         document.getElementById('adminDocRemarks').textContent = data.remarks || 'None';
         
         // Handle attachment with proper URL
-        if (data.attachment && data.attachment !== 'None') {
-            const filename = data.attachment.split(/[/\\]/).pop(); // Handle both forward and backslashes
-            const attachmentUrl = window.location.origin + '/hrdoctrack/uploads/' + encodeURIComponent(filename);
+        if (data.attachment_url) {
+            const attachmentUrl = data.attachment_url;
             document.getElementById('adminDocAttachment').innerHTML = ''
                 + '<a href="' + attachmentUrl + '" class="btn btn-sm btn-outline-primary" target="_blank">'
                 + '    <i class="fas fa-file-download"></i> View PDF'

@@ -4,7 +4,10 @@ import shutil
 import sys
 import tempfile
 import unittest
+from io import BytesIO
 from datetime import date, datetime, timedelta
+
+from werkzeug.datastructures import FileStorage
 
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -15,7 +18,8 @@ os.environ.setdefault('FLASK_ENV', 'development')
 
 import app as app_package  # noqa: E402
 from app import create_app, db  # noqa: E402
-from app.models import ActivityLog, Document, LeaveRequest, User  # noqa: E402
+from app.models import ActivityLog, Document, LeaveRequest, ReleaseBatch, ReleaseBatchDocument, User  # noqa: E402
+from app.route_modules.document_actions import _save_document_attachment  # noqa: E402
 
 
 class AuthAccessTestConfig:
@@ -82,6 +86,9 @@ class AuthAccessTests(unittest.TestCase):
             follow_redirects=follow_redirects,
         )
 
+    def _logout(self):
+        return self.client.get('/hrdoctrack/logout', follow_redirects=False)
+
     def _create_document(self, *, creator_id, recipient_id, title, timestamp, status='Pending'):
         with self.app.app_context():
             document = Document(
@@ -98,6 +105,23 @@ class AuthAccessTests(unittest.TestCase):
             db.session.add(document)
             db.session.commit()
             return document.id
+
+    def _create_release_batch(self, *, created_by_id, name, document_ids, release_at=None):
+        with self.app.app_context():
+            batch = ReleaseBatch(
+                name=name,
+                created_by_id=created_by_id,
+                release_at=release_at or datetime.utcnow(),
+            )
+            db.session.add(batch)
+            db.session.flush()
+            for document_id in document_ids:
+                db.session.add(ReleaseBatchDocument(
+                    release_batch_id=batch.id,
+                    document_id=document_id,
+                ))
+            db.session.commit()
+            return batch.id
 
     def test_unauthenticated_admin_route_redirects_to_login(self):
         response = self.client.get('/hrdoctrack/admin', follow_redirects=False)
@@ -215,6 +239,184 @@ class AuthAccessTests(unittest.TestCase):
 
             self.assertEqual(document.status, 'Pending')
             self.assertEqual(auto_archive_logs, 0)
+
+    def test_attachment_storage_uses_unique_names_for_same_filename(self):
+        with self.app.app_context():
+            first_name = _save_document_attachment(FileStorage(
+                stream=BytesIO(b'first file'),
+                filename='shared.pdf',
+                content_type='application/pdf',
+            ))
+            second_name = _save_document_attachment(FileStorage(
+                stream=BytesIO(b'second file'),
+                filename='shared.pdf',
+                content_type='application/pdf',
+            ))
+
+        self.assertNotEqual(first_name, second_name)
+
+        first_path = os.path.join(AuthAccessTestConfig.UPLOAD_FOLDER, first_name)
+        second_path = os.path.join(AuthAccessTestConfig.UPLOAD_FOLDER, second_name)
+        self.assertTrue(os.path.exists(first_path))
+        self.assertTrue(os.path.exists(second_path))
+
+        with open(first_path, 'rb') as handle:
+            self.assertEqual(handle.read(), b'first file')
+        with open(second_path, 'rb') as handle:
+            self.assertEqual(handle.read(), b'second file')
+
+    def test_document_attachment_download_requires_document_access(self):
+        owner_id = self._create_user('owner', 'owner@example.com', status='Active')
+        other_id = self._create_user('other', 'other@example.com', status='Active')
+        document_id = self._create_document(
+            creator_id=owner_id,
+            recipient_id=owner_id,
+            title='Secret Attachment',
+            timestamp=datetime.utcnow(),
+        )
+
+        attachment_name = 'secret.pdf'
+        with self.app.app_context():
+            document = db.session.get(Document, document_id)
+            document.attachment = attachment_name
+            db.session.commit()
+
+        attachment_path = os.path.join(AuthAccessTestConfig.UPLOAD_FOLDER, attachment_name)
+        with open(attachment_path, 'wb') as handle:
+            handle.write(b'secret bytes')
+
+        self._login('other')
+        denied_response = self.client.get(f'/hrdoctrack/documents/{document_id}/attachment', follow_redirects=False)
+        legacy_response = self.client.get(f'/hrdoctrack/uploads/{attachment_name}', follow_redirects=False)
+        self.assertEqual(denied_response.status_code, 403)
+        self.assertEqual(legacy_response.status_code, 404)
+
+        self._logout()
+        self._login('owner')
+        allowed_response = self.client.get(f'/hrdoctrack/documents/{document_id}/attachment', follow_redirects=False)
+        self.assertEqual(allowed_response.status_code, 200)
+        self.assertEqual(allowed_response.data, b'secret bytes')
+
+    def test_document_search_only_returns_user_accessible_documents(self):
+        owner_id = self._create_user('creator', 'creator@example.com', status='Active')
+        viewer_id = self._create_user('viewer', 'viewer@example.com', status='Active')
+        outsider_id = self._create_user('outsider', 'outsider@example.com', status='Active')
+
+        self._create_document(
+            creator_id=owner_id,
+            recipient_id=viewer_id,
+            title='Secret Payroll',
+            timestamp=datetime.utcnow(),
+        )
+
+        self._login('viewer')
+        visible_response = self.client.get('/hrdoctrack/api/documents/search?q=Secret', follow_redirects=False)
+        self.assertEqual(visible_response.status_code, 200)
+        self.assertEqual(len(visible_response.get_json()['results']), 1)
+
+        self._logout()
+        self._login('outsider')
+        hidden_response = self.client.get('/hrdoctrack/api/documents/search?q=Secret', follow_redirects=False)
+        self.assertEqual(hidden_response.status_code, 200)
+        self.assertEqual(hidden_response.get_json()['results'], [])
+
+    def test_check_barcode_no_longer_exposes_document_metadata(self):
+        owner_id = self._create_user('barcode_owner', 'barcode_owner@example.com', status='Active')
+        viewer_id = self._create_user('barcode_viewer', 'barcode_viewer@example.com', status='Active')
+        document_id = self._create_document(
+            creator_id=owner_id,
+            recipient_id=owner_id,
+            title='Hidden Barcode Doc',
+            timestamp=datetime.utcnow(),
+        )
+
+        with self.app.app_context():
+            document = db.session.get(Document, document_id)
+            document.barcode = 'ABC123'
+            db.session.commit()
+
+        self._login('barcode_viewer')
+        response = self.client.post('/hrdoctrack/check_barcode', data={'barcode': 'ABC123'}, follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertFalse(payload['valid'])
+        self.assertNotIn('document', payload)
+
+    def test_release_batch_list_only_shows_visible_documents_and_blocks_edits_for_non_manager(self):
+        manager_id = self._create_user('manager', 'manager@example.com', status='Active')
+        viewer_id = self._create_user('batch_viewer', 'batch_viewer@example.com', status='Active')
+        other_id = self._create_user('batch_other', 'batch_other@example.com', status='Active')
+
+        visible_doc_id = self._create_document(
+            creator_id=manager_id,
+            recipient_id=viewer_id,
+            title='Visible in Batch',
+            timestamp=datetime.utcnow(),
+            status='Released',
+        )
+        hidden_doc_id = self._create_document(
+            creator_id=manager_id,
+            recipient_id=other_id,
+            title='Hidden in Batch',
+            timestamp=datetime.utcnow(),
+            status='Released',
+        )
+        batch_id = self._create_release_batch(
+            created_by_id=manager_id,
+            name='Shared Batch',
+            document_ids=[visible_doc_id, hidden_doc_id],
+        )
+
+        self._login('batch_viewer')
+        list_response = self.client.get('/hrdoctrack/api/release_batches', follow_redirects=False)
+        self.assertEqual(list_response.status_code, 200)
+        payload = list_response.get_json()['results']
+        self.assertEqual(len(payload), 1)
+        self.assertEqual(payload[0]['id'], batch_id)
+        self.assertFalse(payload[0]['can_edit'])
+        self.assertEqual(len(payload[0]['documents']), 1)
+        self.assertEqual(payload[0]['documents'][0]['id'], visible_doc_id)
+
+        delete_response = self.client.post(f'/hrdoctrack/release_batches/{batch_id}/delete', follow_redirects=False)
+        remove_response = self.client.post(
+            f'/hrdoctrack/release_batches/{batch_id}/documents/remove',
+            data={'document_id': visible_doc_id},
+            follow_redirects=False,
+        )
+        self.assertEqual(delete_response.status_code, 403)
+        self.assertEqual(remove_response.status_code, 403)
+
+    def test_release_batch_list_hides_unrelated_batches(self):
+        manager_id = self._create_user('batch_owner', 'batch_owner@example.com', status='Active')
+        outsider_id = self._create_user('batch_outsider', 'batch_outsider@example.com', status='Active')
+        document_id = self._create_document(
+            creator_id=manager_id,
+            recipient_id=manager_id,
+            title='Private Batch Doc',
+            timestamp=datetime.utcnow(),
+            status='Released',
+        )
+        self._create_release_batch(
+            created_by_id=manager_id,
+            name='Private Batch',
+            document_ids=[document_id],
+        )
+
+        self._login('batch_outsider')
+        response = self.client.get('/hrdoctrack/api/release_batches', follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['results'], [])
+
+    def test_account_status_endpoint_does_not_reveal_user_state(self):
+        self._create_user('pending_user', 'pending_user@example.com', status='Pending')
+
+        existing = self.client.post('/hrdoctrack/check_account_status', data={'username': 'pending_user'}, follow_redirects=False)
+        missing = self.client.post('/hrdoctrack/check_account_status', data={'username': 'missing_user'}, follow_redirects=False)
+
+        self.assertEqual(existing.status_code, 200)
+        self.assertEqual(missing.status_code, 200)
+        self.assertEqual(existing.get_json(), missing.get_json())
+        self.assertNotIn('status', existing.get_json())
 
     def test_admin_dashboard_shows_employee_leave_type_analytics(self):
         admin_id = self._create_user('admin', 'admin@example.com', is_admin=True, status='Active')

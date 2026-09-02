@@ -104,6 +104,7 @@
                             "action_taken": document.action_taken,
                             "remarks": document.remarks|default(""),
                             "attachment": document.attachment|default(""),
+                            "attachment_url": url_for('main.download_document_attachment', document_id=document.id) if document.attachment else "",
                             "creator": document.creator.username,
                             "recipient": document.recipient.username,
                             "timestamp": document.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
@@ -250,8 +251,8 @@ function populateViewModal(data) {
     document.getElementById('docRemarks').textContent = data.remarks || 'None';
     
     // Handle attachment
-    if (data.attachment && data.attachment !== 'None') {
-        document.getElementById('docAttachment').innerHTML = '<a href="' + data.attachment + '" target="_blank">View Attachment</a>';
+    if (data.attachment_url) {
+        document.getElementById('docAttachment').innerHTML = '<a href="' + data.attachment_url + '" target="_blank">View Attachment</a>';
     } else {
         document.getElementById('docAttachment').textContent = 'No attachment available';
     }

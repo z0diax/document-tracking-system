@@ -27,7 +27,7 @@ LEAVE_TYPE_CHOICES = [
 class RegistrationForm(FlaskForm):
     username = StringField('Username', 
                          validators=[DataRequired(), Length(min=3, max=20)])
-    email = StringField('Email')
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
     password = PasswordField('Password', 
                            validators=[DataRequired(), Length(min=6)])
     confirm_password = PasswordField('Confirm Password',
@@ -38,6 +38,11 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError('That username is already taken. Please choose a different one.')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('That email is already registered. Please use a different one.')
 
     # The User model may be overriding our status, so ensure it in the form
     def get_user(self):

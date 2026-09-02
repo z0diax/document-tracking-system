@@ -22,7 +22,7 @@ from app.route_modules.shared import (
     get_recipient_choices,
     main,
 )
-from app.utils import get_upload_path, is_allowed_file
+from app.utils import get_upload_path, get_upload_root, is_allowed_file
 
 
 def _dashboard_listing_args(default_view='received'):
@@ -50,8 +50,9 @@ def _save_document_attachment(file_storage):
     if not is_allowed_file(file_storage.filename):
         raise ValueError('Invalid attachment file type.')
     attachment_rel = get_upload_path(file_storage.filename)
-    file_path = os.path.join(current_app.root_path, attachment_rel)
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    upload_root = get_upload_root()
+    file_path = os.path.join(upload_root, attachment_rel)
+    os.makedirs(upload_root, exist_ok=True)
     file_storage.save(file_path)
     return attachment_rel
 

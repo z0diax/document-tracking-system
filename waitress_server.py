@@ -1,5 +1,5 @@
 import logging
-logging.basicConfig(level=logging.DEBUG)  # Enable debug logging
+logging.basicConfig(level=logging.INFO)
 
 from waitress import serve
 from app import create_app  # Use the factory method

@@ -6,6 +6,12 @@ from sqlalchemy import and_, case, or_
 from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.orm import joinedload, selectinload
 
+from app.access import (
+    release_batch_access_filter,
+    user_can_access_document,
+    user_can_manage_release_batch,
+    visible_release_batch_links,
+)
 from app import db
 from app.forms import (
     BatchDeclineDocumentForm,
@@ -158,6 +164,11 @@ def dashboard():
 
     for document in created_documents + received_documents:
         document.activities_json = [activity.to_dict() for activity in document.activities]
+        document.attachment_url = (
+            url_for('main.download_document_attachment', document_id=document.id)
+            if document.attachment and user_can_access_document(current_user, document)
+            else None
+        )
 
     # Prepare data for RSP view
     if view == 'rsp':
@@ -325,6 +336,7 @@ def dashboard():
     # Load release batches for Released modal (split today vs history)
     try:
         release_batches = (ReleaseBatch.query
+                           .filter(release_batch_access_filter(current_user))
                            .options(joinedload(ReleaseBatch.documents).joinedload(ReleaseBatchDocument.document))
                            .order_by(ReleaseBatch.release_at.desc())
                            .limit(100)
@@ -332,6 +344,17 @@ def dashboard():
     except Exception as exc:
         current_app.logger.error('Unable to load release batches: %s', exc)
         release_batches = []
+
+    for batch in release_batches:
+        batch.can_edit_release = user_can_manage_release_batch(current_user, batch)
+        batch.visible_release_documents = visible_release_batch_links(batch, current_user)
+        batch.visible_release_document_count = len(batch.visible_release_documents)
+        for link in batch.visible_release_documents:
+            link.document.attachment_url = (
+                url_for('main.download_document_attachment', document_id=link.document.id)
+                if link.document.attachment and user_can_access_document(current_user, link.document)
+                else None
+            )
 
     def _is_today(batch_obj):
         try:

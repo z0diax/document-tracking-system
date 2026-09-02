@@ -1,5 +1,6 @@
 from flask import current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
 from app import db
@@ -42,8 +43,6 @@ def register():
             db.session.add(user)
             db.session.commit()
 
-            print(f"User registered successfully: {user.username} (status: {user.status})")
-
             try:
                 admins = User.query.filter(User.is_admin == True).all()
                 if admins:
@@ -81,11 +80,13 @@ def register():
             flash('Registration successful! Your account is pending for approval by an administrator.', 'info')
             return redirect(url_for('main.home'))
 
+        except IntegrityError:
+            db.session.rollback()
+            flash('Registration failed. Please review your username and email, then try again.', 'danger')
         except Exception as exc:
             db.session.rollback()
-            error_message = str(exc)
-            print(f'Registration error: {error_message}')
-            flash(f'Registration failed: {error_message}', 'danger')
+            current_app.logger.exception('Registration error')
+            flash('Registration failed. Please try again.', 'danger')
 
     elif register_form.errors:
         for field, errors in register_form.errors.items():
@@ -109,33 +110,23 @@ def login():
         user = User.query.filter_by(username=login_form.username.data).first()
 
         if user and user.check_password(login_form.password.data):
-            print(f"DEBUG: User '{user.username}' trying to log in with status '{user.status}'")
-
             if user.status != 'Active':
                 if user.status == 'Pending':
                     flash('Your account is pending for approval by the system administrator.', 'warning')
-                    print(f"DEBUG: Login rejected - User '{user.username}' has 'Pending' status")
                 elif user.status in ['Disabled', 'Declined']:
                     flash(
                         'Your account has been disabled or declined. Please contact the system administrator.',
                         'danger',
                     )
-                    print(f"DEBUG: Login rejected - User '{user.username}' has '{user.status}' status")
                 else:
                     flash('Account has an invalid status. Please contact the administrator.', 'danger')
-                    print(f"DEBUG: Login rejected - User '{user.username}' has invalid status '{user.status}'")
 
                 return render_template('home.html', login_form=login_form, register_form=register_form)
-
-            print(f"DEBUG: User '{user.username}' confirmed Active, attempting login")
 
             login_result = login_user(user, remember=login_form.remember.data)
             if not login_result:
                 flash('Login failed. Your account may be inactive.', 'danger')
-                print(f"DEBUG: Flask-login rejected user '{user.username}' - login_user() returned False")
                 return render_template('home.html', login_form=login_form, register_form=register_form)
-
-            print(f"DEBUG: User '{user.username}' logged in successfully")
 
             if user.is_admin:
                 return redirect(url_for('main.admin_dashboard'))
@@ -200,7 +191,8 @@ def delete_all_notifications():
         return jsonify({'success': True, 'unread_count': 0})
     except Exception as exc:
         db.session.rollback()
-        return jsonify({'success': False, 'error': str(exc)}), 500
+        current_app.logger.exception('Failed to delete notifications: %s', exc)
+        return jsonify({'success': False, 'error': 'Failed to delete notifications.'}), 500
 
 
 @main.route('/check_username', methods=['POST'])
@@ -208,23 +200,20 @@ def check_username():
     try:
         username = request.form.get('username', '').strip()
 
-        print(f'Checking username availability: {username}')
-
         if not username:
             return jsonify({'valid': False, 'message': 'Username is required'})
 
         if len(username) < 3:
             return jsonify({'valid': False, 'message': 'Username must be at least 3 characters long'})
 
-        user = User.query.filter_by(username=username).first()
-        if user:
-            return jsonify({'valid': False, 'message': 'This username is already taken'})
-
-        return jsonify({'valid': True, 'message': 'Username is available'})
+        return jsonify({
+            'valid': True,
+            'message': 'Username format looks good. Availability is checked on submit.',
+        })
 
     except Exception as exc:
-        print(f'Error checking username: {str(exc)}')
-        return jsonify({'valid': False, 'message': f'Server error: {str(exc)}'}), 500
+        current_app.logger.exception('Error checking username format: %s', exc)
+        return jsonify({'valid': False, 'message': 'Unable to validate username right now.'}), 500
 
 
 @main.route('/check_email', methods=['POST'])
@@ -232,39 +221,27 @@ def check_email():
     try:
         email = request.form.get('email', '').strip()
 
-        print(f'Checking email availability: {email}')
-
         if not email:
             return jsonify({'valid': False, 'message': 'Email is required'})
 
         if '@' not in email or '.' not in email:
             return jsonify({'valid': False, 'message': 'Invalid email format'})
 
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            return jsonify({'valid': False, 'message': 'Email is already registered'})
-
-        return jsonify({'valid': True, 'message': 'Email is available'})
+        return jsonify({
+            'valid': True,
+            'message': 'Email format looks good. Availability is checked on submit.',
+        })
 
     except Exception as exc:
-        print(f'Error checking email: {str(exc)}')
-        return jsonify({'valid': False, 'message': f'Server error: {str(exc)}'}), 500
+        current_app.logger.exception('Error checking email format: %s', exc)
+        return jsonify({'valid': False, 'message': 'Unable to validate email right now.'}), 500
 
 
 @main.route('/check_account_status', methods=['POST'])
 def check_account_status():
-    """Check a user's account status without logging in."""
-    username = request.form.get('username', '').strip()
-    if not username:
-        return jsonify({'exists': False})
-
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({'exists': False})
-
+    """Return a generic login guidance response without revealing account state."""
     return jsonify({
-        'exists': True,
-        'status': user.status,
+        'message': 'If the account exists, sign in to continue or contact an administrator for access issues.',
     })
 
 

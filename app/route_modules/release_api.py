@@ -1,11 +1,18 @@
 from datetime import datetime
 
-from flask import abort, current_app, jsonify, request
+from flask import abort, current_app, jsonify, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
+from app.access import (
+    document_access_filter,
+    release_batch_access_filter,
+    user_can_access_document,
+    user_can_manage_release_batch,
+    visible_release_batch_links,
+)
 from app import db
 from app.models import (
     ActivityLog,
@@ -75,7 +82,7 @@ def search_recipients():
 @main.route('/api/documents/search', methods=['GET'])
 @login_required
 def search_documents():
-    """Search documents by title, barcode, or office (global)."""
+    """Search documents by title, barcode, or office within the caller's scope."""
     term = (request.args.get('q') or '').strip()
     try:
         limit = int(request.args.get('limit', 8))
@@ -88,7 +95,8 @@ def search_documents():
 
     like_term = f'%{term}%'
     docs = (
-        Document.query.filter(
+        Document.query.filter(document_access_filter(current_user))
+        .filter(
             or_(
                 Document.title.ilike(like_term),
                 Document.barcode.ilike(like_term),
@@ -130,6 +138,7 @@ def list_release_batches():
 
     batches = (
         ReleaseBatch.query
+        .filter(release_batch_access_filter(current_user))
         .options(joinedload(ReleaseBatch.documents).joinedload(ReleaseBatchDocument.document))
         .order_by(ReleaseBatch.release_at.desc())
         .limit(limit)
@@ -154,6 +163,11 @@ def list_release_batches():
             'action_taken': doc.action_taken or '',
             'remarks': doc.remarks or '',
             'attachment': doc.attachment or '',
+            'attachment_url': (
+                url_for('main.download_document_attachment', document_id=doc.id)
+                if doc.attachment and user_can_access_document(current_user, doc)
+                else None
+            ),
             'creator': doc.creator.username if doc.creator else '',
             'recipient': doc.recipient.username if doc.recipient else '',
             'timestamp': timestamp,
@@ -176,10 +190,11 @@ def list_release_batches():
             release_date_label = ''
             release_month_key = ''
             release_month_label = ''
-        docs = [payload_doc for payload_doc in (_doc_payload(link) for link in batch.documents) if payload_doc]
+        docs = [payload_doc for payload_doc in (_doc_payload(link) for link in visible_release_batch_links(batch, current_user)) if payload_doc]
         payload.append({
             'id': batch.id,
             'name': batch.name,
+            'can_edit': user_can_manage_release_batch(current_user, batch),
             'release_at': release_at_iso,
             'release_at_local': release_at_local,
             'release_date_key': release_date_key,
@@ -257,6 +272,11 @@ def _serialize_doc_basic(doc_obj):
         'action_taken': doc_obj.action_taken or '',
         'remarks': doc_obj.remarks or '',
         'attachment': doc_obj.attachment or '',
+        'attachment_url': (
+            url_for('main.download_document_attachment', document_id=doc_obj.id)
+            if doc_obj.attachment and user_can_access_document(current_user, doc_obj)
+            else None
+        ),
         'creator': doc_obj.creator.username if doc_obj.creator else '',
         'recipient': doc_obj.recipient.username if doc_obj.recipient else '',
         'timestamp': timestamp,
@@ -266,33 +286,20 @@ def _serialize_doc_basic(doc_obj):
 def _get_release_accessible_docs(doc_ids_int):
     if not doc_ids_int:
         return []
-    activity_doc_ids = {
-        row[0] for row in (
-            db.session.query(ActivityLog.document_id)
-            .filter(
-                ActivityLog.user_id == current_user.id,
-                ActivityLog.document_id.in_(doc_ids_int),
-            )
-            .distinct()
-            .all()
-        )
-    }
-    filters = [
-        Document.creator_id == current_user.id,
-        Document.recipient_id == current_user.id,
-    ]
-    if activity_doc_ids:
-        filters.append(Document.id.in_(activity_doc_ids))
-    return Document.query.filter(
-        Document.id.in_(doc_ids_int),
-        or_(*filters),
-    ).all()
+    return (
+        Document.query
+        .filter(Document.id.in_(doc_ids_int))
+        .filter(document_access_filter(current_user))
+        .all()
+    )
 
 
 @main.route('/release_batches/<int:batch_id>/documents/add', methods=['POST'])
 @login_required
 def add_docs_to_release_batch(batch_id):
     batch = ReleaseBatch.query.get_or_404(batch_id)
+    if not user_can_manage_release_batch(current_user, batch):
+        return jsonify({'success': False, 'message': 'Not authorized to edit this batch.'}), 403
     doc_ids = request.form.getlist('document_ids[]') or request.form.getlist('document_ids') or [request.form.get('document_id')]
     doc_ids = [doc_id for doc_id in doc_ids if doc_id]
     if not doc_ids:
@@ -332,7 +339,7 @@ def add_docs_to_release_batch(batch_id):
     except Exception as exc:
         db.session.rollback()
         current_app.logger.exception('Failed to add docs to batch %s: %s', batch_id, exc)
-        return jsonify({'success': False, 'message': f'Failed to add documents: {exc}'}), 500
+        return jsonify({'success': False, 'message': 'Failed to add documents.'}), 500
 
     serialized_docs = []
     for link in batch.documents:
@@ -364,6 +371,8 @@ def add_docs_to_release_batch(batch_id):
 @login_required
 def remove_doc_from_release_batch(batch_id):
     batch = ReleaseBatch.query.get_or_404(batch_id)
+    if not user_can_manage_release_batch(current_user, batch):
+        return jsonify({'success': False, 'message': 'Not authorized to edit this batch.'}), 403
     doc_id = request.form.get('document_id')
     try:
         doc_id_int = int(doc_id)
@@ -380,7 +389,7 @@ def remove_doc_from_release_batch(batch_id):
     except Exception as exc:
         db.session.rollback()
         current_app.logger.exception('Failed to remove doc %s from batch %s: %s', doc_id_int, batch_id, exc)
-        return jsonify({'success': False, 'message': f'Failed to remove document: {exc}'}), 500
+        return jsonify({'success': False, 'message': 'Failed to remove document.'}), 500
 
     serialized_docs = []
     for batch_link in batch.documents:
@@ -412,6 +421,8 @@ def remove_doc_from_release_batch(batch_id):
 @login_required
 def delete_release_batch(batch_id):
     batch = ReleaseBatch.query.get_or_404(batch_id)
+    if not user_can_manage_release_batch(current_user, batch):
+        return jsonify({'success': False, 'message': 'Not authorized to delete this batch.'}), 403
     try:
         db.session.delete(batch)
         db.session.commit()
@@ -484,18 +495,11 @@ def create_release_batch():
         'batch': {
             'id': batch.id,
             'name': batch.name,
+            'can_edit': True,
             'release_at': batch.release_at.isoformat(),
             'release_at_local': to_local_time(batch.release_at).isoformat() if batch.release_at else None,
         },
-        'documents': [
-            {
-                'id': doc.id,
-                'title': doc.title,
-                'barcode': doc.barcode,
-                'office': doc.office,
-            }
-            for doc in docs
-        ],
+        'documents': [_serialize_doc_basic(doc) for doc in docs],
     })
 
 

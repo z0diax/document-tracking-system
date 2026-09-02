@@ -123,15 +123,7 @@ class User(db.Model, UserMixin):
         This is used by Flask-Login to determine if a user can log in.
         We only allow users with 'Active' status.
         """
-        print(f"DEBUG - Checking if user {self.username} is_active - status: '{self.status}'")
-        
-        # Explicit status check - anything except exactly 'Active' returns False
-        if self.status != 'Active':
-            print(f"User {self.username} NOT active - status is '{self.status}'")
-            return False
-        
-        print(f"User {self.username} IS active - has 'Active' status")
-        return True
+        return self.status == 'Active'
 
 # Move these timezone functions here instead of importing
 def to_local_time(dt):

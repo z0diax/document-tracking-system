@@ -264,7 +264,8 @@ def admin_leave_analytics_drilldown():
         })
     except Exception as exc:
         db.session.rollback()
-        return jsonify({'success': False, 'error': str(exc)}), 500
+        current_app.logger.exception('Failed to load leave analytics drilldown: %s', exc)
+        return jsonify({'success': False, 'error': 'Failed to load analytics records.'}), 500
 
 
 @main.route('/archive')
@@ -441,7 +442,8 @@ def profile_activity_data():
         })
     except Exception as exc:
         db.session.rollback()
-        return jsonify({'success': False, 'error': str(exc)}), 500
+        current_app.logger.exception('Failed to build profile activity data: %s', exc)
+        return jsonify({'success': False, 'error': 'Failed to load profile activity data.'}), 500
 
 
 @main.route('/admin/print_text_report')
